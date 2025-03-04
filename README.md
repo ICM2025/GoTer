@@ -1,8 +1,10 @@
-# Go-Race
+# 🚴‍♂️ Go-Race  
 
 Aplicación de movilidad urbana que permitirá a los usuarios de scooters, bicicletas y patines planificar rutas óptimas y seguras, encontrar estacionamientos cercanos, participar en competencias gamificadas y conectarse con una comunidad activa. La app integrará tecnologías como GPS y sensores para ofrecer métricas de salud, como calorías quemadas y distancia recorrida, promoviendo un estilo de vida sostenible y saludable. Con funcionalidades de navegación inteligente, socialización y recompensas, nuestra propuesta busca transformar la movilidad urbana en una experiencia eficiente, divertida y conectada.
 
---- INTEGRANTES ---
+---
+
+## 👥 Equipo  
 
 - Joshua prieto 
 
@@ -33,4 +35,9 @@ tanto dentro de lo académico como en lo recreativo
 5 semestre de ingenieria de sistemas.
 Tengo 18 años, me gustan los caballos y en general los animales
 
+-Andres Henao
 
+Soy estudiante de Ingeniería de Sistemas de quintoo semestre.
+Me gustan mucho los temas relacionados a la arquitectura de software. Actualmente estoy enfocado en aprender técnicas para el desarrollo de aplicaciones web. Me interesa el front-end y disfruto discutir sobre Java OOP y diseño de interfaces. En mi tiempo libre intento enfocarme en el arte y el deporte.
+
+---

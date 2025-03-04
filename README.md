@@ -35,7 +35,7 @@ tanto dentro de lo académico como en lo recreativo
 5 semestre de ingenieria de sistemas.
 Tengo 18 años, me gustan los caballos y en general los animales
 
--Andres Henao
+- Andres Henao
 
 Soy estudiante de Ingeniería de Sistemas de quintoo semestre.
 Me gustan mucho los temas relacionados a la arquitectura de software. Actualmente estoy enfocado en aprender técnicas para el desarrollo de aplicaciones web. Me interesa el front-end y disfruto discutir sobre Java OOP y diseño de interfaces. En mi tiempo libre intento enfocarme en el arte y el deporte.

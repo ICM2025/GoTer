@@ -105,7 +105,6 @@
             android:layout_marginEnd="20dp"
             android:backgroundTint="@color/blue_buttons"
             android:text="Cancelar"
-            android:fontFamily="@font/archivoblack"
             android:textColor="@color/white" />
 
         <Button
@@ -113,7 +112,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/blue_buttons"
-            android:fontFamily="@font/archivoblack"
             android:text="Ingresar"
             android:textColor="@color/white" />
     </LinearLayout>

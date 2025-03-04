@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_background"
+    tools:context=".login_usuario">
+
+    <!-- Botón de regreso -->
+    <ImageView
+        android:id="@+id/botonBack"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="16dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        app:srcCompat="@drawable/back_button"
+        android:contentDescription="Botón de regreso" />
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/textIngreso"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/botonBack"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:text="Ingreso de usuario"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="@color/white" />
+
+    <!-- Campo de correo -->
+    <EditText
+        android:id="@+id/editTextEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textIngreso"
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:background="@color/textfield_background"
+        android:hint="Correo"
+        android:padding="12dp"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/textIngresoEmailHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextEmail"
+        android:layout_marginStart="40dp"
+        android:text="Ingrese su dirección de correo electrónico"
+        android:textSize="12sp"
+        android:textColor="@color/gray_hint" />
+
+    <!-- Campo de contraseña -->
+    <EditText
+        android:id="@+id/editTextPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textIngresoEmailHint"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:background="@color/textfield_background"
+        android:hint="Contraseña"
+        android:padding="12dp"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:inputType="textPassword" />
+
+    <TextView
+        android:id="@+id/textIngresoPasswordHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextPassword"
+        android:layout_marginStart="40dp"
+        android:text="Ingrese una contraseña"
+        android:textSize="12sp"
+        android:textColor="@color/gray_hint" />
+
+    <!-- Botones -->
+    <LinearLayout
+        android:id="@+id/buttonContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textIngresoPasswordHint"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:backgroundTint="@color/blue_buttons"
+            android:text="Cancelar"
+            android:textColor="@color/white" />
+
+        <Button
+            android:id="@+id/buttonLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/blue_buttons"
+            android:text="Ingresar"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+</RelativeLayout>

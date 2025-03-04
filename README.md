@@ -16,7 +16,9 @@ y como hobbies me gusta leer e ir al gimnasio
 - Melissa Ruiz
 
 5 semestre de ingeniería de sistemas. 
-20 años. Me gusta leer, ver películas, la robótica y el hiking.
+Tengo 20 años, soy monitora académica de ADS 
+y líder de programación en el semillero de robótica JAVEX.
+Me gusta leer, ver películas, la robótica y el hiking.
 
 - Joan Orduz
 

@@ -23,5 +23,8 @@ class MainActivity : AppCompatActivity() {
         binding.pruebaLogin.setOnClickListener {
             startActivity(Intent(baseContext, LoginUsuario::class.java))
         }
+        binding.pruebaMapa.setOnClickListener {
+            startActivity(Intent(baseContext, Principal_Mapa::class.java))
+        }
     }
 }

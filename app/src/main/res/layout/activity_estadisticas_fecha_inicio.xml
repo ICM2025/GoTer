@@ -25,6 +25,7 @@
             android:drawableEnd="@drawable/ic_calendar"
             android:focusable="false"
             android:inputType="none"
+            android:textColor="#FFFFFF"
             android:textColorLink="#FFFFFF" />
     </com.google.android.material.textfield.TextInputLayout>
 

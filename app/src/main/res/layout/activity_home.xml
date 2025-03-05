@@ -19,7 +19,7 @@
         android:textSize="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:textStyle="italic"
+        android:fontFamily="@font/bahiana"
         />
 
     <TextView
@@ -111,7 +111,7 @@
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="30dp"
-            android:textStyle="italic" />
+            android:fontFamily="@font/bahiana"/>
     </LinearLayout>
 
     <LinearLayout
@@ -143,7 +143,7 @@
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="30dp"
-            android:textStyle="italic" />
+            android:fontFamily="@font/bahiana"/>
     </LinearLayout>
 
     <LinearLayout
@@ -175,7 +175,7 @@
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="30dp"
-            android:textStyle="italic" />
+            android:fontFamily="@font/bahiana"/>
     </LinearLayout>
 
     <LinearLayout

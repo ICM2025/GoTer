@@ -16,10 +16,13 @@
             android:name=".Principal_Mapa"
             android:exported="false" />
         <activity
+            android:name=".EstadisticasFechaInicio"
+            android:exported="false" />
+        <activity
             android:name=".HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".login_usuario"
+            android:name=".LoginUsuario"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

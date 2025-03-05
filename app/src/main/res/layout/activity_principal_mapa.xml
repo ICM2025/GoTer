@@ -2,18 +2,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/map"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Principal_Mapa">
 
-    <!-- Mapa de fondo -->
-    <ImageView
-        android:id="@+id/imageView"
+    <!-- Fragmento del Mapa -->
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        app:srcCompat="@drawable/map_ejemplo" />
+        android:layout_height="match_parent" />
 
     <!-- Botón de regreso -->
     <ImageView
@@ -26,13 +25,13 @@
         android:src="@drawable/back_button"
         android:contentDescription="Botón de regreso" />
 
-    <!-- Contenedor principal inferior -->
+    <!-- Contenedor principal inferior (AUMENTADO) -->
     <RelativeLayout
         android:id="@+id/contenedorInferior"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="250dp"
         android:layout_alignParentBottom="true"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <!-- Tarjeta superior: Saludo y tiempo -->
         <RelativeLayout
@@ -40,8 +39,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_top_card"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp">
+            android:padding="16dp"
+            android:layout_marginBottom="12dp">
 
             <TextView
                 android:id="@+id/textSaludo"
@@ -49,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:text="Hola, usuario"
                 android:textColor="@android:color/white"
-                android:textSize="18sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_alignParentStart="true" />
 
@@ -59,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:text="🚲  0.9 Km • 6 Min"
                 android:textColor="@android:color/white"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"/>
         </RelativeLayout>
@@ -70,7 +69,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_card"
-            android:padding="12dp"
+            android:padding="16dp"
             android:layout_below="@id/cardSaludo">
 
             <!-- Título "Parqueadero más cercano a..." -->
@@ -80,9 +79,9 @@
                 android:layout_height="wrap_content"
                 android:text="Parqueadero más cercano a..."
                 android:textColor="@android:color/white"
-                android:textSize="14sp"
+                android:textSize="16sp"
                 android:layout_alignParentStart="true"
-                android:layout_marginBottom="4dp"/>
+                android:layout_marginBottom="6dp"/>
 
             <!-- Campo de ubicación editable -->
             <EditText
@@ -91,29 +90,33 @@
                 android:layout_height="wrap_content"
                 android:hint="Facultad de ciencias básicas"
                 android:textColorHint="@android:color/white"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:background="@null"
                 android:layout_below="@id/textParqueadero"
                 android:layout_alignParentStart="true"/>
 
-            <!-- Icono de edición al lado del campo -->
+            <!-- Icono de edición (AJUSTADO) -->
+
+            <!-- Botón "GO!" más grande -->
+
             <ImageView
                 android:id="@+id/iconoEditar"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/pen"
-                android:contentDescription="Editar ubicación"
+                android:layout_width="17dp"
+                android:layout_height="22dp"
                 android:layout_alignBottom="@id/editUbicacion"
-                android:layout_toEndOf="@id/editUbicacion"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="6dp"
+                android:layout_marginBottom="32dp"
+                android:layout_toStartOf="@id/botonGo"
+                android:contentDescription="Editar ubicación"
+                android:src="@drawable/pen" />
 
-            <!-- Botón "GO!" a la derecha -->
             <Button
                 android:id="@+id/botonGo"
-                android:layout_width="80dp"
-                android:layout_height="60dp"
+                android:layout_width="100dp"
+                android:layout_height="70dp"
                 android:text="GO!"
-                android:textSize="24sp"
+                android:textSize="26sp"
                 android:textStyle="bold"
                 android:fontFamily="@font/bahiana"
                 android:textColor="@android:color/white"

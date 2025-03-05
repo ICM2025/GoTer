@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Principal_Mapa">
+
+    <!-- Mapa de fondo -->
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        app:srcCompat="@drawable/map_ejemplo" />
+
+    <!-- Botón de regreso -->
+    <ImageView
+        android:id="@+id/botonBack"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="16dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/back_button"
+        android:contentDescription="Botón de regreso" />
+
+    <!-- Contenedor principal inferior -->
+    <RelativeLayout
+        android:id="@+id/contenedorInferior"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="16dp">
+
+        <!-- Tarjeta superior: Saludo y tiempo -->
+        <RelativeLayout
+            android:id="@+id/cardSaludo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_top_card"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/textSaludo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hola, usuario"
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_alignParentStart="true" />
+
+            <TextView
+                android:id="@+id/textTiempo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🚲  0.9 Km • 6 Min"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"/>
+        </RelativeLayout>
+
+        <!-- Tarjeta inferior: Ubicación y botón "GO!" -->
+        <RelativeLayout
+            android:id="@+id/cardUbicacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:padding="12dp"
+            android:layout_below="@id/cardSaludo">
+
+            <!-- Título "Parqueadero más cercano a..." -->
+            <TextView
+                android:id="@+id/textParqueadero"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Parqueadero más cercano a..."
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="4dp"/>
+
+            <!-- Campo de ubicación editable -->
+            <EditText
+                android:id="@+id/editUbicacion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Facultad de ciencias básicas"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:background="@null"
+                android:layout_below="@id/textParqueadero"
+                android:layout_alignParentStart="true"/>
+
+            <!-- Icono de edición al lado del campo -->
+            <ImageView
+                android:id="@+id/iconoEditar"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/pen"
+                android:contentDescription="Editar ubicación"
+                android:layout_alignBottom="@id/editUbicacion"
+                android:layout_toEndOf="@id/editUbicacion"
+                android:layout_marginStart="8dp"/>
+
+            <!-- Botón "GO!" a la derecha -->
+            <Button
+                android:id="@+id/botonGo"
+                android:layout_width="80dp"
+                android:layout_height="60dp"
+                android:text="GO!"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/bahiana"
+                android:textColor="@android:color/white"
+                android:backgroundTint="@color/blue_buttons"
+                android:padding="12dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"/>
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+</RelativeLayout>

@@ -45,10 +45,11 @@ class Principal_Mapa : AppCompatActivity() {
 
             requestLocationPermission()
             return
-        }
+        }else {
 
-        map.isMyLocationEnabled = true
-        getCurrentLocation()
+            map.isMyLocationEnabled = true
+            getCurrentLocation()
+        }
     }
 
     private fun getCurrentLocation() {
@@ -78,8 +79,9 @@ class Principal_Mapa : AppCompatActivity() {
     }
 
     private val requestPermissionLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { it ->
+            if (it) {
+                Toast.makeText(this, "Permiso de ubicación dado", Toast.LENGTH_SHORT).show()
                 enableMyLocation()
             } else {
                 Toast.makeText(this, "Permiso de ubicación denegado", Toast.LENGTH_SHORT).show()

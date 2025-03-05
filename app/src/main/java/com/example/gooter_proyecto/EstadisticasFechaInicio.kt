@@ -1,11 +1,13 @@
 package com.example.gooter_proyecto
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.gooter_proyecto.databinding.ActivityEstadisticasFechaInicioBinding
+import java.util.Calendar
 
 class EstadisticasFechaInicio : AppCompatActivity() {
     private lateinit var binding : ActivityEstadisticasFechaInicioBinding
@@ -13,5 +15,23 @@ class EstadisticasFechaInicio : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding=ActivityEstadisticasFechaInicioBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.dateInput.setOnClickListener{
+            showDatePicker()
+        }
+    }
+
+    private fun showDatePicker(){
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+            // Formatear la fecha y mostrarla en el TextInputEditText
+            val selectedDate = "${selectedMonth + 1}/$selectedDay/$selectedYear"
+            binding.dateInput.setText(selectedDate)
+        }, year, month, day)
+
+        datePickerDialog.show()
     }
 }

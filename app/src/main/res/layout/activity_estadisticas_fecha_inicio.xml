@@ -9,6 +9,25 @@
     android:background="#1C225D"
     android:padding="16dp">
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Date"
+        android:textColorHint="@color/white"
+        app:boxStrokeColor="@color/white"
+        app:layout_constraintTop_toBottomOf="@+id/seleccionTexto"
+        tools:layout_editor_absoluteX="16dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dateInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableEnd="@drawable/ic_calendar"
+            android:focusable="false"
+            android:inputType="none"
+            android:textColorLink="#FFFFFF" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="40dp"
@@ -20,36 +39,29 @@
     <TextView
         android:id="@+id/seleccionTexto"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="100dp"
         android:fontFamily="@font/archivoblack"
         android:padding="16dp"
         android:text="Selecciona la fecha de inicio de tu reporte"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="25dp"
+        app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.textfield.TextInputLayout
+    <Button
+        android:id="@+id/button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Date"
-        android:textColorHint="@color/white"
-        app:layout_constraintTop_toBottomOf="@+id/seleccionTexto"
-        tools:layout_editor_absoluteX="16dp"
-        app:boxStrokeColor="@color/white">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/date_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:drawableEnd="@drawable/ic_calendar"
-            android:focusable="false"
-            android:inputType="none" />
-    </com.google.android.material.textfield.TextInputLayout>
-
+        android:layout_height="64dp"
+        android:layout_marginBottom="64dp"
+        android:backgroundTint="@color/white"
+        android:text="Siguiente"
+        android:textColor="@color/blue_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

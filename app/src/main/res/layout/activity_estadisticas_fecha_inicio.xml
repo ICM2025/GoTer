@@ -12,7 +12,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Date"
+        android:hint="@string/hint_date"
         android:textColorHint="@color/white"
         app:boxStrokeColor="@color/white"
         app:layout_constraintTop_toBottomOf="@+id/seleccionTexto"
@@ -33,6 +33,7 @@
         android:id="@+id/imageView"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:contentDescription="@string/back_button_desc"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/back_button" />
@@ -43,7 +44,7 @@
         android:layout_height="100dp"
         android:fontFamily="@font/archivoblack"
         android:padding="16dp"
-        android:text="Selecciona la fecha de inicio de tu reporte"
+        android:text="@string/select_report_date"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="25dp"
@@ -58,11 +59,10 @@
         android:layout_height="64dp"
         android:layout_marginBottom="64dp"
         android:backgroundTint="@color/white"
-        android:text="Siguiente"
+        android:text="@string/next"
         android:textColor="@color/blue_background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

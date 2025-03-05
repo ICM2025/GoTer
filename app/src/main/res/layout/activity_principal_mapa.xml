@@ -23,9 +23,9 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:src="@drawable/back_button"
-        android:contentDescription="Botón de regreso" />
+        android:contentDescription="@string/back_button_desc" />
 
-    <!-- Contenedor principal inferior (AUMENTADO) -->
+    <!-- Contenedor principal inferior -->
     <RelativeLayout
         android:id="@+id/contenedorInferior"
         android:layout_width="match_parent"
@@ -46,7 +46,7 @@
                 android:id="@+id/textSaludo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hola, usuario"
+                android:text="@string/hello_user"
                 android:textColor="@android:color/white"
                 android:textSize="20sp"
                 android:textStyle="bold"
@@ -56,7 +56,7 @@
                 android:id="@+id/textTiempo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="🚲  0.9 Km • 6 Min"
+                android:text="@string/trip_distance_time"
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:layout_alignParentEnd="true"
@@ -77,7 +77,7 @@
                 android:id="@+id/textParqueadero"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Parqueadero más cercano a..."
+                android:text="@string/nearest_parking"
                 android:textColor="@android:color/white"
                 android:textSize="16sp"
                 android:layout_alignParentStart="true"
@@ -88,7 +88,7 @@
                 android:id="@+id/editUbicacion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:hint="Facultad de ciencias básicas"
+                android:hint="@string/default_location_hint"
                 android:textColorHint="#656CC3"
                 android:textColor="@color/white"
                 android:textSize="18sp"
@@ -97,9 +97,6 @@
                 android:layout_alignParentStart="true"/>
 
             <!-- Icono de edición (AJUSTADO) -->
-
-            <!-- Botón "GO!" más grande -->
-
             <ImageView
                 android:id="@+id/iconoEditar"
                 android:layout_width="17dp"
@@ -109,14 +106,15 @@
                 android:layout_marginEnd="6dp"
                 android:layout_marginBottom="32dp"
                 android:layout_toStartOf="@id/botonGo"
-                android:contentDescription="Editar ubicación"
+                android:contentDescription="@string/edit_location_desc"
                 android:src="@drawable/pen" />
 
+            <!-- Botón "GO!"  -->
             <Button
                 android:id="@+id/botonGo"
                 android:layout_width="100dp"
                 android:layout_height="70dp"
-                android:text="GO!"
+                android:text="@string/go_button"
                 android:textSize="26sp"
                 android:textStyle="bold"
                 android:fontFamily="@font/bahiana"

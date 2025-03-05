@@ -1,3 +1,45 @@
 <resources>
-    <string name="app_name">gooter_proyecto</string>
+    <string name="app_name">Gooter Proyecto</string>
+    <string name="back_button_desc">Botón de regreso</string>
+
+    <!-- FECHA  -->
+    <string name="hint_date">Date</string>
+    <string name="select_report_date">Selecciona la fecha de inicio de tu reporte</string>
+    <string name="next">Siguiente</string>
+
+    <!-- MAPA PRINCIPAL  -->
+    <string name="hello_user">Hola, usuario</string>
+    <string name="trip_distance_time">🚲 0.9 Km • 6 Min</string>
+    <string name="nearest_parking">Parqueadero más cercano a...</string>
+    <string name="edit_location_desc">Editar ubicación</string>
+    <string name="default_location_hint">Facultad de ciencias básicas</string>
+    <string name="go_button">GO!</string>
+
+    <!-- Pantalla de Login -->
+    <string name="login_title">Ingreso de usuario</string>
+    <string name="email_hint">Correo</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="email_description">Ingrese su dirección de correo electrónico</string>
+    <string name="password_description">Ingrese una contraseña</string>
+    <string name="cancel_button">Cancelar</string>
+    <string name="login_button">Ingresar</string>
+
+        <!-- Home Screen -->
+        <string name="home_logo">GoRace</string>
+        <string name="join_community">haz parte de la comunidad hoy</string>
+        <string name="daily_info">Información diaria ></string>
+        <string name="race_with_friend">Carrera con Amigo</string>
+        <string name="group_invitation">Invitación a Grupo</string>
+        <string name="earned_points">Puntos Obtenidos</string>
+        <string name="home_button">h</string>
+        <string name="location_button">u</string>
+        <string name="radio_button">u</string>
+        <string name="notifications_button">u</string>
+        <string name="profile_button">u</string>
+        <string name="home_icon_desc">Icono de inicio</string>
+        <string name="location_icon_desc">Icono de ubicación</string>
+        <string name="radio_icon_desc">Icono de radio</string>
+        <string name="notifications_icon_desc">Icono de notificaciones</string>
+        <string name="profile_icon_desc">Icono de perfil</string>
+
 </resources>

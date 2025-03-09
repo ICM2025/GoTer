@@ -24,22 +24,22 @@
     <string name="cancel_button">Cancelar</string>
     <string name="login_button">Ingresar</string>
 
-        <!-- Home Screen -->
-        <string name="home_logo">GoRace</string>
-        <string name="join_community">haz parte de la comunidad hoy</string>
-        <string name="daily_info">Información diaria ></string>
-        <string name="race_with_friend">Carrera con Amigo</string>
-        <string name="group_invitation">Invitación a Grupo</string>
-        <string name="earned_points">Puntos Obtenidos</string>
-        <string name="home_button">h</string>
-        <string name="location_button">u</string>
-        <string name="radio_button">u</string>
-        <string name="notifications_button">u</string>
-        <string name="profile_button">u</string>
-        <string name="home_icon_desc">Icono de inicio</string>
-        <string name="location_icon_desc">Icono de ubicación</string>
-        <string name="radio_icon_desc">Icono de radio</string>
-        <string name="notifications_icon_desc">Icono de notificaciones</string>
-        <string name="profile_icon_desc">Icono de perfil</string>
+    <!-- Home Screen -->
+    <string name="home_logo">GoRace</string>
+    <string name="join_community">haz parte de la comunidad hoy</string>
+    <string name="daily_info">Información diaria ></string>
+    <string name="race_with_friend">Carrera con Amigo</string>
+    <string name="group_invitation">Invitación a Grupo</string>
+    <string name="earned_points">Puntos Obtenidos</string>
+    <string name="home_button">h</string>
+    <string name="location_button">u</string>
+    <string name="radio_button">u</string>
+    <string name="notifications_button">u</string>
+    <string name="profile_button">u</string>
+    <string name="home_icon_desc">Icono de inicio</string>
+    <string name="location_icon_desc">Icono de ubicación</string>
+    <string name="radio_icon_desc">Icono de radio</string>
+    <string name="notifications_icon_desc">Icono de notificaciones</string>
+    <string name="profile_icon_desc">Icono de perfil</string>
 
 </resources>

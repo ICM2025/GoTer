@@ -26,5 +26,8 @@ class MainActivity : AppCompatActivity() {
         binding.pruebaMapa.setOnClickListener {
             startActivity(Intent(baseContext, Principal_Mapa::class.java))
         }
+        binding.pruebaEstadisticas.setOnClickListener {
+            startActivity(Intent(baseContext, EstadisticasActivity::class.java))
+        }
     }
 }

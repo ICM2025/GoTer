@@ -23,5 +23,9 @@ class MainActivity : AppCompatActivity() {
         binding.pruebaLogin.setOnClickListener {
             startActivity(Intent(baseContext, LoginUsuario::class.java))
         }
+
+        binding.PruebaComunidades.setOnClickListener {
+            startActivity(Intent(baseContext, ComunidadesActivity::class.java))
+        }
     }
 }

@@ -30,6 +30,4 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, Principal_Mapa::class.java))
         }
     }
-    }
-    }
 }

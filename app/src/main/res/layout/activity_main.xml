@@ -44,6 +44,15 @@
         app:layout_constraintTop_toBottomOf="@+id/pruebaLogin" />
 
     <Button
+        android:id="@+id/pruebaEstadisticas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Estadisticas"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pruebaMapa" />
+
+    <Button
         android:id="@+id/PruebaComunidades"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -51,6 +60,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pruebaMapa" />
-
+        app:layout_constraintTop_toBottomOf="@+id/pruebaEstadisticas" />
 </androidx.constraintlayout.widget.ConstraintLayout>

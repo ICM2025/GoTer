@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1C225D"
+    android:backgroundTint="#1C225D"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingVertical="20dp"
+    tools:context=".EstadisticasActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginHorizontal="10dp"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="45dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/arrow_left_circle" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?android:attr/listDivider"
+            android:backgroundTint="#1C225D" />
+
+        <ImageButton
+            android:id="@+id/imageButton2"
+            android:layout_width="45dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/user" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/recorridosText"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginVertical="20dp"
+        android:fontFamily="@font/archivoblack"
+        android:gravity="center"
+        android:text="Estadísticas de actividad física"
+        android:textColor="@color/white"
+        android:textSize="20dp" />
+
+    <ImageView
+        android:id="@+id/imageView8"
+        android:layout_width="416dp"
+        android:layout_height="467dp"
+        app:srcCompat="@drawable/group_62" />
+
+    <ImageView
+        android:id="@+id/imageView10"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="20dp"
+        app:srcCompat="@drawable/image_7" />
+
+    <TextView
+        android:id="@+id/kilometroText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:fontFamily="@font/archivoblack"
+        android:text="234 Km"
+        android:textColor="#008AF3"
+        android:textSize="20dp" />
+
+    <TextView
+        android:id="@+id/actividadText"
+        android:layout_width="273dp"
+        android:layout_height="50dp"
+        android:fontFamily="@font/archivoblack"
+        android:gravity="center"
+        android:text="Recorridos en los últimos x días"
+        android:textColor="@color/white"
+        android:textSize="20dp" />
+
+</LinearLayout>

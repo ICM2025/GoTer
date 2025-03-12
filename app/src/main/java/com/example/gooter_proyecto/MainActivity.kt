@@ -2,10 +2,7 @@ package com.example.gooter_proyecto
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.gooter_proyecto.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -15,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         binding=ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.pruebaFechaInicio.setOnClickListener {
-            startActivity(Intent(baseContext, EstadisticasFechaInicio::class.java))
+            startActivity(Intent(baseContext, EstadisticasFechaInicioActivity::class.java))
         }
         binding.pruebaIrHome.setOnClickListener {
             startActivity(Intent(baseContext, HomeActivity::class.java))

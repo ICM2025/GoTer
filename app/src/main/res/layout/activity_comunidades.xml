@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#142850"
+    tools:context=".ComunidadesActivity">
+
+    <!-- Botón para Devolver -->
+    <ImageButton
+        android:id="@+id/ButtonBack"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackground"
+        android:src="@drawable/back_button"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_margin="8dp"
+        app:tint="@android:color/white" />
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/TusComunidades"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tus Comunidades"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/ButtonBack"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Lista de Comunidades -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/ListaComunidades"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:layout_margin="10dp"
+        app:layout_constraintTop_toBottomOf="@id/TusComunidades"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Botón Crear Comunidad -->
+    <Button
+        android:id="@+id/ButtonCrearComunidad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Crear Comunidad"
+        android:backgroundTint="@color/blue_buttons"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@id/ListaComunidades"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Sección Buscar Canales -->
+    <TextView
+        android:id="@+id/BuscarCanales"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_marginTop="23dp"
+        android:layout_marginBottom="20dp"
+        android:text="Buscar Canales"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/Buscar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ButtonCrearComunidad" />
+
+    <EditText
+        android:id="@+id/Buscar"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:hint="Buscar"
+        android:background="@android:color/white"
+        android:padding="10dp"
+        android:layout_margin="15dp"
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toBottomOf="@id/BuscarCanales"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <!-- Lista de Canales -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/ListaCanales"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:layout_margin="10dp"
+        app:layout_constraintTop_toBottomOf="@id/Buscar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

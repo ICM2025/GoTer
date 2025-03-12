@@ -1,0 +1,36 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+
+    android:padding="10dp">
+
+    <ImageView
+        android:id="@+id/FotoCanal"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_margin="8dp"
+        android:src="@drawable/scooter_location" />
+
+    <TextView
+        android:id="@+id/nombreCanal"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Nombre del Canal"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:layout_margin="8dp" />
+
+    <Button
+        android:id="@+id/ButtonSeguir"
+        android:layout_width="110dp"
+        android:layout_height="35dp"
+        android:backgroundTint="@color/blue_buttons"
+        android:textColor="@color/white"
+        android:textSize="12dp"
+        android:text="Seguir"
+        android:layout_margin="8dp"/>
+</LinearLayout>

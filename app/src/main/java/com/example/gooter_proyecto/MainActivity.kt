@@ -23,5 +23,11 @@ class MainActivity : AppCompatActivity() {
         binding.pruebaLogin.setOnClickListener {
             startActivity(Intent(baseContext, LoginUsuario::class.java))
         }
+        binding.pruebaPerfil.setOnClickListener {
+            startActivity(Intent(baseContext, PerfilUsuario::class.java))
+        }
+        binding.pruebaRegistro.setOnClickListener {
+            startActivity(Intent(baseContext, Registro::class.java))
+        }
     }
 }

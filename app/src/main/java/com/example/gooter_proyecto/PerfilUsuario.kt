@@ -12,7 +12,7 @@ class PerfilUsuario : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityPerfilUsuarioBinding.inflate(layoutInflater)<
+        binding = ActivityPerfilUsuarioBinding.inflate(layoutInflater)
         setContentView(binding.root)
     }
 }

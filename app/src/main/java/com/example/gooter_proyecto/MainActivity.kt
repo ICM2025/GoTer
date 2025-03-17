@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
         }
         binding.PruebaComunidades.setOnClickListener {
             startActivity(Intent(baseContext, ComunidadesActivity::class.java))
+        }
         binding.pruebaPerfil.setOnClickListener {
             startActivity(Intent(baseContext, PerfilUsuario::class.java))
         }

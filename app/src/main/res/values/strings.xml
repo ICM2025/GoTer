@@ -42,4 +42,10 @@
     <string name="notifications_icon_desc">Icono de notificaciones</string>
     <string name="profile_icon_desc">Icono de perfil</string>
 
+    <!-- Pantalla de Estadisticas -->
+
+    <string name="stats_title">Estadísticas de actividad física</string>
+    <string name="stats_distance">234 Km</string>
+    <string name="stats_summary">Recorridos en los últimos x días</string>
+
 </resources>

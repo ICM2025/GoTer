@@ -1,6 +1,7 @@
 package com.example.gooter_proyecto
 
 import android.Manifest
+import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Location
@@ -60,7 +61,9 @@ class Principal_MapaActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         setupLocationComponents()
         createFragment()
-    }
+        binding.botonBack.setOnClickListener{
+            startActivity(Intent(baseContext,HomeActivity::class.java))
+        }    }
 
     private fun setupLocationComponents() {
         locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)

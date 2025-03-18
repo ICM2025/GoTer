@@ -16,6 +16,9 @@
         android:theme="@style/Theme.Gooter_proyecto"
         tools:targetApi="31">
         <activity
+            android:name=".EstadisticasFechaFinalActivity"
+            android:exported="false" />
+        <activity
             android:name=".EstadisticasActivity"
             android:exported="false" />
 
@@ -49,7 +52,7 @@
             android:name=".Principal_Mapa"
             android:exported="false" />
         <activity
-            android:name=".EstadisticasFechaInicio"
+            android:name=".EstadisticasFechaInicioActivity"
             android:exported="false" />
         <activity
             android:name=".HomeActivity"

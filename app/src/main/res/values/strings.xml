@@ -5,6 +5,7 @@
     <!-- FECHA  -->
     <string name="hint_date">Date</string>
     <string name="select_report_date">Selecciona la fecha de inicio de tu reporte</string>
+    <string name="select_report_date_final">Selecciona la fecha de final de tu reporte</string>
     <string name="next">Siguiente</string>
 
     <!-- MAPA PRINCIPAL  -->

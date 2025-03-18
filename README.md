@@ -44,7 +44,7 @@ Me gustan mucho los temas relacionados a la arquitectura de software. Actualment
 
 ---
 
-## Documentación 📄
+## 📄 Documentación 
 
 - [Ver el PDF de Casos de Uso]
 (https://github.com/ICM2025/GoTer/blob/main/Documentacion/Casos%20de%20Uso.pdf)

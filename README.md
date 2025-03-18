@@ -46,12 +46,12 @@ Me gustan mucho los temas relacionados a la arquitectura de software. Actualment
 
 ## 📄 Documentación 
 
-- [Ver el PDF de Casos de Uso]
+- Casos de Uso
 (https://github.com/ICM2025/GoTer/blob/main/Documentacion/Casos%20de%20Uso.pdf)
-- [Ver el pdf de Diagrama de Casos de Uso]
+- Diagrama de Casos de Uso
 (https://github.com/ICM2025/GoTer/blob/main/Documentacion/Diagrama%20Casos%20de%20Uso.pdf)
-- [Ver el PDF de Diagrama de Clases]
+- Diagrama de Clases
 (https://github.com/ICM2025/GoTer/blob/main/Documentacion/Diagrama%20de%20Clases.pdf)
-- [Ver el PDF de los MockUps]
+- MockUps
 (https://github.com/ICM2025/GoTer/blob/main/Documentacion/MockUps.pdf)
 

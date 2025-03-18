@@ -33,7 +33,9 @@ tanto dentro de lo académico como en lo recreativo
 - Daniela Medina
 
 5 semestre de ingenieria de sistemas.
-Tengo 18 años, me gustan los caballos y en general los animales
+Tengo 18 años, soy de Sogamoso, Boyacá. Me gustan los caballos y en general los animales, ya que gracias a donde soy, desde pequeña me he relacionado con ellos. 
+Dentro de mi carrera me interesan temas de nube y proyectos. 
+
 
 - Andres Henao
 

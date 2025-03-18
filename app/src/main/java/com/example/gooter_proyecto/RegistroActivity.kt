@@ -1,5 +1,6 @@
 package com.example.gooter_proyecto
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gooter_proyecto.databinding.ActivityRegistroBinding
@@ -10,6 +11,10 @@ class RegistroActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityRegistroBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.ingresarRegistro.setOnClickListener { 
+            startActivity(Intent(baseContext, HomeActivity::class.java))
+        }
 
     }
 }

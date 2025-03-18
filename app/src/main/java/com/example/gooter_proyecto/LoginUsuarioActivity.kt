@@ -13,7 +13,7 @@ class LoginUsuarioActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.buttonLogin.setOnClickListener {
-            startActivity(Intent(baseContext, Principal_MapaActivity::class.java))
+            startActivity(Intent(baseContext, HomeActivity::class.java))
         }
     }
 }

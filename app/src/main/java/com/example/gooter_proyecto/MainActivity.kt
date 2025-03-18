@@ -12,6 +12,13 @@ class MainActivity : AppCompatActivity() {
         binding=ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.registrate.setOnClickListener {
+            startActivity(Intent(baseContext, RegistroActivity::class.java))
+        }
+
+        binding.iniciarSesion.setOnClickListener {
+            startActivity(Intent(baseContext, LoginUsuarioActivity::class.java))
+        }
         //bindign pa llamar la primera pantalla,  de esa a login o registro
     }
 }

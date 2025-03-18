@@ -34,10 +34,10 @@
             android:exported="false" />
 
         <activity
-            android:name=".PerfilUsuario"
+            android:name=".PerfilUsuarioActivity"
             android:exported="false" />
         <activity
-            android:name=".Registro"
+            android:name=".RegistroActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
@@ -49,7 +49,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Principal_Mapa"
+            android:name=".Principal_MapaActivity"
             android:exported="false" />
         <activity
             android:name=".EstadisticasFechaInicioActivity"
@@ -58,7 +58,7 @@
             android:name=".HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginUsuario"
+            android:name=".LoginUsuarioActivity"
             android:exported="false" />
     </application>
 

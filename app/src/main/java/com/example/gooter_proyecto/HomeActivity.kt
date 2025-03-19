@@ -32,5 +32,9 @@ class HomeActivity : AppCompatActivity() {
         binding.comunidadButton.setOnClickListener{
             startActivity(Intent(baseContext,ComunidadesActivity::class.java))
         }
+        binding.notificacionesButton.setOnClickListener{
+            startActivity(Intent(baseContext,NotificacionesActivity::class.java))
+        }
+
     }
 }

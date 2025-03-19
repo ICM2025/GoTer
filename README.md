@@ -20,7 +20,8 @@ y como hobbies me gusta leer e ir al gimnasio
 5 semestre de ingeniería de sistemas. 
 Tengo 20 años, soy monitora académica de ADS 
 y líder de programación en el semillero de robótica JAVEX.
-Me gusta leer, ver películas, la robótica y el hiking.
+Me gustan temas relacionados con la arquitectura de software o nube y la Inteligencia Artificial. 
+Mis hobbies son leer, ver películas, la robótica y el hiking.
 
 - Joan Orduz
 

@@ -48,18 +48,23 @@ class ComunidadesActivity : AppCompatActivity() {
 
     private fun getComunidades(): List<Comunidad> {
         return listOf(
-            Comunidad("Grupo1", R.drawable.scooter_location),
-            Comunidad("Grupo 2", R.drawable.scooter_location),
-            Comunidad("Grupo 3", R.drawable.scooter_location),
-            Comunidad("Grupo 4", R.drawable.scooter_location)
+            Comunidad("Grupo 1", R.drawable.images),
+            Comunidad("Grupo 2", R.drawable.images),
+            Comunidad("Grupo 3", R.drawable.images),
+            Comunidad("Grupo 4", R.drawable.images),
+            Comunidad("Grupo 5", R.drawable.images),
+            Comunidad("Grupo 6", R.drawable.images),
+            Comunidad("Grupo 7", R.drawable.images)
         )
     }
 
     private fun getCanales(): List<Canal> {
         return listOf(
-            Canal("Canal 1", R.drawable.scooter_location, false),
-            Canal("Canal 2", R.drawable.scooter_location, true),
-            Canal("Canal 3", R.drawable.scooter_location, false)
+            Canal("Canal 1", R.drawable.images, false),
+            Canal("Canal 2", R.drawable.images, true),
+            Canal("Canal 3", R.drawable.images, false),
+            Canal("Canal 4", R.drawable.images, false),
+            Canal("Canal 5", R.drawable.images, true)
         )
     }
 }

@@ -8,112 +8,114 @@
     android:background="@color/blue_background"
     tools:context=".LoginUsuarioActivity">
 
-    <!-- Botón de regreso -->
-    <ImageView
-        android:id="@+id/botonBack"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_margin="16dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        app:srcCompat="@drawable/back_button"
-        android:contentDescription="@string/back_button_desc" />
-
-    <!-- Título -->
-    <TextView
-        android:id="@+id/textIngreso"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/botonBack"
-        android:layout_centerHorizontal="true"
-        android:fontFamily="@font/archivoblack"
-        android:layout_marginTop="50dp"
-        android:text="@string/login_title"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="@color/white" />
-
-    <!-- Campo de correo -->
-    <EditText
-        android:id="@+id/editTextEmail"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/textIngreso"
-        android:layout_marginTop="40dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp"
-        android:background="@color/textfield_background"
-        android:hint="@string/email_hint"
-        android:fontFamily="@font/archivoblack"
-        android:padding="12dp"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/textIngresoEmailHint"
-        android:layout_width="wrap_content"
-        android:fontFamily="@font/archivoblack"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/editTextEmail"
-        android:layout_marginStart="40dp"
-        android:text="@string/email_description"
-        android:textSize="10sp"
-        android:textColor="@color/gray_hint" />
-
-    <!-- Campo de contraseña -->
-    <EditText
-        android:id="@+id/editTextPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/textIngresoEmailHint"
-        android:layout_marginTop="20dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp"
-        android:background="@color/textfield_background"
-        android:hint="@string/password_hint"
-        android:padding="12dp"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        android:fontFamily="@font/archivoblack"
-        android:inputType="textPassword" />
-
-    <TextView
-        android:id="@+id/textIngresoPasswordHint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/editTextPassword"
-        android:layout_marginStart="40dp"
-        android:text="@string/password_description"
-        android:fontFamily="@font/archivoblack"
-        android:textSize="10sp"
-        android:textColor="@color/gray_hint" />
-
-    <!-- Botones -->
-    <LinearLayout
-        android:id="@+id/buttonContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/textIngresoPasswordHint"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/buttonCancel"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
-            android:backgroundTint="@color/blue_buttons"
-            android:text="@string/cancel_button"
-            android:textColor="@color/white" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <Button
-            android:id="@+id/buttonLogin"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/blue_buttons"
-            android:text="@string/login_button"
-            android:textColor="@color/white" />
-    </LinearLayout>
+            <!-- Botón de regreso -->
+            <ImageView
+                android:id="@+id/botonBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_margin="16dp"
+                android:layout_gravity="start"
+                app:srcCompat="@drawable/back_button"
+                android:contentDescription="@string/back_button_desc" />
 
+            <!-- Título -->
+            <TextView
+                android:id="@+id/textIngreso"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/archivoblack"
+                android:layout_marginTop="50dp"
+                android:text="@string/login_title"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="@color/white" />
+
+            <!-- Campo de correo -->
+            <EditText
+                android:id="@+id/editTextEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:background="@color/textfield_background"
+                android:hint="@string/email_hint"
+                android:fontFamily="@font/archivoblack"
+                android:padding="12dp"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textIngresoEmailHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="@string/email_description"
+                android:textSize="10sp"
+                android:textColor="@color/gray_hint"
+                android:fontFamily="@font/archivoblack" />
+
+            <!-- Campo de contraseña -->
+            <EditText
+                android:id="@+id/editTextPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@color/textfield_background"
+                android:hint="@string/password_hint"
+                android:padding="12dp"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:fontFamily="@font/archivoblack"
+                android:inputType="textPassword" />
+
+            <TextView
+                android:id="@+id/textIngresoPasswordHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="@string/password_description"
+                android:textSize="10sp"
+                android:textColor="@color/gray_hint"
+                android:fontFamily="@font/archivoblack" />
+
+            <!-- Botones -->
+            <LinearLayout
+                android:id="@+id/buttonContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="30dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/buttonCancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="20dp"
+                    android:backgroundTint="@color/blue_buttons"
+                    android:text="@string/cancel_button"
+                    android:textColor="@color/white" />
+
+                <Button
+                    android:id="@+id/buttonLogin"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/blue_buttons"
+                    android:text="@string/login_button"
+                    android:textColor="@color/white" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </RelativeLayout>

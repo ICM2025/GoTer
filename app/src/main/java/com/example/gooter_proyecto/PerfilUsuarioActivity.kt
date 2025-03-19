@@ -11,5 +11,9 @@ class PerfilUsuarioActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPerfilUsuarioBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.botonBackPerfil.setOnClickListener{
+            finish()
+        }
     }
 }

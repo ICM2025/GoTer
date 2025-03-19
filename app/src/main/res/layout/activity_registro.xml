@@ -127,6 +127,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableEnd="@drawable/ic_calendar"
+            android:textColorHint="@color/white"
+            android:textColor="@color/white"
             android:focusable="false"
             android:inputType="none"
             android:textColorLink="#FFFFFF" />

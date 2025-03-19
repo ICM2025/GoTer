@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -15,11 +16,12 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="60dp"
+        android:layout_weight="0.3"
         android:layout_marginHorizontal="10dp"
         android:orientation="horizontal">
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/returnButton"
             android:layout_width="45dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -41,50 +43,58 @@
             android:layout_weight="1"
             android:background="@android:color/transparent"
             android:src="@drawable/user" />
-
     </LinearLayout>
 
     <TextView
         android:id="@+id/recorridosText"
         android:layout_width="200dp"
         android:layout_height="50dp"
+        android:layout_weight="1"
+        android:autoSizeTextType="uniform"
         android:layout_marginVertical="20dp"
         android:fontFamily="@font/archivoblack"
         android:gravity="center"
-        android:text="Estadísticas de actividad física"
+        android:text="@string/stats_title"
         android:textColor="@color/white"
         android:textSize="20dp" />
 
     <ImageView
         android:id="@+id/imageView8"
-        android:layout_width="416dp"
-        android:layout_height="467dp"
+        android:layout_width="392dp"
+        android:layout_height="350dp"
+        android:layout_weight="1"
         app:srcCompat="@drawable/group_62" />
 
     <ImageView
         android:id="@+id/imageView10"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="102dp"
+        android:layout_height="70dp"
         android:layout_marginTop="20dp"
+        android:layout_weight="1"
         app:srcCompat="@drawable/image_7" />
 
     <TextView
         android:id="@+id/kilometroText"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:autoSizeTextType="uniform"
+        android:gravity="center"
         android:layout_marginBottom="20dp"
         android:fontFamily="@font/archivoblack"
-        android:text="234 Km"
+        android:text="@string/stats_distance"
         android:textColor="#008AF3"
         android:textSize="20dp" />
 
     <TextView
         android:id="@+id/actividadText"
         android:layout_width="273dp"
+        android:layout_weight="1"
         android:layout_height="50dp"
+        android:autoSizeTextType="uniform"
         android:fontFamily="@font/archivoblack"
         android:gravity="center"
-        android:text="Recorridos en los últimos x días"
+        android:text="@string/stats_summary"
         android:textColor="@color/white"
         android:textSize="20dp" />
 

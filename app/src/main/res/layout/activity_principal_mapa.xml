@@ -5,7 +5,7 @@
     android:id="@+id/map"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Principal_Mapa">
+    tools:context=".Principal_MapaActivity">
 
     <!-- Fragmento del Mapa -->
     <fragment
@@ -99,12 +99,12 @@
             <!-- Icono de edición (AJUSTADO) -->
             <ImageView
                 android:id="@+id/iconoEditar"
-                android:layout_width="17dp"
-                android:layout_height="22dp"
+                android:layout_width="17sp"
+                android:layout_height="22sp"
                 android:layout_alignBottom="@id/editUbicacion"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="6dp"
-                android:layout_marginBottom="32dp"
+                android:layout_marginStart="10sp"
+                android:layout_marginEnd="6sp"
+                android:layout_marginBottom="32sp"
                 android:layout_toStartOf="@id/botonGo"
                 android:contentDescription="@string/edit_location_desc"
                 android:src="@drawable/pen" />

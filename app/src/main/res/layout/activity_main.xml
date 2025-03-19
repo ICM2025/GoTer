@@ -5,60 +5,65 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/blue_background"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/pruebaIrHome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="home"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/pruebaFechaInicio"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="fechaInicio"
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_marginBottom="128dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pruebaIrHome" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/gorace" />
 
-    <Button
-        android:id="@+id/pruebaLogin"
+    <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="login"
+        android:layout_marginBottom="8dp"
+        android:text="¿No tienes cuenta aún?"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pruebaFechaInicio" />
+        app:layout_constraintTop_toBottomOf="@+id/iniciarSesion"
+        app:layout_constraintVertical_bias="0.0" />
 
-    <Button
-        android:id="@+id/pruebaMapa"
+    <TextView
+        android:id="@+id/registrate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="mapa"
+        android:fontFamily="@font/bahiana"
+        android:text="¡Registrate! :)"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pruebaLogin" />
+        app:layout_constraintTop_toBottomOf="@+id/textView"
+        app:layout_constraintVertical_bias="0.0" />
 
-    <Button
-        android:id="@+id/pruebaEstadisticas"
+    <TextView
+        android:id="@+id/iniciarSesion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Estadisticas"
+        android:fontFamily="@font/bahiana"
+        android:text="Iniciar Sesión"
+        android:textColor="@color/white"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pruebaMapa" />
+        app:layout_constraintTop_toBottomOf="@+id/imageView"
+        app:layout_constraintVertical_bias="0.0" />
 
-    <Button
-        android:id="@+id/PruebaComunidades"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="comunidades"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pruebaEstadisticas" />
 </androidx.constraintlayout.widget.ConstraintLayout>

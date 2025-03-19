@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EstadisticasFechaInicioActivity"
+    tools:context=".EstadisticasFechaFinalActivity"
     android:background="#1C225D"
     android:padding="16dp">
 
@@ -44,7 +44,7 @@
         android:layout_height="100dp"
         android:fontFamily="@font/archivoblack"
         android:padding="16dp"
-        android:text="@string/select_report_date"
+        android:text="@string/select_report_date_final"
         android:textAlignment="center"
         android:textColor="@color/white"
         android:textSize="25dp"

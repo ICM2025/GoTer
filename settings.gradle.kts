@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "gooter_proyecto"
 include(":app")
+include(":app")
  

@@ -1,5 +1,6 @@
 package com.example.gooter_proyecto
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -13,5 +14,21 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding=ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.mapButton.setOnClickListener {
+            startActivity(Intent(baseContext, Principal_MapaActivity::class.java))
+        }
+
+        binding.perfilButton.setOnClickListener{
+            startActivity(Intent(baseContext,PerfilUsuarioActivity::class.java))
+        }
+
+        binding.informacionDiariaText.setOnClickListener{
+            startActivity(Intent(baseContext,EstadisticasFechaInicioActivity::class.java))
+        }
+
+        binding.comunidadButton.setOnClickListener{
+            startActivity(Intent(baseContext,ComunidadesActivity::class.java))
+        }
+
     }
 }

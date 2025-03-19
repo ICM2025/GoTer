@@ -2,10 +2,7 @@ package com.example.gooter_proyecto
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.gooter_proyecto.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -14,23 +11,14 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding=ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.pruebaFechaInicio.setOnClickListener {
-            startActivity(Intent(baseContext, EstadisticasFechaInicio::class.java))
+
+        binding.registrate.setOnClickListener {
+            startActivity(Intent(baseContext, RegistroActivity::class.java))
         }
-        binding.pruebaIrHome.setOnClickListener {
-            startActivity(Intent(baseContext, HomeActivity::class.java))
+
+        binding.iniciarSesion.setOnClickListener {
+            startActivity(Intent(baseContext, LoginUsuarioActivity::class.java))
         }
-        binding.pruebaLogin.setOnClickListener {
-            startActivity(Intent(baseContext, LoginUsuario::class.java))
-        }
-        binding.pruebaMapa.setOnClickListener {
-            startActivity(Intent(baseContext, Principal_Mapa::class.java))
-        }
-        binding.pruebaEstadisticas.setOnClickListener {
-            startActivity(Intent(baseContext, EstadisticasActivity::class.java))
-        }
-        binding.PruebaComunidades.setOnClickListener {
-            startActivity(Intent(baseContext, ComunidadesActivity::class.java))
-        }
+        //bindign pa llamar la primera pantalla,  de esa a login o registro
     }
 }

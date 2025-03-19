@@ -5,6 +5,7 @@
     <!-- FECHA  -->
     <string name="hint_date">Date</string>
     <string name="select_report_date">Selecciona la fecha de inicio de tu reporte</string>
+    <string name="select_report_date_final">Selecciona la fecha de final de tu reporte</string>
     <string name="next">Siguiente</string>
 
     <!-- MAPA PRINCIPAL  -->
@@ -41,5 +42,11 @@
     <string name="radio_icon_desc">Icono de radio</string>
     <string name="notifications_icon_desc">Icono de notificaciones</string>
     <string name="profile_icon_desc">Icono de perfil</string>
+
+    <!-- Pantalla de Estadisticas -->
+
+    <string name="stats_title">Estadísticas de actividad física</string>
+    <string name="stats_distance">234 Km</string>
+    <string name="stats_summary">Recorridos en los últimos x días</string>
 
 </resources>

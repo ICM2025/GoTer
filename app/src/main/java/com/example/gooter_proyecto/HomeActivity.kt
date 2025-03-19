@@ -17,18 +17,20 @@ class HomeActivity : AppCompatActivity() {
         binding.mapButton.setOnClickListener {
             startActivity(Intent(baseContext, Principal_MapaActivity::class.java))
         }
-
+        binding.entrarCarrer.setOnClickListener{
+            startActivity(Intent(baseContext, Principal_MapaActivity::class.java))
+        }
+        binding.buscarRuta.setOnClickListener {
+            startActivity(Intent(baseContext, Principal_MapaActivity::class.java))
+        }
         binding.perfilButton.setOnClickListener{
             startActivity(Intent(baseContext,PerfilUsuarioActivity::class.java))
         }
-
-        binding.informacionDiariaText.setOnClickListener{
+        binding.informeSalud.setOnClickListener{
             startActivity(Intent(baseContext,EstadisticasFechaInicioActivity::class.java))
         }
-
         binding.comunidadButton.setOnClickListener{
             startActivity(Intent(baseContext,ComunidadesActivity::class.java))
         }
-
     }
 }

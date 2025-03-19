@@ -33,7 +33,9 @@ tanto dentro de lo académico como en lo recreativo
 - Daniela Medina
 
 5 semestre de ingenieria de sistemas.
-Tengo 18 años, me gustan los caballos y en general los animales
+Tengo 18 años, soy de Sogamoso, Boyacá. Me gustan los caballos y en general los animales, ya que gracias a donde soy, desde pequeña me he relacionado con ellos. 
+Dentro de mi carrera me interesan temas de nube y proyectos. 
+
 
 - Andres Henao
 
@@ -41,3 +43,15 @@ Soy estudiante de Ingeniería de Sistemas de quintoo semestre.
 Me gustan mucho los temas relacionados a la arquitectura de software. Actualmente estoy enfocado en aprender técnicas para el desarrollo de aplicaciones web. Me interesa el front-end y disfruto discutir sobre Java OOP y diseño de interfaces. En mi tiempo libre intento enfocarme en el arte y el deporte.
 
 ---
+
+## 📄 Documentación 
+
+- Casos de Uso
+(https://github.com/ICM2025/GoTer/blob/main/Documentacion/Casos%20de%20Uso.pdf)
+- Diagrama de Casos de Uso
+(https://github.com/ICM2025/GoTer/blob/main/Documentacion/Diagrama%20Casos%20de%20Uso.pdf)
+- Diagrama de Clases
+(https://github.com/ICM2025/GoTer/blob/main/Documentacion/Diagrama%20de%20Clases.pdf)
+- MockUps
+(https://github.com/ICM2025/GoTer/blob/main/Documentacion/MockUps.pdf)
+

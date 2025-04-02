@@ -7,4 +7,5 @@
     <color name="black">#000000</color>
     <color name="gray_hint">#A9A9A9</color>
     <color name="light_purple">#F3E3FF</color>
+    <color name="background_color">#3186D6</color>
 </resources>

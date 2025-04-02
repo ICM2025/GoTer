@@ -44,14 +44,14 @@
             android:layout_height="wrap_content"
             android:background="@drawable/burbuja_debajo"
             android:padding="12dp"
-            android:text="Bienvenido \nNombre del usuario"
+            android:text="Bienvenido \nJoshua Prieto"
             android:textColor="@color/blue_background"
             android:textSize="16sp"
             android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/imagenPerfil"
-            app:layout_constraintTop_toTopOf="@id/imagenPerfil"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintTop_toTopOf="@id/imagenPerfil" />
 
         <!-- Usuario con fondo azul -->
         <TextView
@@ -94,7 +94,8 @@
 
                 <EditText
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"
+                    />
 
             </LinearLayout>
 

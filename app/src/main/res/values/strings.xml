@@ -48,5 +48,6 @@
     <string name="stats_title">Estadísticas de actividad física</string>
     <string name="stats_distance">234 Km</string>
     <string name="stats_summary">Recorridos en los últimos x días</string>
+    <string name="title_activity_maps">MapsActivity</string>
 
 </resources>

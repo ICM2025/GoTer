@@ -2,17 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Principal_MapaActivity">
+    tools:context=".MapsActivity"
+    android:background="@color/background_color">
 
-    <!-- Fragmento del Mapa -->
+    <!-- Mapa -->
     <fragment
-        android:id="@+id/mapFragment"
+        android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        tools:layout="@layout/activity_maps" />
 
     <!-- Botón de regreso -->
     <ImageView
@@ -25,7 +26,7 @@
         android:src="@drawable/back_button"
         android:contentDescription="@string/back_button_desc" />
 
-    <!-- Contenedor principal inferior -->
+    <!-- Contenedor inferior (Tarjetas) -->
     <RelativeLayout
         android:id="@+id/contenedorInferior"
         android:layout_width="match_parent"
@@ -72,7 +73,6 @@
             android:padding="16dp"
             android:layout_below="@id/cardSaludo">
 
-            <!-- Título "Parqueadero más cercano a..." -->
             <TextView
                 android:id="@+id/textParqueadero"
                 android:layout_width="wrap_content"
@@ -83,7 +83,6 @@
                 android:layout_alignParentStart="true"
                 android:layout_marginBottom="6dp"/>
 
-            <!-- Campo de ubicación editable -->
             <EditText
                 android:id="@+id/editUbicacion"
                 android:layout_width="wrap_content"
@@ -96,7 +95,6 @@
                 android:layout_below="@id/textParqueadero"
                 android:layout_alignParentStart="true"/>
 
-            <!-- Icono de edición (AJUSTADO) -->
             <ImageView
                 android:id="@+id/iconoEditar"
                 android:layout_width="17sp"
@@ -109,7 +107,6 @@
                 android:contentDescription="@string/edit_location_desc"
                 android:src="@drawable/pen" />
 
-            <!-- Botón "GO!"  -->
             <Button
                 android:id="@+id/botonGo"
                 android:layout_width="100dp"

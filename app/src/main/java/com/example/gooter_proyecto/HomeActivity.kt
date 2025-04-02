@@ -15,13 +15,13 @@ class HomeActivity : AppCompatActivity() {
         binding=ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.mapButton.setOnClickListener {
-            startActivity(Intent(baseContext, Principal_MapaActivity::class.java))
+                startActivity(Intent(baseContext, MapsActivity::class.java))
         }
         binding.entrarCarrer.setOnClickListener{
-            startActivity(Intent(baseContext, Principal_MapaActivity::class.java))
+            startActivity(Intent(baseContext, MapsActivity::class.java))
         }
         binding.buscarRuta.setOnClickListener {
-            startActivity(Intent(baseContext, Principal_MapaActivity::class.java))
+            startActivity(Intent(baseContext, MapsActivity::class.java))
         }
         binding.perfilButton.setOnClickListener{
             startActivity(Intent(baseContext,PerfilUsuarioActivity::class.java))

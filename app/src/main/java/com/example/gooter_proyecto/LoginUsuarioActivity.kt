@@ -12,7 +12,7 @@ class LoginUsuarioActivity : AppCompatActivity() {
         binding=ActivityLoginUsuarioBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.buttonLogin.setOnClickListener {
+        binding.buttonIngresar.setOnClickListener {
             startActivity(Intent(baseContext, HomeActivity::class.java))
         }
     }

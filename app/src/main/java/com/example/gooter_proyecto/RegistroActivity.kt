@@ -19,9 +19,9 @@ class RegistroActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, HomeActivity::class.java))
         }
 
-        binding.dateFecha.isFocusable = false
-        binding.dateFecha.isClickable = true
-        binding.dateFecha.setOnClickListener { showDatePicker() }
+        binding.fechaNacimiento.isFocusable = false
+        binding.fechaNacimiento.isClickable = true
+        binding.fechaNacimiento.setOnClickListener { showDatePicker() }
     }
 
     private fun showDatePicker() {
@@ -32,7 +32,7 @@ class RegistroActivity : AppCompatActivity() {
 
         val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
             val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-            binding.dateFecha.setText(selectedDate)
+            binding.fechaNacimiento.setText(selectedDate)
         }, year, month, day)
 
         datePickerDialog.show()

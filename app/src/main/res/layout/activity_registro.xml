@@ -5,7 +5,6 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue_background"
     tools:context=".RegistroActivity">
 
     <ImageButton
@@ -36,9 +35,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="2dp"
-                android:fontFamily="@font/archivoblack"
-                android:text="Registro de usuario"
-                android:textColor="@color/white"
+                android:text="Registro de Usuario"
+                android:textColor="@color/black"
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
@@ -46,84 +44,127 @@
                 android:id="@+id/nombreRegistro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:background="@color/textfield_background"
-                android:hint="Nombres"
-                android:fontFamily="@font/archivoblack"
+                android:layout_marginTop="50dp"
+                android:background="@drawable/edittext_borde"
+                android:hint="Nombre"
                 android:padding="12dp"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textNombreRegistro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="Ingrese sus nombres"
+                android:textSize="11sp"
+                android:textColor="@color/black" />
 
             <EditText
                 android:id="@+id/apellidosRegistro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:background="@color/textfield_background"
+                android:background="@drawable/edittext_borde"
                 android:hint="Apellidos"
-                android:fontFamily="@font/archivoblack"
                 android:padding="12dp"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textApellidosRegistro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="Ingrese sus apellidos"
+                android:textSize="11sp"
+                android:textColor="@color/black" />
 
             <EditText
                 android:id="@+id/usuarioRegistro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:background="@color/textfield_background"
+                android:background="@drawable/edittext_borde"
                 android:hint="Usuario"
-                android:fontFamily="@font/archivoblack"
                 android:padding="12dp"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textUsuarioRegistro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="Ingrese el nombre de usuario"
+                android:textSize="11sp"
+                android:textColor="@color/black" />
 
             <EditText
                 android:id="@+id/correoRegistro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:background="@color/textfield_background"
+                android:background="@drawable/edittext_borde"
                 android:hint="Correo"
-                android:fontFamily="@font/archivoblack"
                 android:padding="12dp"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textEmailRegistro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="@string/email_description"
+                android:textSize="11sp"
+                android:textColor="@color/black" />
 
             <EditText
                 android:id="@+id/contraseñaRegistro"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:background="@color/textfield_background"
+                android:background="@drawable/edittext_borde"
                 android:hint="Contraseña"
-                android:fontFamily="@font/archivoblack"
                 android:padding="12dp"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
-            <com.google.android.material.textfield.TextInputLayout
+            <TextView
+                android:id="@+id/textContraseña"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="Ingrese una contraseña"
+                android:textSize="11sp"
+                android:textColor="@color/black" />
+
+            <EditText
+                android:id="@+id/fechaNacimiento"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:hint="Fecha de nacimiento"
-                app:boxStrokeColor="@color/white">
+                android:background="@drawable/edittext_borde"
+                android:drawableEnd="@drawable/ic_calendar"
+                android:hint="Fecha DD/MM/AAAA"
+                android:padding="12dp"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/dateFecha"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableEnd="@drawable/ic_calendar"
-                    android:textColorHint="@color/white"
-                    android:textColor="@color/white"
-                    android:focusable="false"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
+            <TextView
+                android:id="@+id/textFechaNacimientoRegistro"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:text="Ingrese su fecha de nacimiento dd/mm/aaaa"
+                android:textSize="11sp"
+                android:textColor="@color/black" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="60dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -131,10 +172,10 @@
                     android:id="@+id/cancelarRegistro"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="20dp"
-                    android:backgroundTint="@color/blue_buttons"
+                    android:layout_marginEnd="30dp"
+                    android:backgroundTint="#CEC6C6"
                     android:text="Cancelar"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/black" />
 
                 <Button
                     android:id="@+id/ingresarRegistro"

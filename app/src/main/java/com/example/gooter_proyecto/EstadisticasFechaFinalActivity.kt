@@ -17,15 +17,17 @@ class EstadisticasFechaFinalActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityEstadisticasFechaFinalBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.dateInput.setOnClickListener{
+
+        binding.dateInput.setOnClickListener {
             showDatePicker()
         }
         binding.back.setOnClickListener{
             startActivity(Intent(baseContext, EstadisticasFechaInicioActivity::class.java))
         }
-        binding.siguiente.setOnClickListener {
+        binding.btnOk.setOnClickListener{
             startActivity(Intent(baseContext, EstadisticasActivity::class.java))
         }
+
     }
 
     private fun showDatePicker(){
@@ -35,7 +37,6 @@ class EstadisticasFechaFinalActivity : AppCompatActivity() {
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-            // Formatear la fecha y mostrarla en el TextInputEditText
             val selectedDate = "${selectedMonth + 1}/$selectedDay/$selectedYear"
             binding.dateInput.setText(selectedDate)
         }, year, month, day)

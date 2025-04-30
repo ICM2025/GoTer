@@ -18,6 +18,9 @@ class RegistroActivity : AppCompatActivity() {
         binding.ingresarRegistro.setOnClickListener {
             startActivity(Intent(baseContext, HomeActivity::class.java))
         }
+        binding.botonBackRegistro.setOnClickListener {
+            startActivity(Intent(baseContext, MainActivity::class.java))
+        }
 
         binding.fechaNacimiento.isFocusable = false
         binding.fechaNacimiento.isClickable = true

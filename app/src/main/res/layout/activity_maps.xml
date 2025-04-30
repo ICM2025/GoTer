@@ -4,10 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity"
-    android:background="@color/background_color">
+    tools:context=".MapsActivity">
 
-    <!-- Mapa -->
+    <!-- Fragmento del Mapa -->
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -26,102 +25,92 @@
         android:src="@drawable/back_button"
         android:contentDescription="@string/back_button_desc" />
 
-    <!-- Contenedor inferior (Tarjetas) -->
+    <!-- Contenedor inferior de la tarjeta -->
     <RelativeLayout
         android:id="@+id/contenedorInferior"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="220dp"
         android:layout_alignParentBottom="true"
-        android:padding="20dp">
+        android:padding="16dp">
 
-        <!-- Tarjeta superior: Saludo y tiempo -->
+        <!-- Tarjeta de información -->
         <RelativeLayout
-            android:id="@+id/cardSaludo"
+            android:id="@+id/cardInfo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_top_card"
-            android:padding="16dp"
-            android:layout_marginBottom="12dp">
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_card"
+            android:padding="16dp">
 
+            <!-- Texto saludo -->
             <TextView
                 android:id="@+id/textSaludo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/hello_user"
-                android:textColor="@android:color/white"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_alignParentStart="true" />
+                android:text="Hola, Usuario"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
+            <!-- Distancia y tiempo -->
             <TextView
                 android:id="@+id/textTiempo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/trip_distance_time"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
                 android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"/>
-        </RelativeLayout>
+                android:layout_alignTop="@id/textSaludo"
+                android:text="0.9 km • 6 min"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
 
-        <!-- Tarjeta inferior: Ubicación y botón "GO!" -->
-        <RelativeLayout
-            android:id="@+id/cardUbicacion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_card"
-            android:padding="16dp"
-            android:layout_below="@id/cardSaludo">
-
+            <!-- Subtítulo -->
             <TextView
                 android:id="@+id/textParqueadero"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_below="@id/textSaludo"
+                android:layout_marginTop="20dp"
                 android:text="@string/nearest_parking"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"
-                android:layout_alignParentStart="true"
-                android:layout_marginBottom="6dp"/>
+                android:textColor="@color/blue_background"
+                android:textSize="14sp" />
 
+            <!-- Campo de ubicación -->
             <EditText
                 android:id="@+id/editUbicacion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_below="@id/textParqueadero"
+                android:layout_marginTop="6dp"
                 android:hint="@string/default_location_hint"
-                android:textColorHint="#656CC3"
-                android:textColor="@color/white"
+                android:textColor="@color/background_color"
+                android:textColorHint="@color/background_color"
                 android:textSize="18sp"
                 android:background="@null"
-                android:layout_below="@id/textParqueadero"
-                android:layout_alignParentStart="true"/>
+                android:layout_alignParentStart="true" />
 
+            <!-- Ícono de editar -->
             <ImageView
                 android:id="@+id/iconoEditar"
-                android:layout_width="17sp"
-                android:layout_height="22sp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_alignBottom="@id/editUbicacion"
-                android:layout_marginStart="10sp"
-                android:layout_marginEnd="6sp"
-                android:layout_marginBottom="32sp"
-                android:layout_toStartOf="@id/botonGo"
-                android:contentDescription="@string/edit_location_desc"
-                android:src="@drawable/pen" />
+                android:layout_toEndOf="@id/editUbicacion"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/pen"
+                android:contentDescription="@string/edit_location_desc" />
 
+            <!-- Botón GO -->
             <Button
                 android:id="@+id/botonGo"
-                android:layout_width="100dp"
-                android:layout_height="70dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
                 android:text="@string/go_button"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                android:fontFamily="@font/bahiana"
                 android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"
                 android:backgroundTint="@color/blue_buttons"
-                android:padding="12dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"/>
+                android:layout_marginTop="20dp" />
         </RelativeLayout>
-
     </RelativeLayout>
 
 </RelativeLayout>

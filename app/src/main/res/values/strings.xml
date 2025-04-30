@@ -14,7 +14,7 @@
     <string name="nearest_parking">Parqueadero más cercano a...</string>
     <string name="edit_location_desc">Editar ubicación</string>
     <string name="default_location_hint">Facultad de ciencias básicas</string>
-    <string name="go_button">GO!</string>
+    <string name="go_button">¡GO!</string>
 
     <!-- Pantalla de Login -->
     <string name="login_title">Ingreso de usuario</string>

@@ -12,7 +12,7 @@ class PerfilUsuarioActivity : AppCompatActivity() {
         binding = ActivityPerfilUsuarioBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.botonBackPerfil.setOnClickListener{
+        binding.botonBack.setOnClickListener{
             finish()
         }
     }

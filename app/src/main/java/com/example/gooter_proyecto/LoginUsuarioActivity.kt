@@ -1,5 +1,6 @@
 package com.example.gooter_proyecto
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Patterns
@@ -14,6 +15,7 @@ class LoginUsuarioActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginUsuarioBinding
     private lateinit var firebaseAuth: FirebaseAuth
 
+    @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginUsuarioBinding.inflate(layoutInflater)

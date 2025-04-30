@@ -55,7 +55,7 @@
                 android:id="@+id/tvNombre"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Pedro Suarez"
+                android:text=" "
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/black"/>
@@ -64,7 +64,7 @@
                 android:id="@+id/tvUsuario"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="pedroSu24"
+                android:text=" "
                 android:textSize="14sp"
                 android:backgroundTint="@color/blue_background"
                 android:background="@drawable/background_username"
@@ -99,20 +99,20 @@
                 android:textSize="16sp"
                 android:textColor="@color/blue_buttons"/>
 
-            <TextView
+            <EditText
                 android:id="@+id/tvBiografia"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Amante de las carreras en bicicleta con amigos. Fines de semana de Patios. De Bogotá para los mañosos."
+                android:hint="Escribe aquí"
                 android:textSize="14sp"
                 android:layout_marginTop="8dp"
                 android:textColor="@color/grisLetra"/>
 
-            <TextView
+            <EditText
                 android:id="@+id/tvLinks"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Links"
+                android:hint="Escriba aquí"
                 android:textColor="@color/background_color"
                 android:textStyle="bold"
                 android:layout_marginTop="8dp"/>

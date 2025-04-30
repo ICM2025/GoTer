@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.gooter_proyecto.databinding.ActivityRegistroBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.database
 import java.util.Calendar
 
@@ -25,6 +26,13 @@ class RegistroActivity : AppCompatActivity() {
         binding.ingresarRegistro.setOnClickListener {
             validarYRegistrarUsuario()
         }
+        val currentUser = auth.currentUser
+            if (currentUser != null) {
+                val intent = Intent(this, HomeActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
     }
 
     private fun validarYRegistrarUsuario() {
@@ -46,6 +54,7 @@ class RegistroActivity : AppCompatActivity() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
+                    val user: FirebaseUser? = auth.currentUser
                     guardarDatosUsuario(nombre, apellidos, usuario, fechaNacimiento)
                     Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, LoginUsuarioActivity::class.java))

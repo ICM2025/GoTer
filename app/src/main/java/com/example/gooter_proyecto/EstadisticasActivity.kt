@@ -14,10 +14,10 @@ class EstadisticasActivity : AppCompatActivity() {
     lateinit var binding : ActivityEstadisticasBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= ActivityEstadisticasBinding.inflate(layoutInflater)
+        binding = ActivityEstadisticasBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.returnButton.setOnClickListener {
+        binding.botonBack.setOnClickListener{
             startActivity(Intent(baseContext, HomeActivity::class.java))
         }
     }

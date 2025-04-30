@@ -27,7 +27,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
+        <ImageButton
             android:id="@+id/ivFotoPerfil"
             android:layout_width="72dp"
             android:layout_height="72dp"

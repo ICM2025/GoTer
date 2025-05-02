@@ -9,4 +9,9 @@
     <color name="light_purple">#F3E3FF</color>
     <color name="background_color">#3186D6</color>
     <color name="grisLetra">#4C4E50</color>
+    <color name="blue_primary">#4285F4</color>
+    <color name="blue_text">#3D71C9</color>
+    <color name="light_blue">#EDF3FF</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="gray_text">#757575</color>
 </resources>

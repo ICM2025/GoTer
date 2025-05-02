@@ -4,125 +4,166 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/light_gray"
     tools:context=".MapsActivity">
 
-
-    <!-- Fragmento del Mapa -->
+    <!-- Map Fragment -->
     <org.osmdroid.views.MapView
         android:id="@+id/osmMap"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </org.osmdroid.views.MapView>
+        android:layout_height="match_parent" />
 
-    <ImageButton
-        android:id="@+id/btnMyLocation"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:background="@drawable/round_button_background"
-        android:contentDescription="Mi ubicación"
-        android:src="@drawable/baseline_my_location_24" />
-
-
-    <!-- Botón de regreso -->
-    <ImageView
-        android:id="@+id/botonBack"
+    <!-- Back Button - Circular with drop shadow -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/backButtonContainer"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_margin="16dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:src="@drawable/back_button"
-        android:contentDescription="@string/back_button_desc" />
+        app:cardCornerRadius="20dp"
+        app:cardElevation="4dp">
 
-    <!-- Contenedor inferior de la tarjeta -->
-    <RelativeLayout
-        android:id="@+id/contenedorInferior"
-        android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:layout_alignParentBottom="true"
-        android:padding="16dp">
-
-        <!-- Tarjeta de información -->
-        <RelativeLayout
-            android:id="@+id/cardInfo"
+        <ImageView
+            android:id="@+id/botonBack"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/bg_card"
+            android:padding="8dp"
+            android:src="@drawable/back_button"
+            android:background="@android:color/white"
+            android:contentDescription="@string/back_button_desc" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- Location Info at the top -->
+    <TextView
+        android:id="@+id/locationText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_toEndOf="@id/backButtonContainer"
+        android:layout_marginStart="8dp"
+        android:text="Calle 53"
+        android:textColor="@android:color/black"
+        android:textSize="16sp" />
+
+    <!-- My Location Button - Circular with shadows -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/myLocationContainer"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="16dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="4dp">
+
+        <ImageButton
+            android:id="@+id/btnMyLocation"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:contentDescription="Mi ubicación"
+            android:padding="12dp"
+            android:src="@drawable/baseline_my_location_24" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- Bottom Card Container -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/bottomCardContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Texto saludo -->
-            <TextView
-                android:id="@+id/textSaludo"
-                android:layout_width="wrap_content"
+            <!-- User Greeting Row -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/textSaludo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hola, usuario"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"/>
+
+                <TextView
+                    android:id="@+id/textTiempo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:drawableStart="@drawable/ic_navigation"
+                    android:drawablePadding="4dp"
+                    android:text="0.9 km • 6 min"
+                    android:textColor="@color/gray_text"
+                    android:textSize="14sp" />
+            </RelativeLayout>
+
+            <!-- Parking Info Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Hola, Usuario"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/light_blue">
 
-            <!-- Distancia y tiempo -->
-            <TextView
-                android:id="@+id/textTiempo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_alignTop="@id/textSaludo"
-                android:text="0.9 km • 6 min"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp">
 
-            <!-- Subtítulo -->
-            <TextView
-                android:id="@+id/textParqueadero"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/textSaludo"
-                android:layout_marginTop="20dp"
-                android:text="@string/nearest_parking"
-                android:textColor="@color/blue_background"
-                android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/textParqueadero"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/nearest_parking"
+                        android:textColor="@color/blue_text"
+                        android:textSize="14sp" />
 
-            <!-- Campo de ubicación -->
-            <EditText
-                android:id="@+id/editUbicacion"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/textParqueadero"
-                android:layout_marginTop="6dp"
-                android:hint="@string/default_location_hint"
-                android:textColor="@color/background_color"
-                android:textColorHint="@color/background_color"
-                android:textSize="18sp"
-                android:background="@null"
-                android:layout_alignParentStart="true" />
+                    <TextView
+                        android:id="@+id/editUbicacion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/textParqueadero"
+                        android:layout_marginTop="4dp"
+                        android:text="Facultad de ciencias básicas"
+                        android:textColor="@color/black"
+                        android:textSize="16sp" />
 
-            <!-- Ícono de editar -->
-            <ImageView
-                android:id="@+id/iconoEditar"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_alignBottom="@id/editUbicacion"
-                android:layout_toEndOf="@id/editUbicacion"
-                android:layout_marginStart="8dp"
-                android:src="@drawable/pen"
-                android:contentDescription="@string/edit_location_desc" />
+                    <ImageView
+                        android:id="@+id/iconoEditar"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/pen"
+                        android:contentDescription="@string/edit_location_desc" />
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
 
-            <!-- Botón GO -->
+            <!-- GO Button -->
             <Button
                 android:id="@+id/botonGo"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:text="@string/go_button"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/rounded_button"
+                android:text="¡GO!"
+                android:textAllCaps="true"
                 android:textColor="@android:color/white"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                android:backgroundTint="@color/blue_buttons"
-                android:layout_marginTop="20dp" />
-        </RelativeLayout>
-    </RelativeLayout>
-
+                android:backgroundTint="@color/blue_primary" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </RelativeLayout>

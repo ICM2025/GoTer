@@ -1,5 +1,6 @@
 package com.example.gooter_proyecto
 
+import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
@@ -48,7 +49,7 @@ class PerfilUsuarioActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.botonBack.setOnClickListener {
-            finish()
+            startActivity(Intent(baseContext, MainActivity::class.java))
         }
         binding.ivFotoPerfil.setOnClickListener {
             mostrarOpcionesImagen()

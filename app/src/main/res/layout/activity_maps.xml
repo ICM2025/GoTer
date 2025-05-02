@@ -6,12 +6,25 @@
     android:layout_height="match_parent"
     tools:context=".MapsActivity">
 
+
     <!-- Fragmento del Mapa -->
     <org.osmdroid.views.MapView
         android:id="@+id/osmMap"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     </org.osmdroid.views.MapView>
+
+    <ImageButton
+        android:id="@+id/btnMyLocation"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:background="@drawable/round_button_background"
+        android:contentDescription="Mi ubicación"
+        android:src="@drawable/baseline_my_location_24" />
+
 
     <!-- Botón de regreso -->
     <ImageView

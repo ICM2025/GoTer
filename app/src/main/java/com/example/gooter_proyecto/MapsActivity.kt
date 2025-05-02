@@ -16,6 +16,7 @@ import android.os.Looper
 import android.os.StrictMode
 import android.util.Log
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.IntentSenderRequest
@@ -35,8 +36,6 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
-import org.osmdroid.bonuspack.routing.OSRMRoadManager
-import org.osmdroid.bonuspack.routing.RoadManager
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -44,6 +43,10 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.TilesOverlay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MapsActivity : AppCompatActivity() {
 
@@ -52,8 +55,7 @@ class MapsActivity : AppCompatActivity() {
     private lateinit var map: MapView
     private val bogota = GeoPoint(4.62, -74.07)
     private lateinit var geocoder: Geocoder
-    private lateinit var roadManager: RoadManager
-    private var roadOverlay: Polyline? = null
+    private var routeOverlay: Polyline? = null
     lateinit var locationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
@@ -108,7 +110,6 @@ class MapsActivity : AppCompatActivity() {
         map.setMultiTouchControls(true)
 
         // Configurar utilidades
-        roadManager = OSRMRoadManager(this, "ANDROID")
         geocoder = Geocoder(this)
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
@@ -118,71 +119,155 @@ class MapsActivity : AppCompatActivity() {
         locationRequest = createLocationRequest()
         locationCallback = createLocationCallback()
 
+        // Configurar el botón para volver a mi ubicación
+        binding.btnMyLocation.setOnClickListener {
+            goToMyLocation()
+        }
+
         // Configurar búsqueda por texto
         binding.editUbicacion.setOnEditorActionListener { _, i, _ ->
             if (i == EditorInfo.IME_ACTION_SEARCH) {
-                val text = binding.editUbicacion.text.toString()
-                val latlong = findLocation(text)
-
-                if (this@MapsActivity::map.isInitialized) {
-                    if (latlong != null) {
-                        val loc = GeoPoint(latlong.latitude, latlong.longitude)
-                        val address = findAddress(latlong)
-
-                        // Guardar la ubicación del destino
-                        destinationLocation = loc
-
-                        // Remover el marcador anterior si existe
-                        destinationMarker?.let {
-                            map.overlays.remove(it)
-                        }
-
-                        if (!address.isNullOrEmpty()) {
-                            map.controller.animateTo(loc)
-                            map.controller.setZoom(18.0)
-
-                            // Agregar nuevo marcador
-                            destinationMarker = createMarker(
-                                loc,
-                                "Destino",
-                                address,
-                                R.drawable.baseline_location_alt_24
-                            )
-                            destinationMarker?.let {
-                                map.overlays.add(it)
-                            }
-
-                            // Calcular distancia si tenemos ubicación actual
-                            currentLocation?.let {
-                                val distancia = distance(
-                                    it.latitude,
-                                    it.longitude,
-                                    loc.latitude,
-                                    loc.longitude
-                                )
-                                Toast.makeText(
-                                    baseContext,
-                                    "Distancia: $distancia km",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                    } else {
-                        Toast.makeText(
-                            baseContext,
-                            "No se encontró la ubicación",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
+                searchLocation()
+                // Ocultar teclado después de buscar
+                hideKeyboard()
             }
             true
         }
 
         // Botón para dibujar ruta
         binding.botonGo.setOnClickListener {
-            drawRoute()
+            if (currentLocation != null && destinationLocation != null) {
+                // Mostrar mensaje de carga
+                Toast.makeText(
+                    this,
+                    "Calculando ruta...",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                // Usar coroutine para no bloquear UI durante el cálculo
+                CoroutineScope(Dispatchers.Main).launch {
+                    drawDirectLine(currentLocation!!, destinationLocation!!)
+                }
+            } else {
+                // Si no hay destino seleccionado pero hay texto en la búsqueda, intentar buscar primero
+                val searchText = binding.editUbicacion.text.toString().trim()
+                if (searchText.isNotEmpty() && destinationLocation == null) {
+                    Toast.makeText(
+                        this,
+                        "Buscando ubicación primero...",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // Buscar la ubicación y luego trazar la ruta
+                    if (searchLocation()) {
+                        // La función searchLocation ya establece destinationLocation si encuentra algo
+                        // Esperamos un momento y trazamos la ruta
+                        CoroutineScope(Dispatchers.Main).launch {
+                            withContext(Dispatchers.IO) {
+                                Thread.sleep(1000) // Pequeña espera para que se complete la búsqueda
+                            }
+                            if (currentLocation != null && destinationLocation != null) {
+                                drawDirectLine(currentLocation!!, destinationLocation!!)
+                            }
+                        }
+                    }
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Ingresa una dirección para crear la ruta",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
+    }
+
+    // Método para ir a mi ubicación actual
+    private fun goToMyLocation() {
+        currentLocation?.let { current ->
+            map.controller.animateTo(current)
+            map.controller.setZoom(18.0)
+        }
+    }
+
+    // Función para buscar ubicación y poner marcador
+    private fun searchLocation(): Boolean {
+        val text = binding.editUbicacion.text.toString().trim()
+
+        if (text.isEmpty()) {
+            Toast.makeText(this, "Ingresa una dirección para buscar", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        val latlong = findLocation(text)
+
+        return if (this@MapsActivity::map.isInitialized && latlong != null) {
+            val loc = GeoPoint(latlong.latitude, latlong.longitude)
+            val address = findAddress(latlong)
+
+            // Guardar la ubicación del destino
+            destinationLocation = loc
+
+            // Remover el marcador anterior si existe
+            destinationMarker?.let {
+                map.overlays.remove(it)
+            }
+
+            if (!address.isNullOrEmpty()) {
+                map.controller.animateTo(loc)
+                map.controller.setZoom(18.0)
+
+                // Agregar nuevo marcador
+                destinationMarker = createMarker(
+                    loc,
+                    "Destino",
+                    address,
+                    R.drawable.baseline_location_alt_24
+                )
+                destinationMarker?.let {
+                    map.overlays.add(it)
+                }
+
+                // Calcular distancia si tenemos ubicación actual
+                currentLocation?.let {
+                    val distancia = distance(
+                        it.latitude,
+                        it.longitude,
+                        loc.latitude,
+                        loc.longitude
+                    )
+                    Toast.makeText(
+                        baseContext,
+                        "Distancia: $distancia km",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                // Refrescar mapa
+                map.invalidate()
+                true
+            } else {
+                Toast.makeText(
+                    baseContext,
+                    "No se encontró información para esta ubicación",
+                    Toast.LENGTH_SHORT
+                ).show()
+                false
+            }
+        } else {
+            Toast.makeText(
+                baseContext,
+                "No se encontró la ubicación",
+                Toast.LENGTH_SHORT
+            ).show()
+            false
+        }
+    }
+
+    // Función para ocultar el teclado
+    private fun hideKeyboard() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.editUbicacion.windowToken, 0)
     }
 
     override fun onResume() {
@@ -253,13 +338,13 @@ class MapsActivity : AppCompatActivity() {
         var marker: Marker? = null;
         if (map != null) {
             marker = Marker(map);
-            if (title != null) marker.setTitle(title);
-            if (desc != null) marker.setSubDescription(desc);
+            marker.title = title
+            marker.subDescription = desc
             if (iconID != 0) {
-                val myIcon = getResources().getDrawable(iconID, this.getTheme());
-                marker.setIcon(myIcon);
+                val myIcon = resources.getDrawable(iconID, this.theme)
+                marker.icon = myIcon
             }
-            marker.setPosition(p);
+            marker.position = p
             marker.setAnchor(
                 Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM
             );
@@ -267,37 +352,44 @@ class MapsActivity : AppCompatActivity() {
         return marker
     }
 
-    fun drawRoute() {
-        if (currentLocation != null && destinationLocation != null) {
-            val routePoints = ArrayList<GeoPoint>()
-            routePoints.add(currentLocation!!)
-            routePoints.add(destinationLocation!!)
-
-            val road = roadManager.getRoad(routePoints)
-
-            if (roadOverlay != null) {
-                map.overlays.remove(roadOverlay)
-            }
-
-            roadOverlay = RoadManager.buildRoadOverlay(road)
-            roadOverlay!!.getOutlinePaint().setColor(Color.BLUE)
-            roadOverlay!!.getOutlinePaint().setStrokeWidth(10F)
-            map.overlays.add(roadOverlay)
-
-            map.invalidate()
-
-            Toast.makeText(
-                this,
-                "Ruta trazada al destino",
-                Toast.LENGTH_SHORT
-            ).show()
-        } else {
-            Toast.makeText(
-                this,
-                "Faltan ubicaciones para crear la ruta",
-                Toast.LENGTH_SHORT
-            ).show()
+    // Función para dibujar una línea recta entre dos puntos como alternativa a una ruta
+    fun drawDirectLine(start: GeoPoint, end: GeoPoint) {
+        // Eliminar ruta anterior si existe
+        routeOverlay?.let {
+            map.overlays.remove(it)
         }
+
+        // Crear nueva polyline
+        val polyline = Polyline()
+        polyline.outlinePaint.color = Color.BLUE
+        polyline.outlinePaint.strokeWidth = 10F
+
+        // Agregar puntos a la polyline
+        val points = ArrayList<GeoPoint>()
+        points.add(start)
+        points.add(end)
+        polyline.setPoints(points)
+
+        // Agregar polyline al mapa
+        map.overlays.add(polyline)
+        routeOverlay = polyline
+
+        // Refrescar el mapa
+        map.invalidate()
+
+        // Calcular la distancia para mostrarla en el Toast
+        val distancia = distance(
+            start.latitude,
+            start.longitude,
+            end.latitude,
+            end.longitude
+        )
+
+        Toast.makeText(
+            this,
+            "Ruta trazada - Distancia: $distancia km",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     fun locationSettings() {
@@ -395,7 +487,15 @@ class MapsActivity : AppCompatActivity() {
                 it.longitude
             )
             Log.i("DISTANCE", "Distancia al destino: $distancia km")
+
+            // Si existe una ruta trazada, actualizarla con la nueva posición
+            if (routeOverlay != null) {
+                drawDirectLine(newLocation, it)
+            }
         }
+
+        // Refrescar mapa
+        map.invalidate()
     }
 
     fun findAddress(location: LatLng): String? {

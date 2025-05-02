@@ -48,7 +48,7 @@
         app:layout_constraintTop_toBottomOf="@id/btnBack" />
 
     <TextView
-        android:id="@+id/tvUserName"
+        android:id="@+id/tvName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -75,7 +75,7 @@
         android:textColor="@color/white"
         android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@id/ivProfilePhoto"
-        app:layout_constraintTop_toBottomOf="@id/tvUserName" />
+        app:layout_constraintTop_toBottomOf="@id/tvName" />
 
     <!-- Card Biografía -->
     <androidx.cardview.widget.CardView
@@ -178,7 +178,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:contentDescription="Estrella"
-                    android:src="@drawable/ic_star"
+                    android:src="@drawable/star_ic"
                     app:tint="#4285F4" />
 
                 <TextView
@@ -219,7 +219,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:contentDescription="Estrella"
-                    android:src="@drawable/ic_star"
+                    android:src="@drawable/star_ic"
                     app:tint="#4285F4" />
 
                 <TextView
@@ -260,7 +260,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:contentDescription="Estrella"
-                    android:src="@drawable/ic_star"
+                    android:src="@drawable/star_ic"
                     app:tint="#4285F4" />
 
                 <TextView

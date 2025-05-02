@@ -48,10 +48,10 @@ class PerfilUsuarioActivity : AppCompatActivity() {
         binding = ActivityPerfilUsuarioBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.botonBack.setOnClickListener {
+        binding.btnBack.setOnClickListener {
             startActivity(Intent(baseContext, MainActivity::class.java))
         }
-        binding.ivFotoPerfil.setOnClickListener {
+        binding.ivProfilePhoto.setOnClickListener {
             mostrarOpcionesImagen()
         }
 
@@ -82,8 +82,8 @@ class PerfilUsuarioActivity : AppCompatActivity() {
                             "Datos obtenidos: nombre=$nombre, apellidos=$apellidos, usuario=$usuario"
                         )
 
-                        binding.tvNombre.text = "$nombre $apellidos"
-                        binding.tvUsuario.text = "$usuario"
+                        binding.tvName.text = "$nombre $apellidos"
+                        binding.tvUsername.text = "$usuario"
                     } else {
                         Log.w(
                             "PerfilUsuarioActivity",
@@ -136,7 +136,7 @@ class PerfilUsuarioActivity : AppCompatActivity() {
     private fun loadImage(uri: Uri) {
         val imagenStream = contentResolver.openInputStream(uri)
         val bitmap = BitmapFactory.decodeStream(imagenStream)
-        binding.ivFotoPerfil.setImageBitmap(bitmap)
+        binding.ivProfilePhoto.setImageBitmap(bitmap)
     }
 
 }

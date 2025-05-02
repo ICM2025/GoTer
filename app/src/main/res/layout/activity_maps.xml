@@ -130,15 +130,16 @@
                         android:textColor="@color/blue_text"
                         android:textSize="14sp" />
 
-                    <TextView
+
+                    <EditText
                         android:id="@+id/editUbicacion"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/textParqueadero"
                         android:layout_marginTop="4dp"
-                        android:text="Facultad de ciencias básicas"
+                        android:hint="Facultad de ciencias básicas"
                         android:textColor="@color/black"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"/>
 
                     <ImageView
                         android:id="@+id/iconoEditar"
@@ -152,18 +153,18 @@
             </androidx.cardview.widget.CardView>
 
             <!-- GO Button -->
-            <Button
+
+            <TextView
                 android:id="@+id/botonGo"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/rounded_button"
-                android:text="¡GO!"
-                android:textAllCaps="true"
-                android:textColor="@android:color/white"
-                android:textSize="20sp"
+                android:layout_height="wrap_content"
+                android:text="GO!"
+                android:textColor="#FFFFFF"
                 android:textStyle="bold"
-                android:backgroundTint="@color/blue_primary" />
+                android:textSize="18sp"
+                android:background="@drawable/rounded_corner_button"
+                android:gravity="center"
+                android:padding="12dp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

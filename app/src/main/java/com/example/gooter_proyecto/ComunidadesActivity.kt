@@ -33,7 +33,7 @@ class ComunidadesActivity : AppCompatActivity() {
     private fun configComunidadesRecyclerView() {
         comunidadAdapter = ComunidadAdapter(getComunidades())
         binding.ListaComunidades.apply {
-            layoutManager = LinearLayoutManager(this@ComunidadesActivity)
+            layoutManager = LinearLayoutManager(this@ComunidadesActivity, LinearLayoutManager.VERTICAL, false)
             adapter = comunidadAdapter
         }
     }
@@ -41,7 +41,7 @@ class ComunidadesActivity : AppCompatActivity() {
     private fun configCanalesRecyclerView() {
         CanalAdapter = CanalAdapter(getCanales())
         binding.rvListaCanales.apply {
-            layoutManager = LinearLayoutManager(this@ComunidadesActivity)
+            layoutManager = LinearLayoutManager(this@ComunidadesActivity,LinearLayoutManager.VERTICAL, false)
             adapter = CanalAdapter
         }
     }
@@ -54,7 +54,7 @@ class ComunidadesActivity : AppCompatActivity() {
             Comunidad("Grupo 4", R.drawable.background_username,7),
             Comunidad("Grupo 5", R.drawable.background_username,46),
             Comunidad("Grupo 6", R.drawable.background_username,34),
-            Comunidad("Grupo 7", R.drawable.images,21)
+            Comunidad("Grupo 7", R.drawable.background_username,21)
         )
     }
 

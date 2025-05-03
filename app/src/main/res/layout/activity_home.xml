@@ -60,26 +60,16 @@
             android:gravity="end"
             android:orientation="horizontal">
 
-            <!-- Botón campana con contador -->
-            <ImageButton
-                android:id="@+id/btnCampana"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:layout_marginEnd="12dp"
-                android:background="@android:color/transparent"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_notificacion" />
+            <com.google.android.material.appbar.MaterialToolbar
+                android:id="@+id/topAppBar"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:background="#00EFF3FA"
+                android:title="Inicio"
+                android:titleTextColor="@color/black"
+                app:layout_constraintTop_toTopOf="parent"
+                app:navigationIcon="@drawable/ic_menu" />
 
-            <!-- Botón de usuario -->
-            <ImageButton
-                android:id="@+id/btnUsuario"
-                android:layout_width="37dp"
-                android:layout_height="37dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/circle_gray"
-                android:padding="8dp"
-                android:scaleType="fitCenter"
-                android:src="@drawable/ic_user" />
         </LinearLayout>
     </RelativeLayout>
 

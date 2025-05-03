@@ -2,7 +2,7 @@
 <resources>
     <color name="blue_buttons">#3186D6</color>
     <color name="blue_background">#1C225D</color>
-    <color name="textfield_background">#DEE8F1</color>
+    <color name="textfield_background">#EFF3FA</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="gray_hint">#A9A9A9</color>

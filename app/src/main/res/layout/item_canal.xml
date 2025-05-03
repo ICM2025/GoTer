@@ -1,43 +1,65 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-
-    android:padding="10dp">
+    android:background="@color/white"
+    android:padding="8dp">
 
     <ImageView
         android:id="@+id/FotoCanal"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_margin="5dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="30dp"
-        android:layout_marginEnd="10dp"
         android:layout_marginBottom="30dp"
-        android:scaleType="centerCrop"
-        android:background="@drawable/circle_mask"
-        android:src="@drawable/images"
-        android:clipToOutline="true" />
+        android:clipToOutline="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/circle_gray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.387" />
 
     <TextView
-        android:id="@+id/nombreCanal"
+        android:id="@+id/NombreCanal"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Nombre del Canal"
+        android:layout_margin="5dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:text="Nombre del Grupo"
+        android:textColor="@color/black"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="@android:color/white"
-        android:layout_margin="8dp" />
+        app:layout_constraintBottom_toTopOf="@+id/MiembrosGrupo"
+        app:layout_constraintEnd_toStartOf="@+id/ButtonSeguir"
+        app:layout_constraintStart_toEndOf="@+id/FotoCanal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.489" />
+
+    <TextView
+        android:id="@+id/MiembrosGrupo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="12 miembros"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/FotoCanal" />
 
     <Button
         android:id="@+id/ButtonSeguir"
         android:layout_width="110dp"
-        android:layout_height="35dp"
+        android:layout_height="36dp"
+        android:layout_margin="8dp"
         android:backgroundTint="@color/blue_buttons"
+        android:text="Seguir"
         android:textColor="@color/white"
         android:textSize="12dp"
-        android:text="Seguir"
-        android:layout_margin="8dp"/>
-</LinearLayout>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

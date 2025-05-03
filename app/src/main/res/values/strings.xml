@@ -50,4 +50,7 @@
     <string name="stats_summary">Recorridos en los últimos x días</string>
     <string name="title_activity_maps">MapsActivity</string>
 
+    <!-- Pantalla de Crear Comunidad -->
+    <string name="visibilidad">Visibilidad.\nNadie puede encontrar este grupo. Solo miembros pueden ver quién está en el grupo y lo que se postea en él.</string>
+
 </resources>

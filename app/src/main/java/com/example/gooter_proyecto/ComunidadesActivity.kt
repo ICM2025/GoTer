@@ -24,7 +24,7 @@ class ComunidadesActivity : AppCompatActivity() {
         configComunidadesRecyclerView()
         configCanalesRecyclerView()
 
-        binding.ButtonBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { finish() }
         binding.ButtonCrearComunidad.setOnClickListener {
             startActivity(Intent(baseContext, CrearComunidadActivity::class.java))
         }
@@ -33,38 +33,38 @@ class ComunidadesActivity : AppCompatActivity() {
     private fun configComunidadesRecyclerView() {
         comunidadAdapter = ComunidadAdapter(getComunidades())
         binding.ListaComunidades.apply {
-            layoutManager = LinearLayoutManager(this@ComunidadesActivity)
+            layoutManager = LinearLayoutManager(this@ComunidadesActivity, LinearLayoutManager.VERTICAL, false)
             adapter = comunidadAdapter
         }
     }
 
     private fun configCanalesRecyclerView() {
         CanalAdapter = CanalAdapter(getCanales())
-        binding.ListaCanales.apply {
-            layoutManager = LinearLayoutManager(this@ComunidadesActivity)
+        binding.rvListaCanales.apply {
+            layoutManager = LinearLayoutManager(this@ComunidadesActivity,LinearLayoutManager.VERTICAL, false)
             adapter = CanalAdapter
         }
     }
 
     private fun getComunidades(): List<Comunidad> {
         return listOf(
-            Comunidad("Grupo 1", R.drawable.images),
-            Comunidad("Grupo 2", R.drawable.images),
-            Comunidad("Grupo 3", R.drawable.images),
-            Comunidad("Grupo 4", R.drawable.images),
-            Comunidad("Grupo 5", R.drawable.images),
-            Comunidad("Grupo 6", R.drawable.images),
-            Comunidad("Grupo 7", R.drawable.images)
+            Comunidad("Grupo 1", R.drawable.background_username,5),
+            Comunidad("Grupo 2", R.drawable.background_username,7),
+            Comunidad("Grupo 3", R.drawable.background_username,0),
+            Comunidad("Grupo 4", R.drawable.background_username,7),
+            Comunidad("Grupo 5", R.drawable.background_username,46),
+            Comunidad("Grupo 6", R.drawable.background_username,34),
+            Comunidad("Grupo 7", R.drawable.background_username,21)
         )
     }
 
     private fun getCanales(): List<Canal> {
         return listOf(
-            Canal("Canal 1", R.drawable.images, false),
-            Canal("Canal 2", R.drawable.images, true),
-            Canal("Canal 3", R.drawable.images, false),
-            Canal("Canal 4", R.drawable.images, false),
-            Canal("Canal 5", R.drawable.images, true)
+            Canal("Canal 1", R.drawable.background_username, false,5),
+            Canal("Canal 2", R.drawable.background_username, true,8),
+            Canal("Canal 3", R.drawable.background_username, false, 31),
+            Canal("Canal 4", R.drawable.background_username, false, 17),
+            Canal("Canal 5", R.drawable.background_username, true,11)
         )
     }
 }

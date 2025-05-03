@@ -22,6 +22,7 @@ class ComunidadAdapter(private val comunidades: List<Comunidad>) :
         val comunidad = comunidades[position]
         holder.binding.NombreGrupo.text = comunidad.nombre
         holder.binding.FotoGrupo.setImageResource(comunidad.imagen)
+        holder.binding.MiembrosGrupo.text = comunidad.miembros.toString()
     }
 
     override fun getItemCount(): Int = comunidades.size

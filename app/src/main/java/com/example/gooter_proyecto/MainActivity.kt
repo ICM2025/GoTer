@@ -10,7 +10,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
     private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
-        
+
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
         val currentUser = auth.currentUser
@@ -20,7 +20,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-
 
         binding=ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

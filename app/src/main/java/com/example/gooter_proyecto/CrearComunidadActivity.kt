@@ -16,7 +16,7 @@ class CrearComunidadActivity : AppCompatActivity() {
         binding = ActivityCrearComunidadBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.ButtonCancelar.setOnClickListener {
+        binding.btnBack.setOnClickListener {
             finish()
         }
 

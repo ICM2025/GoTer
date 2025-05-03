@@ -1,33 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/transparent"
+    android:background="@color/white"
     android:padding="8dp">
 
-    <!-- Foto del grupo -->
     <ImageView
         android:id="@+id/FotoGrupo"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_margin="5dp"
         android:layout_marginStart="10dp"
         android:layout_marginTop="30dp"
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="30dp"
-        android:scaleType="centerCrop"
-        android:background="@drawable/circle_mask"
-        android:src="@drawable/images"
         android:clipToOutline="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/circle_gray"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/NombreGrupo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.387" />
 
-
-    <!-- Nombre del grupo -->
     <TextView
         android:id="@+id/NombreGrupo"
         android:layout_width="0dp"
@@ -38,12 +35,22 @@
         android:layout_marginEnd="15dp"
         android:layout_marginBottom="30dp"
         android:text="Nombre del Grupo"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:textSize="13sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/MiembrosGrupo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/FotoGrupo"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
 
+    <TextView
+        android:id="@+id/MiembrosGrupo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:text="12 miembros"
+        android:textSize="11dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/FotoGrupo" />
 </androidx.constraintlayout.widget.ConstraintLayout>

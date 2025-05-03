@@ -1,318 +1,436 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/home"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:background="#1C225D"
-    >
+    android:background="@color/textfield_background">
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:background="@color/white"
+        android:padding="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Texto de Bienvenida -->
+        <LinearLayout
+            android:id="@+id/layout_texto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginLeft="13dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvSaludo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hola Pedro"
+                android:textColor="@color/black"
+                android:textSize="28dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSubtitulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="¡Buen día para correr!"
+                android:textColor="@color/grisLetra"
+                android:textSize="15dp" />
+
+        </LinearLayout>
+
+        <!-- Contenedor con los botones de usuario y notificación -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="-154dp"
+            android:layout_marginTop="15dp"
+            android:layout_toEndOf="@+id/layout_texto"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <!-- Botón campana con contador -->
+            <ImageButton
+                android:id="@+id/btnCampana"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginEnd="8dp"
+                android:background="@android:color/transparent"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_notificacion" />
+
+            <!-- Botón de usuario -->
+            <ImageButton
+                android:id="@+id/btnUsuario"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/circle_gray"
+                android:padding="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_user" />
+        </LinearLayout>
+    </RelativeLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/main"
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".HomeActivity"
-        android:background="#1C225D"
-        android:padding="16dp">
+        android:layout_height="170dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginEnd="25dp"
+        android:background="@color/white"
+        android:padding="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/relativeLayout">
 
         <TextView
-            android:id="@+id/logoHome"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:text="GoRace"
-            android:textAlignment="textEnd"
-            android:textColor="@color/white"
-            android:textSize="40dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            android:fontFamily="@font/bahiana"
-            />
-
-        <TextView
-            android:id="@+id/saludoUsuario"
-            android:paddingTop="30dp"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:text="Hola Usuario"
-            android:textColor="@color/white"
-            android:textSize="44dp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/logoHome" />
-
-        <TextView
-            android:id="@+id/invitacionUsuarioText"
-            android:textColor="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:text="Haz parte de la comunidad hoy"
+            android:id="@+id/tvResumenActividad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Resumen de Actividad"
+            android:textColor="@color/black"
             android:textSize="17dp"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/saludoUsuario" />
-
-        <LinearLayout
-            android:id="@+id/imagenesHome"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            app:layout_constraintTop_toBottomOf="@+id/invitacionUsuarioText"
-            tools:layout_editor_absoluteX="16dp">
-
-            <ImageView
-                android:id="@+id/entrarCarrer"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_weight="1"
-                app:srcCompat="@drawable/map_ejemplo_carrera_home" />
-
-            <ImageView
-                android:id="@+id/buscarRuta"
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_weight="1"
-                app:srcCompat="@drawable/map_ejemplo_ruta_cercana_home" />
-
-        </LinearLayout>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/informeSalud"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:padding="16dp"
-            android:text="Ver informe de salud >"
-            android:textColor="@color/white"
-            android:textSize="20dp"
+            android:id="@+id/tvNumKilometros"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="16dp"
+            android:text="5.2"
+            android:textColor="@color/black"
+            android:textSize="25dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvResumenActividad" />
+
+        <TextView
+            android:id="@+id/tvTextoKilometros"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="4dp"
+            android:text="km hoy"
+            android:textColor="@color/grisLetra"
+            android:textSize="12dp"
+            app:layout_constraintBottom_toTopOf="@+id/ivLineaMeta"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvNumKilometros"
+            app:layout_constraintVertical_bias="0.093" />
+
+        <TextView
+            android:id="@+id/tvNumMinutos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="32"
+            android:textColor="@color/black"
+            android:textSize="25dp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/tvNumCalorias"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tvNumKilometros"
+            app:layout_constraintTop_toBottomOf="@+id/tvResumenActividad" />
+
+        <TextView
+            android:id="@+id/tvMinutos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="4dp"
+            android:text="minutos activo"
+            android:textColor="@color/grisLetra"
+            android:textSize="12dp"
+            app:layout_constraintBottom_toTopOf="@+id/ivLineaMeta"
+            app:layout_constraintEnd_toStartOf="@+id/tvCalorias"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/tvTextoKilometros"
+            app:layout_constraintTop_toBottomOf="@+id/tvNumMinutos"
+            app:layout_constraintVertical_bias="0.096" />
+
+        <TextView
+            android:id="@+id/tvNumCalorias"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="12dp"
+            android:text="320"
+            android:textColor="@color/black"
+            android:textSize="25dp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imagenesHome" />
+            app:layout_constraintTop_toBottomOf="@+id/tvResumenActividad" />
 
-        <LinearLayout
-            android:id="@+id/seccionUnoShortcuts"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:padding="16dp"
-            android:orientation="horizontal"
+        <TextView
+            android:id="@+id/tvCalorias"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="4dp"
+            android:text="calorias"
+            android:textColor="@color/grisLetra"
+            android:textSize="12dp"
+            app:layout_constraintBottom_toTopOf="@+id/ivLineaMeta"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/informeSalud"
-            android:background="#151940">
+            app:layout_constraintTop_toBottomOf="@+id/tvNumCalorias"
+            app:layout_constraintVertical_bias="0.0" />
 
-            <TextView
-                android:id="@+id/carreraConAmigo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="70"
-                android:text="Carrera con Amigo"
-                android:textColor="@color/white"
-                android:textSize="20dp" />
-
-            <TextView
-                android:id="@+id/go1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="10"
-                android:text="GO"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="30dp"
-                android:fontFamily="@font/bahiana"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/seccionDosShortcuts"
+        <ImageView
+            android:id="@+id/ivLineaMeta"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:background="#151940"
-            android:orientation="horizontal"
-            android:padding="16dp"
+            android:layout_height="29dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="1dp"
+            app:layout_constraintBottom_toTopOf="@+id/tvPorcentajeMeta"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/seccionUnoShortcuts">
+            app:srcCompat="@drawable/linea_meta_home" />
 
-            <TextView
-                android:id="@+id/invitacionGrupo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="70"
-                android:text="Invitación a Grupo"
-                android:textColor="@color/white"
-                android:textSize="20dp" />
-
-            <TextView
-                android:id="@+id/go2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="10"
-                android:text="GO"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="30dp"
-                android:fontFamily="@font/bahiana"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/seccionTresShortcuts"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:background="#151940"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/seccionDosShortcuts">
-
-            <TextView
-                android:id="@+id/puntosObtenidos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="70"
-                android:text="Puntos Obtenidos"
-                android:textColor="@color/white"
-                android:textSize="20dp" />
-
-            <TextView
-                android:id="@+id/go3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="10"
-                android:text="GO"
-                android:textAlignment="center"
-                android:textColor="@color/white"
-                android:textSize="30dp"
-                android:fontFamily="@font/bahiana"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/barraMenu"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:background="@color/white"
-            android:orientation="horizontal"
+        <TextView
+            android:id="@+id/tvPorcentajeMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
+            android:text="70% de tu meta diaria"
+            android:textColor="@color/grisLetra"
+            android:textSize="12dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            tools:layout_editor_absoluteX="16dp">
+            app:layout_constraintEnd_toEndOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <FrameLayout
-                android:id="@+id/layoutBotonHome"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
 
-                <Button
-                    android:id="@+id/botonHome"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0"
-                    android:backgroundTint="@color/white"
-                    android:text="h"
-                    android:textColor="@color/white"
-                    android:textSize="16dp" />
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="25dp"
+        android:text="Notificaciones"
+        android:textColor="@color/black"
+        android:textSize="17dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/constraintLayout" />
 
-                <ImageView
-                    android:id="@+id/imageView3"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="8dp"
-                    app:srcCompat="@drawable/home_icon" />
-            </FrameLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvListaNotificaciones"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="25dp"
+        android:nestedScrollingEnabled="false"
+        android:padding="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
+    <TextView
+        android:id="@+id/tvTusComunidades"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="25dp"
+        android:text="Tus comunidades"
+        android:textColor="@color/black"
+        android:textSize="17dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/rvListaNotificaciones" />
 
-                <Button
-                    android:id="@+id/button2"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0"
-                    android:backgroundTint="@color/white"
-                    android:text="u"
-                    android:textColor="@color/white"
-                    android:textSize="16dp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="25dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTusComunidades">
 
-                <ImageView
-                    android:id="@+id/mapButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="8dp"
-                    app:srcCompat="@drawable/play_ubi_icon" />
-            </FrameLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvListaComunidades"
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:scrollbars="horizontal"
+        android:padding="8dp"/>
+    </LinearLayout>
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-                <Button
-                    android:id="@+id/button3"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0"
-                    android:backgroundTint="@color/white"
-                    android:text="u"
-                    android:textColor="@color/white"
-                    android:textSize="16dp" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
 
-                <ImageView
-                    android:id="@+id/comunidadButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="8dp"
-                    app:srcCompat="@drawable/comunidades" />
-            </FrameLayout>
+            <ImageButton
+                android:id="@+id/btnInicio"
+                android:layout_width="81dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="9dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_home"
+                app:tint="@color/blue_buttons" />
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0"
-                    android:backgroundTint="@color/white"
-                    android:text="u"
-                    android:textColor="@color/white"
-                    android:textSize="16dp" />
-
-                <ImageView
-                    android:id="@+id/notificacionesButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="8dp"
-                    app:srcCompat="@drawable/bell_icon" />
-            </FrameLayout>
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_weight="1">
-
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0"
-                    android:backgroundTint="@color/white"
-                    android:text="u"
-                    android:textColor="@color/white"
-                    android:textSize="16dp" />
-
-                <ImageView
-                    android:id="@+id/perfilButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="8dp"
-                    app:srcCompat="@drawable/user_icon" />
-            </FrameLayout>
+            <TextView
+                android:id="@+id/tvInicio"
+                android:layout_width="81dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="2dp"
+                android:gravity="center"
+                android:text="Inicio"
+                android:textSize="11dp" />
 
         </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.core.widget.NestedScrollView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btnMapa"
+                android:layout_width="81dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="9dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_map"
+                app:tint="@color/grisLetra"/>
+
+            <TextView
+                android:id="@+id/tvMapa"
+                android:layout_width="81dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="2dp"
+                android:gravity="center"
+                android:text="Mapa"
+                android:textSize="11dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btnCorrer"
+                android:layout_width="81dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="9dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_run" />
+
+            <TextView
+                android:id="@+id/tvCorrer"
+                android:layout_width="81dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="2dp"
+                android:gravity="center"
+                android:text="Correr"
+                android:textSize="11dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btnGrupos"
+                android:layout_width="81dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="9dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_group"
+                app:tint="@color/grisLetra"/>
+
+            <TextView
+                android:id="@+id/tvGrupos"
+                android:layout_width="81dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="2dp"
+                android:gravity="center"
+                android:text="Grupos"
+                android:textSize="11dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/btnActividad"
+                android:layout_width="81dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="9dp"
+                android:background="@null"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/ic_activity"
+                app:tint="@color/grisLetra"/>
+
+            <TextView
+                android:id="@+id/tvActividad"
+                android:layout_width="81dp"
+                android:layout_height="15dp"
+                android:layout_marginTop="2dp"
+                android:gravity="center"
+                android:text="Actividad"
+                android:textSize="11dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

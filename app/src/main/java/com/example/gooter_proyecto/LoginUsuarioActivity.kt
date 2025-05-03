@@ -28,7 +28,7 @@ class LoginUsuarioActivity : AppCompatActivity() {
             finish()
         }
         binding.botonBack.setOnClickListener {
-            finish()
+            startActivity(Intent(this, MainActivity::class.java))
         }
 
         val currentUser = firebaseAuth.currentUser

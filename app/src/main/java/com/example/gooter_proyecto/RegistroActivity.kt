@@ -26,6 +26,10 @@ class RegistroActivity : AppCompatActivity() {
         binding.ingresarRegistro.setOnClickListener {
             validarYRegistrarUsuario()
         }
+        binding.botonBackRegistro.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+
+        }
         val currentUser = auth.currentUser
             if (currentUser != null) {
                 val intent = Intent(this, HomeActivity::class.java)

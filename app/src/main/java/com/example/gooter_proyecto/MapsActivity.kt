@@ -1,4 +1,3 @@
-
 package com.example.gooter_proyecto
 
 import android.app.UiModeManager
@@ -48,6 +47,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class MapsActivity : AppCompatActivity() {
 
@@ -67,6 +70,9 @@ class MapsActivity : AppCompatActivity() {
     private lateinit var sensorEventListener: SensorEventListener
     private var destinationLocation: GeoPoint? = null
     private var destinationMarker: Marker? = null
+
+    // Lista para almacenar los marcadores de estacionamiento
+    private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
 
     val locationSettings = registerForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult(),
@@ -137,6 +143,73 @@ class MapsActivity : AppCompatActivity() {
 
         // Configurar botón de ruta
         setupRouteButton()
+
+        // Cargar los puntos de estacionamiento desde Firebase
+        cargarEstacionamientos()
+    }
+
+    // Nueva función para cargar datos de estacionamiento desde Firebase
+    private fun cargarEstacionamientos() {
+        // Referencia a la base de datos de Firebase, específicamente a la tabla "estacionamientos"
+        val database = FirebaseDatabase.getInstance()
+        val estacionamientoRef = database.getReference("estacionamientos")
+
+        estacionamientoRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                estacionamientoMarkers.forEach { marker ->
+                    map.overlays.remove(marker)
+                }
+                estacionamientoMarkers.clear()
+
+
+                for (estacionamientoSnapshot in snapshot.children) {
+                    try {
+                        val parkingId = estacionamientoSnapshot.key ?: "Unknown Parking"
+                        val ubicacionSnapshot = estacionamientoSnapshot.child("ubicacion")
+                        val latitud = ubicacionSnapshot.child("latitud").getValue(Double::class.java)
+                        val longitud = ubicacionSnapshot.child("longitud").getValue(Double::class.java)
+                        val altitud = ubicacionSnapshot.child("altitud").getValue(Double::class.java)
+                        val capacidad = estacionamientoSnapshot.child("capacidad").getValue(Int::class.java)
+                        val disponibilidad = estacionamientoSnapshot.child("disponibilidad").getValue(Boolean::class.java)
+                        val nombre = parkingId
+                        if (latitud != null && longitud != null) {
+                            // Crear punto para el marcador
+                            val punto = if (altitud != null) {
+                                GeoPoint(latitud, longitud, altitud)
+                            } else {
+                                GeoPoint(latitud, longitud)
+                            }
+
+                            // Crear marcador de estacionamiento
+                            val marker = createMarker(
+                                punto,
+                                nombre,
+                                "Capacidad: ${capacidad ?: "N/A"}, Disponible: ${disponibilidad ?: "N/A"}", // Example snippet info
+                                R.drawable.star_ic
+                            )
+
+                            // Añadir marcador al mapa y a la lista
+                            marker?.let {
+                                map.overlays.add(it)
+                                estacionamientoMarkers.add(it)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("FIREBASE", "Error al cargar estacionamiento: ${e.message}")
+                        Log.e("FIREBASE", "Error details for snapshot: ${estacionamientoSnapshot.key}")
+                    }
+                }
+
+                // Refrescar el mapa para mostrar los marcadores
+                map.invalidate()
+                Toast.makeText(baseContext, "Se cargaron ${estacionamientoMarkers.size} estacionamientos", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("FIREBASE", "Error al cargar estacionamientos: ${error.message}")
+                Toast.makeText(baseContext, "Error al cargar estacionamientos", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     // Configuración del botón de ruta

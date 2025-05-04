@@ -29,7 +29,6 @@
         android:layout_height="70dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
-        android:scaleType="centerCrop"
         android:background="@drawable/circle_shape"
         android:contentDescription="Foto de perfil"
         android:src="@drawable/fotoperfil"
@@ -55,7 +54,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
-        android:text=""
+        android:text="Pedro Suarez"
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -73,7 +72,7 @@
         android:paddingTop="4dp"
         android:paddingEnd="12dp"
         android:paddingBottom="4dp"
-        android:text=""
+        android:text="@pedroSu24"
         android:textColor="@color/white"
         android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@id/ivProfilePhoto"
@@ -114,7 +113,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text=""
+                android:text="Amante de las carreras en bicicleta con amigos. Fines de semana de Patios. De Bogotá para los mañosos."
                 android:textColor="#666666"
                 android:textSize="14sp" />
 
@@ -125,14 +124,6 @@
                 android:layout_marginTop="8dp"
                 android:text="Links"
                 android:textColor="#4285F4"
-                android:textSize="14sp" />
-            <TextView
-                android:id="@+id/tvLinksContent"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text=""
-                android:textColor="#666666"
                 android:textSize="14sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -172,20 +163,132 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Estas son las insignias forjadas por @usuario durante el uso de Go-Race"
+                android:text="Estas son las insignias forjadas por @pedroSu24 durante el uso de Go-Race"
                 android:textColor="#666666"
                 android:textSize="14sp" />
 
             <!-- Badge 1 -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvBadges"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:nestedScrollingEnabled="false"
-                android:overScrollMode="never"
-                tools:listitem="@layout/item_badge"/>
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Estrella"
+                    android:src="@drawable/star_ic"
+                    app:tint="#4285F4" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="First Race"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="100+"
+                    android:textColor="#4285F4"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="Completado"
+                    android:src="@drawable/ic_check_circle"
+                    app:tint="#4285F4" />
+            </LinearLayout>
+
+            <!-- Badge 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Estrella"
+                    android:src="@drawable/star_ic"
+                    app:tint="#4285F4" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="10 K"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="100+"
+                    android:textColor="#4285F4"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="Completado"
+                    android:src="@drawable/ic_check_circle"
+                    app:tint="#4285F4" />
+            </LinearLayout>
+
+            <!-- Badge 3 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Estrella"
+                    android:src="@drawable/star_ic"
+                    app:tint="#4285F4" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:text="Tiempos superados"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="100+"
+                    android:textColor="#4285F4"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="Completado"
+                    android:src="@drawable/ic_check_circle"
+                    app:tint="#4285F4" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvAchievementSummary"

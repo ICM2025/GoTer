@@ -92,6 +92,20 @@ class RegistroActivity : AppCompatActivity() {
                 .addOnFailureListener { e ->
                     println("Error al guardar los datos del usuario: ${e.message}")
                 }
+            val insigniasIniciales = mapOf(
+                "primeraCarrera" to false,
+                "primeros10km" to false,
+                "mediaMaraton" to false,
+                "reto7diasSeguidos" to false
+            )
+
+            if (uid != null) {
+                val userRef = database.child("usuarios").child(uid)
+                userRef.setValue(datosUsuario)
+                    .addOnSuccessListener {
+                        userRef.child("insignias").setValue(insigniasIniciales)
+                    }
+            }
         } else {
             println("No hay un usuario autenticado.")
         }

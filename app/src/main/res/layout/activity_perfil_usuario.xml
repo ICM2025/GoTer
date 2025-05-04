@@ -29,6 +29,7 @@
         android:layout_height="70dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
+        android:scaleType="centerCrop"
         android:background="@drawable/circle_shape"
         android:contentDescription="Foto de perfil"
         android:src="@drawable/fotoperfil"
@@ -54,7 +55,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
-        android:text="Pedro Suarez"
+        android:text=""
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -72,7 +73,7 @@
         android:paddingTop="4dp"
         android:paddingEnd="12dp"
         android:paddingBottom="4dp"
-        android:text="@pedroSu24"
+        android:text=""
         android:textColor="@color/white"
         android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@id/ivProfilePhoto"
@@ -113,7 +114,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Amante de las carreras en bicicleta con amigos. Fines de semana de Patios. De Bogotá para los mañosos."
+                android:text=""
                 android:textColor="#666666"
                 android:textSize="14sp" />
 
@@ -124,6 +125,14 @@
                 android:layout_marginTop="8dp"
                 android:text="Links"
                 android:textColor="#4285F4"
+                android:textSize="14sp" />
+            <TextView
+                android:id="@+id/tvLinksContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text=""
+                android:textColor="#666666"
                 android:textSize="14sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>

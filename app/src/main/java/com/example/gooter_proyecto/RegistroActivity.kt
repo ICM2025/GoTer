@@ -101,7 +101,19 @@ class RegistroActivity : AppCompatActivity() {
         binding.fechaNacimiento.isFocusable = false
         binding.fechaNacimiento.isClickable = true
         binding.fechaNacimiento.setOnClickListener { showDatePicker() }
+        binding.contraseARegistro.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val password = s.toString()
+                if (password.isNotEmpty() && password.length < 6) {
+                    binding.contraseARegistro.error = "Mínimo 6 caracteres"
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
     }
+
 
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()

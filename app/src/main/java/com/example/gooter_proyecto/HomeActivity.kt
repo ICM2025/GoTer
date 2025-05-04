@@ -11,6 +11,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityHomeBinding
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import models.Comunidad
 
 class HomeActivity : AppCompatActivity() {
@@ -18,16 +20,38 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var comunidadHomeAdapter: ComunidadHomeAdapter
     private lateinit var notificacionHomeAdapter: ComunidadAdapter
     private lateinit var auth: FirebaseAuth
+    private lateinit var database: DatabaseReference
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         auth = FirebaseAuth.getInstance()
-
+        database = FirebaseDatabase.getInstance().reference
 
         configComunidadesRecyclerView()
         configNotificacionesRecyclerView()
+
+        val uid = auth.currentUser?.uid
+
+        if (uid != null) {
+            database.child("usuarios").child(uid).get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
+                        binding.tvSaludo.text = "Hola, $nombre!"
+                    } else {
+                        Toast.makeText(this, "No se encontró el usuario", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al obtener datos del usuario", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_SHORT).show()
+        }
+
 
         val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
 

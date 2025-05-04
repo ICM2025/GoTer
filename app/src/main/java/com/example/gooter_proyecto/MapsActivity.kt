@@ -36,6 +36,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.location.SettingsClient
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.FirebaseAuth
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -51,6 +52,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import android.os.Handler
 
 class MapsActivity : AppCompatActivity() {
 
@@ -70,6 +72,9 @@ class MapsActivity : AppCompatActivity() {
     private lateinit var sensorEventListener: SensorEventListener
     private var destinationLocation: GeoPoint? = null
     private var destinationMarker: Marker? = null
+    private lateinit var auth: FirebaseAuth
+    private lateinit var locationUpdateHandler: Handler
+    private lateinit var locationUpdateRunnable: Runnable
 
     // Lista para almacenar los marcadores de estacionamiento
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
@@ -146,7 +151,52 @@ class MapsActivity : AppCompatActivity() {
 
         // Cargar los puntos de estacionamiento desde Firebase
         cargarEstacionamientos()
+
+        auth = FirebaseAuth.getInstance()
+        locationUpdateHandler = Handler(Looper.getMainLooper())
+        locationUpdateRunnable = object : Runnable {
+            override fun run() {
+                guardarUsuarioUbicacionFirebase()
+                locationUpdateHandler.postDelayed(this, 7000)
+            }
+        }
     }
+
+    private fun guardarUsuarioUbicacionFirebase() {
+        val user = auth.currentUser
+        val uid = user?.uid
+
+        if (uid != null && currentLocation != null) {
+            val database = FirebaseDatabase.getInstance()
+            val userLocationRef = database.getReference("usuarios").child(uid).child("ubicacion")
+
+            val locationData = hashMapOf(
+                "latitud" to currentLocation!!.latitude,
+                "longitud" to currentLocation!!.longitude,
+                "altitud" to currentLocation!!.altitude
+            )
+
+            userLocationRef.setValue(locationData)
+                .addOnSuccessListener {
+                    Log.d("Firebase", "Location saved successfully for user: $uid")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Firebase", "Failed to save location for user: $uid", e)
+                }
+        } else {
+            Log.d("Firebase", "User not logged in or current location not available.")
+        }
+    }
+
+    private fun startSavingLocationUpdates() {
+        locationUpdateHandler.post(locationUpdateRunnable)
+    }
+
+    private fun stopSavingLocationUpdates() {
+        locationUpdateHandler.removeCallbacks(locationUpdateRunnable)
+    }
+
+
 
     // Nueva función para cargar datos de estacionamiento desde Firebase
     private fun cargarEstacionamientos() {
@@ -395,6 +445,8 @@ class MapsActivity : AppCompatActivity() {
         } ?: run {
             map.controller.animateTo(bogota)
         }
+
+        startSavingLocationUpdates()
     }
 
     private fun createSensorEventListener(): SensorEventListener {
@@ -426,6 +478,7 @@ class MapsActivity : AppCompatActivity() {
         map.onPause()
         stopLocationUpdates()
         sensorManager.unregisterListener(sensorEventListener)
+        stopSavingLocationUpdates()
     }
 
     fun createMarker(p: GeoPoint, title: String, desc: String, iconID: Int): Marker? {

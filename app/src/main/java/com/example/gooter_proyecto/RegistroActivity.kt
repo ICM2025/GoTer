@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.database
 import java.util.Calendar
+import java.util.regex.Pattern
 
 class RegistroActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegistroBinding
@@ -25,20 +26,22 @@ class RegistroActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         setUpBinding()
+
         binding.ingresarRegistro.setOnClickListener {
             validarYRegistrarUsuario()
         }
+
         binding.botonBackRegistro.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
-
         }
+
         val currentUser = auth.currentUser
-            if (currentUser != null) {
-                val intent = Intent(this, HomeActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
-            }
+        if (currentUser != null) {
+            val intent = Intent(this, HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun validarYRegistrarUsuario() {
@@ -84,28 +87,20 @@ class RegistroActivity : AppCompatActivity() {
             )
 
             val database = Firebase.database.reference
-            database.child("usuarios").child(uid)
-                .setValue(datosUsuario)
+            val userRef = database.child("usuarios").child(uid)
+            userRef.setValue(datosUsuario)
                 .addOnSuccessListener {
-                    println("Datos de usuario guardados correctamente")
+                    val insigniasIniciales = mapOf(
+                        "primeraCarrera" to false,
+                        "primeros10km" to false,
+                        "mediaMaraton" to false,
+                        "reto7diasSeguidos" to false
+                    )
+                    userRef.child("insignias").setValue(insigniasIniciales)
                 }
                 .addOnFailureListener { e ->
                     println("Error al guardar los datos del usuario: ${e.message}")
                 }
-            val insigniasIniciales = mapOf(
-                "primeraCarrera" to false,
-                "primeros10km" to false,
-                "mediaMaraton" to false,
-                "reto7diasSeguidos" to false
-            )
-
-            if (uid != null) {
-                val userRef = database.child("usuarios").child(uid)
-                userRef.setValue(datosUsuario)
-                    .addOnSuccessListener {
-                        userRef.child("insignias").setValue(insigniasIniciales)
-                    }
-            }
         } else {
             println("No hay un usuario autenticado.")
         }
@@ -115,6 +110,21 @@ class RegistroActivity : AppCompatActivity() {
         binding.fechaNacimiento.isFocusable = false
         binding.fechaNacimiento.isClickable = true
         binding.fechaNacimiento.setOnClickListener { showDatePicker() }
+        binding.correoRegistro.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val email = s.toString()
+                val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$"
+                val pattern = Pattern.compile(emailRegex)
+
+                if (email.isNotEmpty() && !pattern.matcher(email).matches()) {
+                    binding.correoRegistro.error = "Correo no válido"
+                }
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
         binding.contraseARegistro.addTextChangedListener(object : android.text.TextWatcher {
             override fun afterTextChanged(s: android.text.Editable?) {
                 val password = s.toString()
@@ -127,7 +137,6 @@ class RegistroActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
     }
-
 
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()

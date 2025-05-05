@@ -2,6 +2,7 @@ package com.example.gooter_proyecto
 
 import android.app.UiModeManager
 import android.content.Context
+import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -134,6 +135,9 @@ class MapsActivity : AppCompatActivity() {
         // Configurar el botón para volver a mi ubicación
         binding.btnMyLocation.setOnClickListener {
             goToMyLocation()
+        }
+        binding.botonBack.setOnClickListener {
+            startActivity(Intent(this, HomeActivity::class.java))
         }
 
         // Configurar búsqueda por texto

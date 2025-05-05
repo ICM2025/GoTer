@@ -40,13 +40,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:gravity="center"
-        android:layout_marginTop="50dp"/>
+        android:layout_marginTop="32dp"/>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardGrafico"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_marginTop="24dp"
+        android:layout_height="300dp" android:layout_marginTop="24dp"
         app:cardElevation="8dp"
         app:cardCornerRadius="16dp"
         app:layout_constraintTop_toBottomOf="@id/tvTitulo"
@@ -58,14 +57,24 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitCenter"
-            android:src="@drawable/graphic_holder" />
+            tools:src="@tools:sample/avatars" />
     </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="50dp"
+        android:layout_height="32dp"
+        app:srcCompat="@drawable/ic_bike"
+        app:layout_constraintTop_toBottomOf="@+id/cardGrafico"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp"/>
 
     <TextView
         android:id="@+id/tvKilometros"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="8dp"
         android:drawablePadding="8dp"
         android:gravity="center"
         android:text="234 Km"
@@ -74,32 +83,19 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cardGrafico" />
+        app:layout_constraintTop_toBottomOf="@id/imageView" />
 
     <TextView
         android:id="@+id/tvDescripcion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="8dp"
         android:gravity="center"
         android:text="Recorridos en los últimos 7 días"
         android:textColor="@color/black"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvKilometros" />
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="50dp"
-        android:layout_height="32dp"
-        app:layout_constraintBottom_toTopOf="@+id/tvKilometros"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cardGrafico"
-        app:layout_constraintVertical_bias="1.0"
-        app:srcCompat="@drawable/ic_bike" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

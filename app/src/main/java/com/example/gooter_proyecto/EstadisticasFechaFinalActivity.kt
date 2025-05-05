@@ -61,8 +61,11 @@ class EstadisticasFechaFinalActivity : AppCompatActivity() {
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
         val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-            val selectedDate = "${selectedMonth + 1}/$selectedDay/$selectedYear"
-            binding.dateInput.setText(selectedDate)
+            // Format the date as "yyyy-MM-dd"
+            val formattedMonth = String.format("%02d", selectedMonth + 1)
+            val formattedDay = String.format("%02d", selectedDay)
+            this.selectedDate = "$selectedYear-$formattedMonth-$formattedDay"
+            binding.dateInput.setText(this.selectedDate)
         }, year, month, day)
 
         datePickerDialog.show()

@@ -25,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.registrate.setOnClickListener {
-            startActivity(Intent(baseContext, RegistroActivity::class.java))
+            startActivity(Intent(baseContext, CrearCarreraActivity::class.java))
         }
 
         binding.iniciarSesion.setOnClickListener {

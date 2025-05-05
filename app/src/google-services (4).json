@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "129361428133",
+    "firebase_url": "https://go-oter-ee454-default-rtdb.firebaseio.com",
+    "project_id": "go-oter-ee454",
+    "storage_bucket": "go-oter-ee454.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:129361428133:android:85205131bbdba7236f174c",
+        "android_client_info": {
+          "package_name": "com.example.gooter_proyecto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSHat8-Gkk8LVYrT-E4sy6X3SUgTzuCGU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -49,8 +49,15 @@
     <string name="stats_distance">234 Km</string>
     <string name="stats_summary">Recorridos en los últimos x días</string>
     <string name="title_activity_maps">MapsActivity</string>
+    <string name="suggestion_text"><b>Sugerencia:</b> Agita tu dispositivo para encontrar corredores cercanos</string>
+
 
     <!-- Pantalla de Crear Comunidad -->
     <string name="visibilidad">Visibilidad.\nNadie puede encontrar este grupo. Solo miembros pueden ver quién está en el grupo y lo que se postea en él.</string>
+    <string name="crear_carrera">Crear Carrera</string>
+    <string name="text_invitacion">Configura una nueva carrera e invita a tus amigos a participar</string>
+    <string name="text_create">Crear Una Carrera</string>
+    <string name="text_init_c">Iniciar Carrera</string>
+    <string name="text_desc_init">Crea una nueva carrera o encuentra corredores\ncercanos para competir</string>
 
 </resources>

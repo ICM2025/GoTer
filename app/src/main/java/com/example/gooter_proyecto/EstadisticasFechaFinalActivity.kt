@@ -3,20 +3,27 @@ package com.example.gooter_proyecto
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.gooter_proyecto.databinding.ActivityEstadisticasFechaFinalBinding
 import com.example.gooter_proyecto.databinding.ActivityEstadisticasFechaInicioBinding
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class EstadisticasFechaFinalActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEstadisticasFechaFinalBinding
+    private var selectedDate: String? = null
+    private var fechaInicio: String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEstadisticasFechaFinalBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        fechaInicio = intent.getStringExtra("fecha_inicio")
 
         binding.dateInput.setOnClickListener {
             showDatePicker()
@@ -25,10 +32,27 @@ class EstadisticasFechaFinalActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, EstadisticasFechaInicioActivity::class.java))
         }
         binding.btnOk.setOnClickListener{
-            startActivity(Intent(baseContext, EstadisticasActivity::class.java))
+            if (selectedDate == null) {
+                Toast.makeText(this, "Por favor selecciona la fecha final", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val fechaInicioDate = sdf.parse(fechaInicio!!)
+            val fechaFinalDate = sdf.parse(selectedDate!!)
+
+            if (fechaFinalDate.before(fechaInicioDate)) {
+                Toast.makeText(this, "La fecha final no puede ser anterior a la fecha de inicio", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val intent = Intent(baseContext, EstadisticasActivity::class.java)
+            intent.putExtra("fecha_inicio", fechaInicio)
+            intent.putExtra("fecha_final", selectedDate)
+            startActivity(intent)
         }
 
     }
+
+
 
     private fun showDatePicker(){
         val calendar = Calendar.getInstance()

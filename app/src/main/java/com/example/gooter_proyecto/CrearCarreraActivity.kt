@@ -36,8 +36,10 @@ class CrearCarreraActivity : AppCompatActivity() {
                     val y = event.values[1]
                     val z = event.values[2]
 
-                    var floatSum = Math.abs(x) + Math.abs(y) + Math.abs(z)
-                    if(floatSum >14){
+                    val acceleration = sqrt(x * x + y * y + z * z) / SensorManager.GRAVITY_EARTH
+                    val accelerationDelta = acceleration - 1
+
+                    if (accelerationDelta > 2.7) {
                         binding.busquedaText.text = "Sacudiendo"
                     }
                     else {

@@ -96,8 +96,8 @@ class ChatActivity : AppCompatActivity() {
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val nombreComunidad = intent.getStringExtra("nombreComunidad")
-        binding.tvTitulo.text = nombreComunidad
+        val nombreGrupo = intent.getStringExtra("nombreGrupo")
+        binding.tvTitulo.text = nombreGrupo
         adapter = ChatAdapter(mensajes)
         binding.listaMensajes.layoutManager = LinearLayoutManager(this)
         binding.listaMensajes.adapter = adapter

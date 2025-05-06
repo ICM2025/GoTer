@@ -86,7 +86,7 @@ class HomeActivity : AppCompatActivity() {
     private fun configComunidadesRecyclerView() {
         comunidadHomeAdapter = ComunidadHomeAdapter(getComunidades()) { comunidad ->
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("nombreComunidad", comunidad.nombre)
+            intent.putExtra("nombreGrupo", comunidad.nombre)
             startActivity(intent)
         }
 

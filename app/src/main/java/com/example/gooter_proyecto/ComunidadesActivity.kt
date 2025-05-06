@@ -14,7 +14,7 @@ class ComunidadesActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityComunidadesBinding
     private lateinit var comunidadAdapter: ComunidadAdapter
-    private lateinit var CanalAdapter: CanalAdapter
+    private lateinit var canalAdapter: CanalAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,7 +33,7 @@ class ComunidadesActivity : AppCompatActivity() {
     private fun configComunidadesRecyclerView() {
         comunidadAdapter = ComunidadAdapter(getComunidades()) { comunidad ->
             val intent = Intent(this, ChatActivity::class.java).apply {
-                putExtra("nombreComunidad", comunidad.nombre)
+                putExtra("nombreGrupo", comunidad.nombre)
             }
             startActivity(intent)
         }
@@ -45,12 +45,17 @@ class ComunidadesActivity : AppCompatActivity() {
     }
 
     private fun configCanalesRecyclerView() {
-        CanalAdapter = CanalAdapter(getCanales())
+
+        canalAdapter = CanalAdapter(getCanales()) { canal ->
+            val intent = Intent(this, ChatActivity::class.java).apply {
+                putExtra("nombreGrupo", canal.nombre)
+            }
+            startActivity(intent)
+        }
         binding.rvListaCanales.apply {
             layoutManager = LinearLayoutManager(this@ComunidadesActivity,LinearLayoutManager.VERTICAL, false)
-            adapter = CanalAdapter
+            adapter = canalAdapter
         }
-
     }
 
     private fun getComunidades(): List<Comunidad> {

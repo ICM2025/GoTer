@@ -57,8 +57,6 @@ class CrearCarreraActivity : AppCompatActivity() {
             accelerometerEventListener,
             accelerometer,
             SensorManager.SENSOR_DELAY_NORMAL
-            //prueba commit
-            //prueba commit2
         )
     }
 

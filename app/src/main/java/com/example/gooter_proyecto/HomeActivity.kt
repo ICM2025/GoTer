@@ -72,7 +72,7 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, MapsActivity::class.java))
         }
         binding.btnCorrer.setOnClickListener{
-            startActivity(Intent(this, MapsActivity::class.java))
+            startActivity(Intent(this, CrearCarreraActivity::class.java))
         }
         binding.btnGrupos.setOnClickListener{
             startActivity(Intent(this, ComunidadesActivity::class.java))

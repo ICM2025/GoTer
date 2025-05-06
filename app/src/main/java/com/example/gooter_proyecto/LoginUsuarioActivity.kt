@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gooter_proyecto.databinding.ActivityLoginUsuarioBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser // Opcional: si necesitas info del usuario
+import com.google.firebase.auth.FirebaseUser
 
 class LoginUsuarioActivity : AppCompatActivity() {
 
@@ -20,24 +20,28 @@ class LoginUsuarioActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginUsuarioBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         firebaseAuth = FirebaseAuth.getInstance()
+
         binding.buttonIngresar.setOnClickListener {
             validarYAutenticarUsuario()
         }
+
         binding.buttonCancel.setOnClickListener {
             finish()
         }
+
         binding.botonBack.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }
 
         val currentUser = firebaseAuth.currentUser
-             if (currentUser != null) {
-                 val intent = Intent(this, HomeActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
-          }
+        if (currentUser != null) {
+            val intent = Intent(this, HomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun validarYAutenticarUsuario() {
@@ -61,14 +65,20 @@ class LoginUsuarioActivity : AppCompatActivity() {
             binding.editTextPassword.requestFocus()
             return
         }
+
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user: FirebaseUser? = firebaseAuth.currentUser
                     Toast.makeText(this, "Inicio de sesión exitoso.", Toast.LENGTH_SHORT).show()
 
-                    val intent = Intent(this, HomeActivity::class.java)
+                    val uid = user?.uid
+                    if (uid != null) {
+                        val sharedPref = getSharedPreferences("GooterPrefs", MODE_PRIVATE)
+                        sharedPref.edit().putString("uid_guardado", uid).apply()
+                    }
 
+                    val intent = Intent(this, HuellaActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
                     finish()
@@ -83,5 +93,4 @@ class LoginUsuarioActivity : AppCompatActivity() {
                 }
             }
     }
-
 }

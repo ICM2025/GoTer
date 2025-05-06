@@ -20,7 +20,7 @@ class CanalAdapter (private val canales: List<Canal>) :
         val canal = canales[position]
         holder.binding.NombreCanal.text = canal.nombre
         holder.binding.FotoCanal.setImageResource(canal.imagen)
-        holder.binding.MiembrosGrupo.text = canal.miembros.toString()
+        holder.binding.MiembrosCanal.text = canal.miembros.toString()
 
         // Configurar el botón según el estado actual
         holder.binding.ButtonSeguir.text = if (canal.seguido) "Siguiendo" else "Seguir"

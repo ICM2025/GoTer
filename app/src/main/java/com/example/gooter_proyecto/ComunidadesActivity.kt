@@ -31,7 +31,13 @@ class ComunidadesActivity : AppCompatActivity() {
     }
 
     private fun configComunidadesRecyclerView() {
-        comunidadAdapter = ComunidadAdapter(getComunidades())
+        comunidadAdapter = ComunidadAdapter(getComunidades()) { comunidad ->
+            val intent = Intent(this, ChatActivity::class.java).apply {
+                putExtra("nombreComunidad", comunidad.nombre)
+            }
+            startActivity(intent)
+        }
+
         binding.ListaComunidades.apply {
             layoutManager = LinearLayoutManager(this@ComunidadesActivity, LinearLayoutManager.VERTICAL, false)
             adapter = comunidadAdapter
@@ -44,6 +50,7 @@ class ComunidadesActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@ComunidadesActivity,LinearLayoutManager.VERTICAL, false)
             adapter = CanalAdapter
         }
+
     }
 
     private fun getComunidades(): List<Comunidad> {

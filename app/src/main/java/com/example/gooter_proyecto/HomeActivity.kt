@@ -1,7 +1,9 @@
 package com.example.gooter_proyecto
 
+import adapters.CanalAdapter
 import adapters.ComunidadAdapter
 import adapters.ComunidadHomeAdapter
+import adapters.NotificacionAdapter
 import android.content.Intent
 import android.os.Bundle
 import android.widget.PopupMenu
@@ -11,12 +13,14 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityHomeBinding
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
+import models.Canal
 import models.Comunidad
+import models.Notificacion
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding : ActivityHomeBinding
     private lateinit var comunidadHomeAdapter: ComunidadHomeAdapter
-    private lateinit var notificacionHomeAdapter: ComunidadAdapter
+    private lateinit var notificacionHomeAdapter: NotificacionAdapter
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,9 +84,14 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun configComunidadesRecyclerView() {
-        comunidadHomeAdapter = ComunidadHomeAdapter(getComunidades())
+        comunidadHomeAdapter = ComunidadHomeAdapter(getComunidades()) { comunidad ->
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("nombreComunidad", comunidad.nombre)
+            startActivity(intent)
+        }
+
         binding.rvListaComunidades.apply {
-            layoutManager = LinearLayoutManager(this@HomeActivity,LinearLayoutManager.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(this@HomeActivity, LinearLayoutManager.HORIZONTAL, false)
             adapter = comunidadHomeAdapter
         }
     }
@@ -90,22 +99,19 @@ class HomeActivity : AppCompatActivity() {
     //Se esta usando adaptador de comunidades para la pantalla de notificaciones
     //Hay que cambiarlo
     private fun configNotificacionesRecyclerView() {
-        notificacionHomeAdapter = ComunidadAdapter(getNotificaciones())
+        notificacionHomeAdapter = NotificacionAdapter(getNotificaciones())
         binding.rvListaNotificaciones.apply {
             layoutManager = LinearLayoutManager(this@HomeActivity,LinearLayoutManager.VERTICAL, false)
             adapter = notificacionHomeAdapter
         }
     }
 
-    private fun getNotificaciones(): List<Comunidad> {
+    private fun getNotificaciones(): List<Notificacion> {
         return listOf(
-            Comunidad("Notificacion 1", R.drawable.background_username,5),
-            Comunidad("Notificacion 2", R.drawable.background_username,7),
-            Comunidad("Notificacion 3", R.drawable.background_username,0),
-            Comunidad("Notificacion 4", R.drawable.background_username,7),
-            Comunidad("Notificacion 5", R.drawable.background_username,46),
-            Comunidad("Notificacion 6", R.drawable.background_username,34),
-            Comunidad("Notificacion 7", R.drawable.background_username,21)
+            Notificacion("Carrera con Diego", "En 15 minutos • 3km"),
+            Notificacion("Invitación a Grupo", "Corredores Matutinos • 8 miembros"),
+            Notificacion("Puntos Obtenidos", "+150 puntos esta semana"),
+            Notificacion("Tus estadisticas de la semana", "Haz mejorado 15% tu rendimiento"),
         )
     }
 
@@ -119,7 +125,4 @@ class HomeActivity : AppCompatActivity() {
             Comunidad("Grupo 7", R.drawable.ic_user,21)
         )
     }
-
-
-
 }

@@ -6,8 +6,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.gooter_proyecto.databinding.ItemComunidadHomeBinding
 import models.Comunidad
 
-class ComunidadHomeAdapter(private val lista: List<Comunidad>) :
-    RecyclerView.Adapter<ComunidadHomeAdapter.ComunidadHomeViewHolder>() {
+class ComunidadHomeAdapter(
+    private val lista: List<Comunidad>,
+    private val onItemClick: (Comunidad) -> Unit
+) : RecyclerView.Adapter<ComunidadHomeAdapter.ComunidadHomeViewHolder>() {
 
     inner class ComunidadHomeViewHolder(val binding: ItemComunidadHomeBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -22,6 +24,10 @@ class ComunidadHomeAdapter(private val lista: List<Comunidad>) :
         holder.binding.imagenComunidad.setImageResource(comunidad.imagen)
         holder.binding.nombreComunidad.text = comunidad.nombre
         holder.binding.miembrosComunidad.text = comunidad.miembros.toString()
+
+        holder.itemView.setOnClickListener {
+            onItemClick(comunidad)
+        }
     }
 
     override fun getItemCount(): Int = lista.size

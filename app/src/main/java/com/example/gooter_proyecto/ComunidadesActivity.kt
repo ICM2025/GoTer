@@ -4,9 +4,17 @@ import adapters.CanalAdapter
 import adapters.ComunidadAdapter
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityComunidadesBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import models.Canal
 import models.Comunidad
 
@@ -15,68 +23,90 @@ class ComunidadesActivity : AppCompatActivity() {
     private lateinit var binding: ActivityComunidadesBinding
     private lateinit var comunidadAdapter: ComunidadAdapter
     private lateinit var canalAdapter: CanalAdapter
+    private lateinit var database: DatabaseReference
+    private val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityComunidadesBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        configComunidadesRecyclerView()
-        configCanalesRecyclerView()
-
+        database = FirebaseDatabase.getInstance().reference
+        loadComunidades()
+        loadCanales()
         binding.btnBack.setOnClickListener { finish() }
         binding.ButtonCrearComunidad.setOnClickListener {
             startActivity(Intent(baseContext, CrearComunidadActivity::class.java))
         }
     }
 
-    private fun configComunidadesRecyclerView() {
-        comunidadAdapter = ComunidadAdapter(getComunidades()) { comunidad ->
-            val intent = Intent(this, ChatActivity::class.java).apply {
-                putExtra("nombreGrupo", comunidad.nombre)
+    private fun loadComunidades() {
+        if (userId == null) return
+
+        val comunidadesRef = database.child("comunidad")
+        comunidadesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val comunidades = mutableListOf<Comunidad>()
+                for (comunidadSnap in snapshot.children) {
+                    val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
+                    val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
+
+                    if (adminId == userId || participantes.contains(userId)) {
+                        val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
+                        val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
+                        comunidades.add(Comunidad(nombre, R.drawable.background_username, miembros))
+                    }
+                }
+                comunidadAdapter = ComunidadAdapter(comunidades) { comunidad ->
+                    val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
+                        putExtra("nombreGrupo", comunidad.nombre)
+                    }
+                    startActivity(intent)
+                }
+                binding.ListaComunidades.layoutManager = LinearLayoutManager(this@ComunidadesActivity)
+                binding.ListaComunidades.adapter = comunidadAdapter
+                Log.d("Firebase", "Comunidades encontradas: ${comunidades.size}")
+                if (comunidades.isEmpty()) {
+                    binding.ListaComunidades.visibility = View.GONE
+                    binding.TusComunidades.text = "No estás en ninguna comunidad aún"
+                }
             }
-            startActivity(intent)
-        }
-
-        binding.ListaComunidades.apply {
-            layoutManager = LinearLayoutManager(this@ComunidadesActivity, LinearLayoutManager.VERTICAL, false)
-            adapter = comunidadAdapter
-        }
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
-    private fun configCanalesRecyclerView() {
+    private fun loadCanales() {
+        if (userId == null) return
 
-        canalAdapter = CanalAdapter(getCanales()) { canal ->
-            val intent = Intent(this, ChatActivity::class.java).apply {
-                putExtra("nombreGrupo", canal.nombre)
+        val canalesRef = database.child("canal")
+        canalesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val canales = mutableListOf<Canal>()
+                for (canalSnap in snapshot.children) {
+                    val adminId = canalSnap.child("administrador").getValue(String::class.java)
+                    val miembros = canalSnap.child("miembros").children.mapNotNull { it.getValue(String::class.java) }
+
+                    if (adminId == userId || miembros.contains(userId)) {
+                        val nombre = canalSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
+                        val privado = canalSnap.child("privado").getValue(Boolean::class.java) ?: false
+                        canales.add(Canal(nombre, R.drawable.background_username, privado, miembros.size))
+                    }
+                }
+
+                canalAdapter = CanalAdapter(canales) { canal ->
+                    val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
+                        putExtra("nombreGrupo", canal.nombre)
+                    }
+                    startActivity(intent)
+                }
+                binding.rvListaCanales.layoutManager = LinearLayoutManager(this@ComunidadesActivity)
+                binding.rvListaCanales.adapter = canalAdapter
+                Log.d("Firebase", "Canales encontrados: ${canales.size}")
             }
-            startActivity(intent)
-        }
-        binding.rvListaCanales.apply {
-            layoutManager = LinearLayoutManager(this@ComunidadesActivity,LinearLayoutManager.VERTICAL, false)
-            adapter = canalAdapter
-        }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
-    private fun getComunidades(): List<Comunidad> {
-        return listOf(
-            Comunidad("Grupo 1", R.drawable.background_username,5),
-            Comunidad("Grupo 2", R.drawable.background_username,7),
-            Comunidad("Grupo 3", R.drawable.background_username,0),
-            Comunidad("Grupo 4", R.drawable.background_username,7),
-            Comunidad("Grupo 5", R.drawable.background_username,46),
-            Comunidad("Grupo 6", R.drawable.background_username,34),
-            Comunidad("Grupo 7", R.drawable.background_username,21)
-        )
-    }
 
-    private fun getCanales(): List<Canal> {
-        return listOf(
-            Canal("Canal 1", R.drawable.background_username, false,5),
-            Canal("Canal 2", R.drawable.background_username, true,8),
-            Canal("Canal 3", R.drawable.background_username, false, 31),
-            Canal("Canal 4", R.drawable.background_username, false, 17),
-            Canal("Canal 5", R.drawable.background_username, true,11)
-        )
-    }
+
 }

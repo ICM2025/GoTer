@@ -5,19 +5,27 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
-import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.gooter_proyecto.databinding.ActivityCrearCarreraBinding
-import kotlin.math.sqrt
 
 class CrearCarreraActivity : AppCompatActivity() {
 
     private lateinit var sensorManager: SensorManager
     private lateinit var accelerometer : Sensor
     private lateinit var accelerometerEventListener: SensorEventListener
+    private val FORCE_THRESHOLD = 350
+    private val TIME_THRESHOLD = 100
+    private val SHAKE_TIMEOUT = 500
+    private val SHAKE_DURATION = 1000
+    private val SHAKE_COUNT = 3
+    private var mLastX = -1.0f
+    private var mLastY = -1.0f
+    private var mLastZ = -1.0f
+    private var mLastTime: Long = 0
+    private var mShakeCount = 0
+    private var mLastShake: Long = 0
+    private var mLastForce: Long = 0
+
     lateinit var binding: ActivityCrearCarreraBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityCrearCarreraBinding.inflate(layoutInflater)
@@ -32,19 +40,26 @@ class CrearCarreraActivity : AppCompatActivity() {
         val ret : SensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event : SensorEvent?) {
                 if(event != null ) {
-                    val x = event.values[0]
-                    val y = event.values[1]
-                    val z = event.values[2]
-
-                    val acceleration = sqrt(x * x + y * y + z * z) / SensorManager.GRAVITY_EARTH
-                    val accelerationDelta = acceleration - 1
-
-                    if (accelerationDelta > 2.7) {
-                        binding.busquedaText.text = "Sacudiendo"
+                    val now = System.currentTimeMillis()
+                    if ((now - mLastForce) > SHAKE_TIMEOUT) {
+                        mShakeCount = 0;
                     }
-                    else {
-                        binding.busquedaText.text = "No sacudiendo"
+                    if((now - mLastTime) > TIME_THRESHOLD ) {
+                        var diff = now - mLastTime
+                        var speed = Math.abs(event.values[0] + event.values[1] + event.values[2] - mLastX - mLastY - mLastZ) / diff * 10000
+                        if (speed > FORCE_THRESHOLD) {
+                            if((mShakeCount++ >= SHAKE_COUNT) && (now -mLastShake >SHAKE_DURATION)) {
+                                mLastShake = now
+                                mShakeCount = 0
+                                binding.busquedaText.text = "Buscando jugadores"
+                            }
+                            mLastForce = now
+                        }
                     }
+                    mLastTime = now
+                    mLastX = event.values[0]
+                    mLastY = event.values[1]
+                    mLastZ = event.values[2]
                 }
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {

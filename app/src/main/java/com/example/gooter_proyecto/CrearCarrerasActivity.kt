@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.util.Log
 import android.view.GestureDetector
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
@@ -30,16 +31,18 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import models.Comunidad
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.math.*
-import android.view.KeyEvent
 
 class CrearCarrerasActivity : AppCompatActivity() {
 
     private val ETIQUETA = "CrearCarrerasActivity"
-
     private lateinit var binding: ActivityCrearCarrerasBinding
     private lateinit var adaptadorComunidades: ComunidadHomeAdapter
     private lateinit var autenticacion: FirebaseAuth
+    private lateinit var database: FirebaseDatabase
 
     private lateinit var mapa: MapView
     private lateinit var clienteUbicacion: FusedLocationProviderClient
@@ -51,7 +54,6 @@ class CrearCarrerasActivity : AppCompatActivity() {
     private var marcadorActual: Marker? = null
     private var marcadorDestino: Marker? = null
     private var lineaRuta: Polyline? = null
-    private var DESTINO_CARRERA: GeoPoint? = null
 
     private lateinit var detectorGestos: GestureDetector
 
@@ -74,6 +76,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
         Log.d(ETIQUETA, "onCreate iniciado.")
 
         autenticacion = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance()
         cargarComunidades()
 
         Configuration.getInstance().load(this, androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
@@ -118,7 +121,6 @@ class CrearCarrerasActivity : AppCompatActivity() {
     }
 
         detectorGestos = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
-            override fun onLongPress(e: MotionEvent) { }
             override fun onDoubleTap(e: MotionEvent): Boolean {
                 val proyeccion = mapa.projection
                 val punto = proyeccion.fromPixels(e.x.toInt(), e.y.toInt()) as GeoPoint
@@ -126,7 +128,6 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 Toast.makeText(this@CrearCarrerasActivity, "Destino establecido por doble toque", Toast.LENGTH_SHORT).show()
                 return true
             }
-            override fun onSingleTapConfirmed(e: MotionEvent): Boolean = false
         })
 
         mapa.setOnTouchListener { _, evento -> detectorGestos.onTouchEvent(evento) }
@@ -161,7 +162,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
     private fun cargarComunidades() {
         val usuarioId = autenticacion.currentUser?.uid ?: return
-        val ref = FirebaseDatabase.getInstance().reference.child("comunidad")
+        val ref = database.reference.child("comunidad")
         ref.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
             override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
                 val lista = mutableListOf<Comunidad>()
@@ -171,26 +172,151 @@ class CrearCarrerasActivity : AppCompatActivity() {
                     val participantes = if (participantesSnap.exists() && participantesSnap.value != null) {
                         participantesSnap.children.mapNotNull { it.getValue(String::class.java) }
                     } else emptyList()
+
                     if (admin == usuarioId || participantes.contains(usuarioId)) {
                         val nombre = snap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val miembros = snap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        lista.add(Comunidad(nombre, R.drawable.ic_user, miembros))
+                        lista.add(Comunidad(nombre, R.drawable.ic_user, miembros, participantes))
                     }
                 }
-                adaptadorComunidades = ComunidadHomeAdapter(lista) { c ->
-                    startActivity(Intent(this@CrearCarrerasActivity, ChatActivity::class.java).apply {
-                        putExtra("nombreGrupo", c.nombre)
-                    })
+
+                adaptadorComunidades = ComunidadHomeAdapter(lista) { comunidad ->
+                    if (ubicacionDestino == null) {
+                        Toast.makeText(this@CrearCarrerasActivity, "Primero selecciona un destino para la carrera", Toast.LENGTH_SHORT).show()
+                        return@ComunidadHomeAdapter
+                    }
+
+                    crearCarreraParaComunidad(comunidad)
                 }
+
                 binding.rvListaComunidades.apply {
                     layoutManager = LinearLayoutManager(this@CrearCarrerasActivity, LinearLayoutManager.HORIZONTAL, false)
                     adapter = adaptadorComunidades
                 }
             }
+
             override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
                 Toast.makeText(this@CrearCarrerasActivity, "Error al cargar comunidades: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun crearCarreraParaComunidad(comunidad: Comunidad) {
+        val usuarioId = autenticacion.currentUser?.uid ?: return
+        val ubicacionDestino = this.ubicacionDestino ?: return
+
+        // Calcular distancia aproximada
+        val distancia = ubicacionActual?.let {
+            distancia(it.latitude, it.longitude, ubicacionDestino.latitude, ubicacionDestino.longitude)
+        } ?: 0.0
+
+        // Crear ID único para la carrera
+        val carreraId = database.reference.child("modosCarrera").push().key ?: return
+
+        // Crear objeto carrera - Solo incluir al creador como participante inicial
+        val carrera = mapOf(
+            "id" to carreraId,
+            "organizadorId" to usuarioId,
+            "fechaInicio" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date()),
+            "estado" to "pendiente",
+            "inicioCarrera" to mapOf(
+                "latitud" to ubicacionActual?.latitude,
+                "longitud" to ubicacionActual?.longitude,
+                "altitud" to ubicacionActual?.altitude
+            ),
+            "destinoCarrera" to mapOf(
+                "latitud" to ubicacionDestino.latitude,
+                "longitud" to ubicacionDestino.longitude,
+                "altitud" to ubicacionDestino.altitude
+            ),
+            "distanciaTotal" to distancia,
+            "participantes" to listOf(usuarioId) // Solo incluir al creador como participante inicial
+        )
+
+        // Guardar carrera en Firebase
+        database.reference.child("modosCarrera").child(carreraId).setValue(carrera)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Carrera creada para ${comunidad.nombre}", Toast.LENGTH_SHORT).show()
+                enviarNotificacionesCarrera(comunidad, carreraId, distancia)
+                actualizarUbicacionParticipante(carreraId)
+                // Iniciar MapsActivity con el ID de la carrera
+                val intent = Intent(this, MapsActivity::class.java).apply {
+                    putExtra("carrera_id", carreraId)
+                }
+
+                startActivity(intent)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error al crear carrera: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun actualizarUbicacionParticipante(carreraId: String) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+
+        val usuarioId = autenticacion.currentUser?.uid ?: return
+
+        // Escuchar cambios en la ubicación del usuario
+        val ubicacionCallback = object : LocationCallback() {
+            override fun onLocationResult(resultado: LocationResult) {
+                resultado.lastLocation?.let { ubicacion ->
+                    // Guardar ubicación del participante en la carrera
+                    val ubicacionData = mapOf(
+                        "latitud" to ubicacion.latitude,
+                        "longitud" to ubicacion.longitude,
+                        "timestamp" to System.currentTimeMillis()
+                    )
+
+                    database.reference.child("modosCarrera")
+                        .child(carreraId)
+                        .child("participantes")
+                        .child(usuarioId)
+                        .setValue(ubicacionData)
+                }
+            }
+        }
+
+        // Configurar solicitud de ubicación con alta frecuencia
+        val solicitud = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000)
+            .setMinUpdateIntervalMillis(2000)
+            .build()
+
+        clienteUbicacion.requestLocationUpdates(solicitud, ubicacionCallback, Looper.getMainLooper())
+    }
+
+    private fun enviarNotificacionesCarrera(comunidad: Comunidad, carreraId: String, distancia: Double) {
+        val usuarioId = autenticacion.currentUser?.uid ?: return
+        val fechaHora = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
+
+        // Obtener nombre del organizador
+        database.reference.child("usuarios").child(usuarioId).child("nombre").get()
+            .addOnSuccessListener { snapshot ->
+                val nombreOrganizador = snapshot.getValue(String::class.java) ?: "Un organizador"
+
+                // Usar listaIdParticipantes en lugar de participantes según la clase Comunidad definida
+                comunidad.participantes.forEach { participanteId ->
+                    if (participanteId != usuarioId) { // No enviar notificación a sí mismo
+                        val notificacionId = database.reference.child("notificaciones").push().key ?: return@forEach
+
+                        // Crear notificación con carrera_id como metadato
+                        val notificacion = mapOf(
+                            "idNotificacion" to notificacionId,
+                            "emisorId" to usuarioId,
+                            "destinatarioId" to participanteId,
+                            "fechaHora" to fechaHora,
+                            "leida" to false,
+                            "tipo" to "Carrera",
+                            "mensaje" to "$nombreOrganizador ha creado una nueva carrera en ${comunidad.nombre} (${"%.1f".format(distancia)} km)",
+                            "accion" to "ver_carrera",
+                            "metadatos" to mapOf("carrera_id" to carreraId) // Solo incluir el ID de la carrera
+                        )
+
+                        database.reference.child("notificaciones").child(notificacionId).setValue(notificacion)
+                    }
+                }
+            }
     }
 
     private fun iniciarActualizacionesUbicacion() {
@@ -245,7 +371,6 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
     private fun establecerDestino(pt: GeoPoint) {
         ubicacionDestino = pt
-        DESTINO_CARRERA = pt
         marcadorDestino?.let { if (mapa.overlays.contains(it)) mapa.overlays.remove(it) }
         marcadorDestino = Marker(mapa).apply {
             position = pt
@@ -270,31 +395,19 @@ class CrearCarrerasActivity : AppCompatActivity() {
         mapa.overlays.add(linea)
         lineaRuta = linea
         mapa.invalidate()
-        val km = distancia(inicio.latitude, inicio.longitude, fin.latitude, fin.longitude)
-        Toast.makeText(
-            this,
-            "Distancia aproximada: ${String.format("%.2f", km)} km",
-            Toast.LENGTH_LONG
-        ).show()
-
     }
 
-                private fun distancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-            val r = 6371.0
-            val dLat = Math.toRadians(lat2 - lat1)
-            val dLon = Math.toRadians(lon2 - lon1)
-            val a = sin(dLat/2).pow(2) + cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon/2).pow(2)
-            val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-            return r * c
-        }
-
-                private fun ocultarTeclado() {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(binding.editTextDestination.windowToken, 0)
-        }
-
-                private fun mostrarTeclado() {
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(binding.editTextDestination, InputMethodManager.SHOW_IMPLICIT)
-        }
+    private fun distancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat/2).pow(2) + cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon/2).pow(2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return r * c
     }
+
+    private fun ocultarTeclado() {
+        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.editTextDestination.windowToken, 0)
+    }
+}

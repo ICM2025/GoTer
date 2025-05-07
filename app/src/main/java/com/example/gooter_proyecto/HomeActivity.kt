@@ -215,7 +215,7 @@ class HomeActivity : AppCompatActivity() {
                     if (adminId == userId || participantes.contains(userId)) {
                         val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        comunidades.add(Comunidad(nombre, R.drawable.ic_user, miembros))
+                        comunidades.add(Comunidad(nombre, R.drawable.ic_user, miembros, participantes))
                     }
                 }
 

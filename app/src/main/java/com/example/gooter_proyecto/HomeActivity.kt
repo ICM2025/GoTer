@@ -1,7 +1,5 @@
 package com.example.gooter_proyecto
 
-import adapters.CanalAdapter
-import adapters.ComunidadAdapter
 import adapters.ComunidadHomeAdapter
 import adapters.NotificacionAdapter
 import android.content.Intent
@@ -103,7 +101,7 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, MapsActivity::class.java))
         }
         binding.btnCorrer.setOnClickListener{
-            startActivity(Intent(this, MapsActivity::class.java))
+            startActivity(Intent(this, CarreraActivity::class.java))
         }
         binding.btnGrupos.setOnClickListener{
             startActivity(Intent(this, ComunidadesActivity::class.java))

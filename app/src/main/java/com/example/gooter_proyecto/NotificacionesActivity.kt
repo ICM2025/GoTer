@@ -1,6 +1,7 @@
 package com.example.gooter_proyecto
 
 import adapters.NotificacionAdapter
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -26,6 +27,10 @@ class NotificacionesActivity : AppCompatActivity() {
         setupUI()
         setupRecyclerView()
         loadNotificacionesTiempoReal()
+
+        binding.ButtonRedactar.setOnClickListener {
+            startActivity(Intent(this,CrearCarrerasActivity::class.java))
+        }
     }
 
     private fun initFirebase() {

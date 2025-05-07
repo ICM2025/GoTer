@@ -760,7 +760,7 @@ class MapsActivity : AppCompatActivity() {
                                         val alt = snap.child("altitud").getValue(Double::class.java) ?: 0.0
 
                                         val punto = GeoPoint(lat, lon, alt)
-                                        val marker = createMarker(punto, "Participante", "", R.drawable.ic_user)
+                                        val marker = createMarker(punto, "Participante", "", R.drawable.star_ic)
                                         map.overlays.add(marker)
                                         map.invalidate()
                                     }

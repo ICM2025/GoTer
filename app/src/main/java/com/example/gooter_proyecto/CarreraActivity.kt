@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gooter_proyecto.databinding.ActivityCarreraBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -44,8 +45,10 @@ class CarreraActivity : AppCompatActivity() {
     private var mLastForce: Long = 0
     private var idUnicoUser : String = ""
     lateinit var binding: ActivityCarreraBinding
+    val carrerasRef = database.child("carreras")
     val docRef = database.child("usuariosDisponibles")
     var mapCompetidores = HashMap<String, String>()
+    var customKey : String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityCarreraBinding.inflate(layoutInflater)
@@ -63,6 +66,8 @@ class CarreraActivity : AppCompatActivity() {
         binding.imageButton.setOnClickListener {
             startActivity(Intent(this,HomeActivity::class.java))
         }
+
+
         docRef.limitToFirst(3).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var listTemporal = ArrayList<String>()
@@ -79,13 +84,34 @@ class CarreraActivity : AppCompatActivity() {
                 addUsersList(listTemporal)
             }
             override fun onCancelled(error: DatabaseError) {
+            }
+        })
+        carrerasRef.addChildEventListener(object : ChildEventListener {
+            val userCarreraKeyPrefix = "Carrera_$uid"
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                val key = snapshot.key
+                if (key != null && key.startsWith(userCarreraKeyPrefix)) {
+                    val intent = Intent(baseContext, MapsActivity::class.java).apply {
+                        putExtra("carrera_id", customKey)
+                    }
+                    startActivity(intent)
+                }
 
+            }
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+            }
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+            }
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
+            }
+            override fun onCancelled(error: DatabaseError) {
             }
         })
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
             val email = parent.getItemAtPosition(position).toString()
             var contrarioUid = mapCompetidores[email]
-            val customKey = "Carrera_$contrarioUid"
+            val customKeyTmp = "Carrera_$contrarioUid"
+            customKey = customKeyTmp
             val jugadores = ArrayList<String>()
             jugadores.add(uid!!)
             jugadores.add(contrarioUid!!)

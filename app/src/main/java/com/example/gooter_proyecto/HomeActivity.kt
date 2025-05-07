@@ -165,11 +165,21 @@ class HomeActivity : AppCompatActivity() {
                         val accion = notificacionSnap.child("accion").getValue(String::class.java) ?: ""
                         val tipo = notificacionSnap.child("tipo").getValue(String::class.java) ?: "General"
 
-                        val metadatos = notificacionSnap.child("metadatos").getValue(String::class.java)
-                            ?: notificacionSnap.child("metadatos").children.associate {
-                                it.key to it.value.toString()
-                            }.toString()
 
+                        val metadatosValue = notificacionSnap.child("metadatos").value
+
+                        val metadatosString = when (metadatosValue) {
+                            is HashMap<*, *> -> {
+                                metadatosValue.entries.joinToString(", ") { "${it.key}=${it.value}" }
+                            }
+                            is String -> {
+                                metadatosValue
+                            }
+                            else -> {
+
+                                ""
+                            }
+                        }
                         notificaciones.add(Notificacion(
                             idNotificacion = idNotificacion,
                             titulo = titulo,
@@ -180,7 +190,7 @@ class HomeActivity : AppCompatActivity() {
                             leida = leida,
                             accion = accion,
                             tipo = tipo,
-                            metadatos = metadatos
+                            metadatos = metadatosString 
                         ))
                     }
 

@@ -7,13 +7,11 @@
     android:background="@color/light_gray"
     tools:context=".MapsActivity">
 
-    <!-- Map Fragment -->
     <org.osmdroid.views.MapView
         android:id="@+id/osmMap"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Back Button - Circular with drop shadow -->
     <androidx.cardview.widget.CardView
         android:id="@+id/backButtonContainer"
         android:layout_width="40dp"
@@ -32,7 +30,6 @@
             android:contentDescription="@string/back_button_desc" />
     </androidx.cardview.widget.CardView>
 
-    <!-- Location Info at the top -->
     <TextView
         android:id="@+id/locationText"
         android:layout_width="wrap_content"
@@ -44,7 +41,6 @@
         android:textColor="@android:color/black"
         android:textSize="16sp" />
 
-    <!-- My Location Button - Circular with shadows -->
     <androidx.cardview.widget.CardView
         android:id="@+id/myLocationContainer"
         android:layout_width="48dp"
@@ -65,7 +61,6 @@
             android:src="@drawable/baseline_my_location_24" />
     </androidx.cardview.widget.CardView>
 
-    <!-- Bottom Card Container -->
     <androidx.cardview.widget.CardView
         android:id="@+id/bottomCardContainer"
         android:layout_width="match_parent"
@@ -77,85 +72,100 @@
         app:cardCornerRadius="16dp"
         app:cardElevation="4dp">
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="0dp">
 
-            <!-- User Greeting Row -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/textSaludo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Hola, usuario"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"/>
-
-                <TextView
-                    android:id="@+id/textTiempo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:drawableStart="@drawable/ic_navigation"
-                    android:drawablePadding="4dp"
-                    android:text="0.9 km • 6 min"
-                    android:textColor="@color/gray_text"
-                    android:textSize="14sp" />
-            </RelativeLayout>
-
-            <!-- Parking Info Card -->
-            <androidx.cardview.widget.CardView
+            <LinearLayout
+                android:id="@+id/normalLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/light_blue">
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="visible">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="12dp">
+                    android:layout_height="wrap_content">
 
                     <TextView
-                        android:id="@+id/textParqueadero"
+                        android:id="@+id/textSaludo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/nearest_parking"
-                        android:textColor="@color/blue_text"
-                        android:textSize="14sp" />
-
-
-                    <EditText
-                        android:id="@+id/editUbicacion"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/textParqueadero"
-                        android:layout_marginTop="4dp"
-                        android:hint="Facultad de ciencias básicas"
+                        android:text="Hola, usuario"
                         android:textColor="@color/black"
-                        android:textSize="16sp"/>
+                        android:textSize="18sp" />
 
-                    <ImageView
-                        android:id="@+id/iconoEditar"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
+                    <TextView
+                        android:id="@+id/textTiempo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:src="@drawable/pen"
-                        android:contentDescription="@string/edit_location_desc" />
+                        android:drawableStart="@drawable/ic_navigation"
+                        android:drawablePadding="4dp"
+                        android:text="0.9 km • 6 min"
+                        android:textColor="@color/gray_text"
+                        android:textSize="14sp" />
                 </RelativeLayout>
-            </androidx.cardview.widget.CardView>
 
-            <!-- GO Button -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/light_blue">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:id="@+id/textParqueadero"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/nearest_parking"
+                            android:textColor="@color/blue_text"
+                            android:textSize="14sp" />
+
+                        <EditText
+                            android:id="@+id/editUbicacion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/textParqueadero"
+                            android:layout_marginTop="4dp"
+                            android:hint="Facultad de ciencias básicas"
+                            android:textColor="@color/black"
+                            android:textSize="16sp" />
+
+                        <ImageView
+                            android:id="@+id/iconoEditar"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:src="@drawable/pen"
+                            android:contentDescription="@string/edit_location_desc" />
+                    </RelativeLayout>
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/botonGo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="GO!"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:background="@drawable/rounded_corner_button"
+                    android:gravity="center"
+                    android:padding="12dp" />
+            </LinearLayout>
 
             <TextView
-                android:id="@+id/botonGo"
+                android:id="@+id/goOnlyButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="GO!"
@@ -164,7 +174,8 @@
                 android:textSize="18sp"
                 android:background="@drawable/rounded_corner_button"
                 android:gravity="center"
-                android:padding="12dp" />
-        </LinearLayout>
+                android:padding="12dp"
+                android:visibility="gone" />
+        </FrameLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

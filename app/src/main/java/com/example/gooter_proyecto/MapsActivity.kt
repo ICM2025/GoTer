@@ -18,6 +18,7 @@ import android.os.Bundle
 import android.os.Looper
 import android.os.StrictMode
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -81,13 +82,12 @@ class MapsActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var locationUpdateHandler: Handler
     private lateinit var locationUpdateRunnable: Runnable
-    private lateinit var carreraId: String
+    private var carreraId: String = ""
     private var carreraEnCurso = false
     private var distanciaRecorrida = 0.0
     private var ultimaUbicacion: GeoPoint? = null
     private var carreraDestino: GeoPoint? = null
 
-    // Lista para almacenar los marcadores de estacionamiento
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
 
     val locationSettings = registerForActivityResult(
@@ -113,6 +113,7 @@ class MapsActivity : AppCompatActivity() {
         }
     )
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMapsBinding.inflate(layoutInflater)
@@ -124,17 +125,63 @@ class MapsActivity : AppCompatActivity() {
 
         if (carreraId.isNotEmpty())
         {
+            binding.normalLayout.visibility = View.GONE
+            binding.goOnlyButton.visibility = View.VISIBLE
+
             cargarDestinoCarrera()
             observarParticipantes()
             observarEstadoCarrera()
+
+            binding.goOnlyButton.setOnClickListener {
+                if (!carreraEnCurso) {
+                    FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
+                        .setValue("en_curso")
+                    borrarNotificacionesAsociadas()
+                    Toast.makeText(this, "¡Carrera iniciada!", Toast.LENGTH_SHORT).show()
+                    carreraEnCurso = true
+                    binding.goOnlyButton.text = "FINISH RACE"
+                } else {
+                    finalizarCarreraYRegistrarEstadisticas()
+                }
+            }
+
+        } else {
+            binding.normalLayout.visibility = View.VISIBLE
+            binding.goOnlyButton.visibility = View.GONE
+
+            cargarEstacionamientos()
+
+            binding.botonGo.setOnClickListener {
+                val searchSuccessful = searchLocation()
+                if (searchSuccessful && destinationLocation != null && currentLocation != null) {
+                    drawDirectLine(currentLocation!!, destinationLocation!!)
+                } else if (!searchSuccessful) {
+                    // searchLocation already shows a toast if search fails
+                } else {
+                    Toast.makeText(this, "No se pudo trazar la ruta: ubicación actual desconocida.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            binding.editUbicacion.setOnEditorActionListener { _, i, _ ->
+                if (i == EditorInfo.IME_ACTION_SEARCH) {
+                    searchLocation()
+                    hideKeyboard()
+                    true
+                }
+                false
+            }
+            binding.iconoEditar.setOnClickListener {
+                binding.editUbicacion.requestFocus()
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.editUbicacion, InputMethodManager.SHOW_IMPLICIT)
+            }
         }
 
-        // Configurar sensor de luz
+
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         sensorEventListener = createSensorEventListener()
 
-        // Configurar mapa
         Configuration.getInstance().load(
             this,
             androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
@@ -143,39 +190,21 @@ class MapsActivity : AppCompatActivity() {
         map.setTileSource(TileSourceFactory.MAPNIK)
         map.setMultiTouchControls(true)
 
-        // Configurar utilidades
         geocoder = Geocoder(this)
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
-        // Configurar ubicación
         locationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest = createLocationRequest()
         locationCallback = createLocationCallback()
 
-        // Configurar el botón para volver a mi ubicación
         binding.btnMyLocation.setOnClickListener {
             goToMyLocation()
         }
         binding.botonBack.setOnClickListener {
             startActivity(Intent(this, HomeActivity::class.java))
+            finish()
         }
-
-        // Configurar búsqueda por texto
-        binding.editUbicacion.setOnEditorActionListener { _, i, _ ->
-            if (i == EditorInfo.IME_ACTION_SEARCH) {
-                searchLocation()
-                // Ocultar teclado después de buscar
-                hideKeyboard()
-            }
-            true
-        }
-
-        // Configurar botón de ruta
-        setupRouteButton()
-
-        // Cargar los puntos de estacionamiento desde Firebase
-        cargarEstacionamientos()
 
         auth = FirebaseAuth.getInstance()
         locationUpdateHandler = Handler(Looper.getMainLooper())
@@ -197,8 +226,8 @@ class MapsActivity : AppCompatActivity() {
                 val alt = destino.child("altitud").getValue(Double::class.java) ?: 0.0
 
                 carreraDestino = GeoPoint(lat, lon, alt)
+                destinationLocation = carreraDestino
 
-                // Crear marcador de destino
                 destinationMarker = createMarker(
                     carreraDestino!!,
                     "Destino de la carrera",
@@ -210,7 +239,6 @@ class MapsActivity : AppCompatActivity() {
                     map.invalidate()
                 }
 
-                // Si ya tenemos ubicación actual, trazar ruta
                 currentLocation?.let {
                     drawDirectLine(it, carreraDestino!!)
                 }
@@ -256,11 +284,7 @@ class MapsActivity : AppCompatActivity() {
         locationUpdateHandler.removeCallbacks(locationUpdateRunnable)
     }
 
-
-
-    // Nueva función para cargar datos de estacionamiento desde Firebase
     private fun cargarEstacionamientos() {
-        // Referencia a la base de datos de Firebase, específicamente a la tabla "estacionamientos"
         val database = FirebaseDatabase.getInstance()
         val estacionamientoRef = database.getReference("estacionamientos")
 
@@ -283,22 +307,19 @@ class MapsActivity : AppCompatActivity() {
                         val disponibilidad = estacionamientoSnapshot.child("disponibilidad").getValue(Boolean::class.java)
                         val nombre = parkingId
                         if (latitud != null && longitud != null) {
-                            // Crear punto para el marcador
                             val punto = if (altitud != null) {
                                 GeoPoint(latitud, longitud, altitud)
                             } else {
                                 GeoPoint(latitud, longitud)
                             }
 
-                            // Crear marcador de estacionamiento
                             val marker = createMarker(
                                 punto,
                                 nombre,
-                                "Capacidad: ${capacidad ?: "N/A"}, Disponible: ${disponibilidad ?: "N/A"}", // Example snippet info
+                                "Capacidad: ${capacidad ?: "N/A"}, Disponible: ${disponibilidad ?: "N/A"}",
                                 R.drawable.star_ic
                             )
 
-                            // Añadir marcador al mapa y a la lista
                             marker?.let {
                                 map.overlays.add(it)
                                 estacionamientoMarkers.add(it)
@@ -310,7 +331,6 @@ class MapsActivity : AppCompatActivity() {
                     }
                 }
 
-                // Refrescar el mapa para mostrar los marcadores
                 map.invalidate()
                 Toast.makeText(baseContext, "Se cargaron ${estacionamientoMarkers.size} estacionamientos", Toast.LENGTH_SHORT).show()
             }
@@ -323,19 +343,6 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun setupRouteButton() {
-        binding.botonGo.setOnClickListener {
-            if (!carreraEnCurso) {
-                // Cambiar estado a "en_curso"
-                FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId).child("estado")
-                    .setValue("en_curso")
-
-                borrarNotificacionesAsociadas()
-                Toast.makeText(this, "¡Carrera iniciada!", Toast.LENGTH_SHORT).show()
-                carreraEnCurso = true
-            } else {
-                finalizarCarreraYRegistrarEstadisticas()
-            }
-        }
     }
 
     private fun borrarNotificacionesAsociadas() {
@@ -357,33 +364,29 @@ class MapsActivity : AppCompatActivity() {
         val statsRef = FirebaseDatabase.getInstance().getReference("estadisticasUsuarios").child(uid).child("diarias").child(hoy)
 
         statsRef.child("distanciaRecorrida").setValue(distanciaRecorrida)
-        statsRef.child("tiempoActividad").setValue(0) // Reemplaza si tienes tiempo registrado
+        statsRef.child("tiempoActividad").setValue(0)
 
-        // Eliminar carrera
-        FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId).removeValue()
+        FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).removeValue()
 
         Toast.makeText(this, "Carrera finalizada. Distancia: ${distanciaRecorrida}km", Toast.LENGTH_LONG).show()
-        finish() // O regresar a HomeActivity
+        startActivity(Intent(this, HomeActivity::class.java))
+        finish()
     }
 
-    // Función para dibujar ruta después de un pequeño retraso
     private fun drawRouteAfterDelay() {
         CoroutineScope(Dispatchers.Main).launch {
             withContext(Dispatchers.IO) {
-                Thread.sleep(500) // Espera menor, solo para asegurar que se complete la búsqueda
+                Thread.sleep(500)
             }
             if (currentLocation != null && destinationLocation != null) {
-                // Aseguramos que la cámara se mueva al destino
                 map.controller.animateTo(destinationLocation)
                 map.controller.setZoom(16.0)
 
-                // Dibujamos la ruta
                 drawDirectLine(currentLocation!!, destinationLocation!!)
             }
         }
     }
 
-    // Método para ir a mi ubicación actual
     private fun goToMyLocation() {
         currentLocation?.let { current ->
             map.controller.animateTo(current)
@@ -391,7 +394,6 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
-    // Función para buscar ubicación y poner marcador
     private fun searchLocation(): Boolean {
         val text = binding.editUbicacion.text.toString().trim()
 
@@ -408,26 +410,21 @@ class MapsActivity : AppCompatActivity() {
 
             Log.i("SEARCH", "ADDRESS: $address")
 
-            // Eliminar ruta anterior si existe
             routeOverlay?.let {
                 map.overlays.remove(it)
                 routeOverlay = null
             }
 
-            // Guardar la ubicación del destino
             destinationLocation = loc
 
-            // Remover el marcador anterior si existe
             destinationMarker?.let {
                 map.overlays.remove(it)
             }
 
             if (!address.isNullOrEmpty()) {
-                // Nos aseguramos de mover la cámara al destino
                 map.controller.animateTo(loc)
                 map.controller.setZoom(17.0)
 
-                // Agregar nuevo marcador
                 destinationMarker = createMarker(
                     loc,
                     "Destino",
@@ -438,10 +435,8 @@ class MapsActivity : AppCompatActivity() {
                     map.overlays.add(it)
                 }
 
-                // Mostrar distancia si tenemos ubicación actual
                 showDistanceBetweenPoints(currentLocation, loc)
 
-                // Refrescar mapa
                 map.invalidate()
                 true
             } else {
@@ -462,7 +457,6 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
-    // Nueva función para calcular y mostrar distancia entre dos puntos
     private fun showDistanceBetweenPoints(startPoint: GeoPoint?, endPoint: GeoPoint?) {
         if (startPoint != null && endPoint != null) {
             val distancia = distance(
@@ -479,7 +473,6 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
-    // Función para ocultar el teclado
     private fun hideKeyboard() {
         val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
         imm.hideSoftInputFromWindow(binding.editUbicacion.windowToken, 0)
@@ -504,13 +497,11 @@ class MapsActivity : AppCompatActivity() {
             locationPermission.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
-        // Modo nocturno basado en configuración del sistema
         val uims = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         if (uims.nightMode == UiModeManager.MODE_NIGHT_YES) {
             map.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
         }
 
-        // Centrar mapa en ubicación actual o en Bogotá
         currentLocation?.let {
             map.controller.animateTo(it)
         } ?: run {
@@ -535,12 +526,9 @@ class MapsActivity : AppCompatActivity() {
             override fun onSensorChanged(event: SensorEvent?) {
                 if (this@MapsActivity::map.isInitialized) {
                     if (event != null) {
-                        // El valor de 5000 es mejor calibrarlo con un dispositivo real
                         if (event.values[0] > 5000) {
-                            // Modo claro - quitar filtro de color
                             map.overlayManager.tilesOverlay.setColorFilter(null)
                         } else {
-                            // Modo oscuro - aplicar filtro de inversión de colores
                             map.overlayManager.tilesOverlay.setColorFilter(TilesOverlay.INVERT_COLORS)
                         }
                     }
@@ -548,7 +536,6 @@ class MapsActivity : AppCompatActivity() {
             }
 
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // No se requiere implementación
             }
         }
         return sel
@@ -580,57 +567,44 @@ class MapsActivity : AppCompatActivity() {
         return marker
     }
 
-    // Función optimizada para dibujar la línea directa
     private fun drawDirectLine(start: GeoPoint, end: GeoPoint) {
-        // Eliminar ruta anterior si existe
         routeOverlay?.let {
             map.overlays.remove(it)
         }
 
-        // Crear nueva polyline
         val polyline = Polyline().apply {
             outlinePaint.color = Color.BLUE
             outlinePaint.strokeWidth = 10F
             setPoints(arrayListOf(start, end))
         }
 
-        // Agregar polyline al mapa
         map.overlays.add(polyline)
         routeOverlay = polyline
 
-        // Ajustar zoom para mostrar toda la ruta
         adjustZoomToShowRoute(start, end)
 
-        // Refrescar el mapa
         map.invalidate()
 
-        // Mostrar distancia
         showDistanceBetweenPoints(start, end)
     }
 
-    // Nueva función para ajustar el zoom y mostrar la ruta completa
     private fun adjustZoomToShowRoute(start: GeoPoint, end: GeoPoint) {
-        // Calculamos los límites máximos y mínimos
         val north = Math.max(start.latitude, end.latitude)
         val south = Math.min(start.latitude, end.latitude)
         val east = Math.max(start.longitude, end.longitude)
         val west = Math.min(start.longitude, end.longitude)
 
-        // Añadimos un margen
         val latSpan = (north - south) * 1.5
         val lonSpan = (east - west) * 1.5
 
-        // Recalculamos con el margen
         val newNorth = Math.min(north + latSpan * 0.25, 90.0)
         val newSouth = Math.max(south - latSpan * 0.25, -90.0)
         val newEast = Math.min(east + lonSpan * 0.25, 180.0)
         val newWest = Math.max(west - lonSpan * 0.25, -180.0)
 
-        // Calculamos el centro
         val centerLat = (newNorth + newSouth) / 2
         val centerLon = (newEast + newWest) / 2
 
-        // Aplicamos al mapa
         map.zoomToBoundingBox(org.osmdroid.util.BoundingBox(
             newNorth, newEast, newSouth, newWest
         ), true, 100)
@@ -699,7 +673,6 @@ class MapsActivity : AppCompatActivity() {
         val newLocation = GeoPoint(location.latitude, location.longitude)
         val address = findAddress(LatLng(location.latitude, location.longitude))
 
-        // Acumular distancia
         ultimaUbicacion?.let {
             val d = distance(it.latitude, it.longitude, newLocation.latitude, newLocation.longitude)
             distanciaRecorrida += d
@@ -710,21 +683,17 @@ class MapsActivity : AppCompatActivity() {
         updateCurrentLocationMarker(newLocation, address)
         map.controller.animateTo(newLocation)
 
-        // Trazar ruta si hay destino de carrera
         carreraDestino?.let {
             drawDirectLine(newLocation, it)
         }
         map.invalidate()
     }
 
-    // Nueva función para actualizar el marcador de ubicación actual
     private fun updateCurrentLocationMarker(location: GeoPoint, address: String?) {
-        // Eliminar marcador anterior
         currentLocationMarker?.let {
             map.overlays.remove(it)
         }
 
-        // Crear y añadir nuevo marcador
         val newMarker = createMarker(
             location,
             "Tu ubicación",
@@ -773,7 +742,7 @@ class MapsActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid ?: return
         val ref = FirebaseDatabase.getInstance().getReference("usuarios")
 
-        FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId).child("participantes")
+        FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("jugadores")
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val participantes = snapshot.children.mapNotNull {
@@ -806,9 +775,8 @@ class MapsActivity : AppCompatActivity() {
             })
     }
 
-
     private fun observarEstadoCarrera() {
-        val ref = FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId).child("estado")
+        val ref = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 carreraEnCurso = snapshot.getValue(String::class.java) == "en_curso"

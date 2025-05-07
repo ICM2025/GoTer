@@ -418,7 +418,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 "longitud" to ubicacionActual?.longitude,
                 "altitud" to ubicacionActual?.altitude
             ),
-            "destinoCarrera" to mapOf(
+            "location" to mapOf(
                 "latitud" to ubicacionDestino.latitude,
                 "longitud" to ubicacionDestino.longitude,
                 "altitud" to ubicacionDestino.altitude
@@ -451,7 +451,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
             distancia(it.latitude, it.longitude, ubicacionDestino.latitude, ubicacionDestino.longitude)
         } ?: 0.0
 
-        val carreraId = database.reference.child("modosCarrera").push().key ?: return
+        val carreraId = database.reference.child("carreras").push().key ?: return
 
         val participantesMap = comunidad.participantes.associateWith { true }
 
@@ -465,7 +465,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 "longitud" to ubicacionActual?.longitude,
                 "altitud" to ubicacionActual?.altitude
             ),
-            "destinoCarrera" to mapOf(
+            "location" to mapOf(
                 "latitud" to ubicacionDestino.latitude,
                 "longitud" to ubicacionDestino.longitude,
                 "altitud" to ubicacionDestino.altitude
@@ -475,7 +475,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
             "comunidadId" to comunidad.nombre
         )
 
-        database.reference.child("modosCarrera").child(carreraId).setValue(carrera)
+        database.reference.child("carreras").child(carreraId).setValue(carrera)
             .addOnSuccessListener {
                 Toast.makeText(this, "Carrera creada para ${comunidad.nombre}", Toast.LENGTH_SHORT).show()
                 enviarNotificacionesCarrera(comunidad, carreraId, distancia)

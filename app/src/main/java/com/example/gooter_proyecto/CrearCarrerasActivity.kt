@@ -86,6 +86,8 @@ class CrearCarrerasActivity : AppCompatActivity() {
         autenticacion = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
+        val databases = FirebaseDatabase.getInstance().reference
+
         configurarVistaSegunModo()
 
         Configuration.getInstance().load(this, androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
@@ -137,12 +139,20 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
             if (modoDirecto) {
                 if (carreraIdExistente != null) {
-                    actualizarUbicacionParticipante(carreraIdExistente!!)
-                    val intent = Intent(this, MapsActivity::class.java).apply {
-                        putExtra("carrera_id", carreraIdExistente)
+                    val locationData = hashMapOf(
+                        "latitud" to ubicacionDestino!!.latitude,
+                        "longitud" to ubicacionDestino!!.longitude,
+                        "altitud" to 0.0
+                    )
+                    databases.child("carreras").child(carreraIdExistente!!).setValue(locationData).addOnSuccessListener {
+                        val intent = Intent(this, MapsActivity::class.java).apply {
+                            putExtra("carrera_id", carreraIdExistente)
+                        }
+                        Toast.makeText(this, "Iniciando seguimiento de carrera existente", Toast.LENGTH_SHORT).show()
+                        startActivity(intent)
+                    }.addOnFailureListener{ exception ->
+                        Toast.makeText(this, "Error al guardar ubicación: ${exception.message}", Toast.LENGTH_SHORT).show()
                     }
-                    Toast.makeText(this, "Iniciando seguimiento de carrera existente", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
                 } else {
                     Toast.makeText(this, "Error: ID de carrera no disponible para iniciar.", Toast.LENGTH_SHORT).show()
                 }

@@ -33,7 +33,7 @@ class ComunidadesActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance().reference
         loadComunidades()
         loadCanales()
-        binding.btnBack.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { startActivity(Intent(this, HomeActivity::class.java)) }
         binding.ButtonCrearComunidad.setOnClickListener {
             startActivity(Intent(baseContext, CrearComunidadActivity::class.java))
         }

@@ -1,5 +1,6 @@
 package com.example.gooter_proyecto
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -30,7 +31,7 @@ class CrearComunidadActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         binding.btnBack.setOnClickListener {
-            finish()
+            startActivity(Intent(this, ComunidadesActivity::class.java))
         }
 
         binding.ButtonCrear.setOnClickListener {

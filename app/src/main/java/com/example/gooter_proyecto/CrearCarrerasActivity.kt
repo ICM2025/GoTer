@@ -113,6 +113,9 @@ class CrearCarrerasActivity : AppCompatActivity() {
             }
             manejado
         }
+        binding.buttonBack.setOnClickListener{
+            startActivity(Intent(this, CarreraActivity::class.java))
+    }
 
         detectorGestos = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onLongPress(e: MotionEvent) { }

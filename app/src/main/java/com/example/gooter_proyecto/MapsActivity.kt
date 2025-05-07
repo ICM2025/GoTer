@@ -188,10 +188,10 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun cargarDestinoCarrera() {
-        val carreraRef = FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId)
+        val carreraRef = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId)
         carreraRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val destino = snapshot.child("destinoCarrera")
+                val destino = snapshot.child("location")
                 val lat = destino.child("latitud").getValue(Double::class.java) ?: return
                 val lon = destino.child("longitud").getValue(Double::class.java) ?: return
                 val alt = destino.child("altitud").getValue(Double::class.java) ?: 0.0

@@ -5,11 +5,22 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gooter_proyecto.databinding.ActivityCrearCarreraBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class CrearCarreraActivity : AppCompatActivity() {
 
+    val database = FirebaseDatabase.getInstance().reference
+    private val email = FirebaseAuth.getInstance().currentUser?.email
+    private val uid = FirebaseAuth.getInstance().currentUser?.uid
+    val usuario = hashMapOf(
+        "email" to email,
+        "uid" to uid
+    )
     private lateinit var sensorManager: SensorManager
     private lateinit var accelerometer : Sensor
     private lateinit var accelerometerEventListener: SensorEventListener
@@ -52,6 +63,8 @@ class CrearCarreraActivity : AppCompatActivity() {
                                 mLastShake = now
                                 mShakeCount = 0
                                 binding.busquedaText.text = "Buscando jugadores"
+                                binding.listDisponibles.visibility = View.INVISIBLE
+                                agregarALista()
                             }
                             mLastForce = now
                         }
@@ -68,6 +81,14 @@ class CrearCarreraActivity : AppCompatActivity() {
         return ret
     }
 
+    fun agregarALista() {
+        database.child("usuariosDisponibles").push().setValue(usuario).addOnSuccessListener {
+            Toast.makeText(this, "Usuario agregado", Toast.LENGTH_SHORT).show()
+        }.addOnFailureListener{
+            Toast.makeText(this, "No fue agregado", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         sensorManager.registerListener(
@@ -75,6 +96,11 @@ class CrearCarreraActivity : AppCompatActivity() {
             accelerometer,
             SensorManager.SENSOR_DELAY_NORMAL
         )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //database.child("usuariosDisponibles").removeValue(usuario)
     }
 
     override fun onPause() {

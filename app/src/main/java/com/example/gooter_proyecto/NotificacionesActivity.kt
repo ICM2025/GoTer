@@ -40,9 +40,7 @@ class NotificacionesActivity : AppCompatActivity() {
 
     private fun setupUI() {
         binding.ButtonBack.setOnClickListener { finish() }
-        binding.ButtonRedactar.setOnClickListener {
-            Toast.makeText(this, "Función de redacción en desarrollo", Toast.LENGTH_SHORT).show()
-        }
+        // Removed duplicate ButtonRedactar listener
     }
 
     private fun setupRecyclerView() {
@@ -66,6 +64,7 @@ class NotificacionesActivity : AppCompatActivity() {
                     if (!snapshot.exists()) {
                         binding.rvNotificaciones.visibility = View.GONE
                         binding.emptyState.visibility = View.VISIBLE
+                        notificacionAdapter.updateList(emptyList())
                         return
                     }
 
@@ -78,12 +77,10 @@ class NotificacionesActivity : AppCompatActivity() {
                         val fecha = notifSnapshot.child("fechaHora").getValue(String::class.java) ?: "Sin fecha"
                         val leida = notifSnapshot.child("leida").getValue(Boolean::class.java) ?: false
                         val accion = notifSnapshot.child("accion").getValue(String::class.java) ?: ""
-                        val tipo = notifSnapshot.child("tipo").getValue(String::class.java) ?: "General"
 
-                        val metadatos = notifSnapshot.child("metadatos").getValue(String::class.java)
-                            ?: notifSnapshot.child("metadatos").children.associate {
-                                it.key to it.value.toString()
-                            }.toString()
+                        // Assume metadatos is stored as a String containing JSON
+                        val metadatos = notifSnapshot.child("metadatos").getValue(String::class.java) ?: ""
+
 
                         notificaciones.add(Notificacion(
                             idNotificacion = idNotificacion,
@@ -94,7 +91,7 @@ class NotificacionesActivity : AppCompatActivity() {
                             fecha = fecha,
                             leida = leida,
                             accion = accion,
-                            tipo = tipo,
+                            tipo = titulo, // Using 'tipo' from DB for 'tipo' field in Notificacion
                             metadatos = metadatos
                         ))
                     }
@@ -111,6 +108,9 @@ class NotificacionesActivity : AppCompatActivity() {
                         "Error al cargar notificaciones: ${error.message}",
                         Toast.LENGTH_SHORT
                     ).show()
+                    binding.rvNotificaciones.visibility = View.GONE
+                    binding.emptyState.visibility = View.VISIBLE
+                    notificacionAdapter.updateList(emptyList())
                 }
             })
     }

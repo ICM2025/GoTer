@@ -61,6 +61,66 @@ class CrearCarrerasActivity : AppCompatActivity() {
     private var modoDirecto: Boolean = false
     private var carreraIdExistente: String? = null
 
+    // Add this at the top of your class for detailed Firebase debugging
+    private fun debugFirebaseData() {
+        val usuarioId = autenticacion.currentUser?.uid ?: return
+        Log.d(ETIQUETA, "Debug Firebase - UID: $usuarioId")
+
+        // Check database connection
+        database.reference.child(".info/connected").addValueEventListener(object : com.google.firebase.database.ValueEventListener {
+            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                val connected = snapshot.getValue(Boolean::class.java) ?: false
+                Log.d(ETIQUETA, "Firebase conexión: ${if (connected) "ACTIVA" else "INACTIVA"}")
+            }
+
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                Log.e(ETIQUETA, "Error verificando conexión: ${error.message}")
+            }
+        })
+
+        // Verifica estructura de datos de comunidades
+        database.reference.child("comunidad").get()
+            .addOnSuccessListener { snapshot ->
+                Log.d(ETIQUETA, "Estructura de datos - Comunidades: ${snapshot.childrenCount}")
+                if (snapshot.childrenCount > 0) {
+                    // Imprime los detalles de cada comunidad
+                    for (comSnap in snapshot.children) {
+                        val comId = comSnap.key
+                        val comNombre = comSnap.child("nombreGrupo").getValue(String::class.java)
+                        val adminId = comSnap.child("administrador").getValue(String::class.java)
+                        val isAdmin = adminId == usuarioId
+
+                        // Estructurar participantes
+                        val participantesSnap = comSnap.child("participantes")
+                        val isParticipante = if (participantesSnap.exists()) {
+                            var encontrado = false
+                            for (partSnap in participantesSnap.children) {
+                                if (partSnap.key == usuarioId) {
+                                    encontrado = true
+                                    break
+                                }
+                            }
+                            encontrado
+                        } else false
+
+                        Log.d(ETIQUETA, "Comunidad: $comId ($comNombre)")
+                        Log.d(ETIQUETA, "  - ¿Es admin? $isAdmin, ¿Es participante? $isParticipante")
+
+                        // Si debería ver esta comunidad pero no aparece en la UI, hay un problema
+                        if (isAdmin || isParticipante) {
+                            Log.d(ETIQUETA, "  ¡USUARIO DEBERÍA VER ESTA COMUNIDAD!")
+                        }
+                    }
+                } else {
+                    Log.d(ETIQUETA, "No hay comunidades en la base de datos")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e(ETIQUETA, "Error al obtener comunidades: ${e.message}")
+            }
+    }
+
+
     private val lanzadorPermisoUbicacion =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { concedido ->
             if (concedido) {
@@ -74,6 +134,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCrearCarrerasBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        autenticacion = FirebaseAuth.getInstance()
 
         modoDirecto = intent.getBooleanExtra("modo_directo", false)
         if (modoDirecto) {
@@ -82,13 +143,26 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 Toast.makeText(this, "Error: No se proporcionó ID de carrera en modo directo.", Toast.LENGTH_LONG).show()
             }
         }
-
-        autenticacion = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
         val databases = FirebaseDatabase.getInstance().reference
 
         configurarVistaSegunModo()
+        if (!modoDirecto) {
+            // Asegurar que estas vistas están visibles antes de cargar datos
+            binding.rvListaComunidades.visibility = View.VISIBLE
+            binding.textViewSelectComunity.visibility = View.VISIBLE
+
+            // Verificar estructura layout
+            Log.d(ETIQUETA, "Verificando estructura de layout:")
+            Log.d(ETIQUETA, "- RecyclerView null: ${binding.rvListaComunidades == null}")
+            Log.d(ETIQUETA, "- TextView null: ${binding.textViewSelectComunity == null}")
+
+            // Delay pequeño para asegurar que la UI esté inicializada
+            binding.rvListaComunidades.post {
+                cargarComunidades()
+            }
+        }
 
         Configuration.getInstance().load(this, androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
         mapa = binding.osmMap
@@ -173,15 +247,20 @@ class CrearCarrerasActivity : AppCompatActivity() {
     }
 
     private fun configurarVistaSegunModo() {
+        Log.d(ETIQUETA, "Configurando vista según modo: $modoDirecto")
+
         if (modoDirecto) {
             binding.rvListaComunidades.visibility = View.GONE
             binding.textViewSelectComunity.visibility = View.GONE
             binding.buttonIniciar.visibility = View.VISIBLE
+            Log.d(ETIQUETA, "Modo directo activado: ocultando lista de comunidades")
         } else {
             binding.rvListaComunidades.visibility = View.VISIBLE
             binding.textViewSelectComunity.visibility = View.VISIBLE
             binding.buttonIniciar.visibility = View.GONE
-            cargarComunidades()
+            Log.d(ETIQUETA, "Modo normal: mostrando lista de comunidades")
+
+            // No llamamos a cargarComunidades aquí, lo haremos desde onCreate con un post()
         }
     }
 
@@ -211,42 +290,110 @@ class CrearCarrerasActivity : AppCompatActivity() {
     }
 
     private fun cargarComunidades() {
-        val usuarioId = autenticacion.currentUser?.uid ?: return
+        val usuarioId = autenticacion.currentUser?.uid ?: run {
+            Log.e(ETIQUETA, "No hay usuario autenticado")
+            Toast.makeText(this, "No hay usuario autenticado", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        Log.d(ETIQUETA, "Cargando comunidades para usuario: $usuarioId")
+
+        binding.rvListaComunidades.layoutManager = LinearLayoutManager(
+            this,
+            LinearLayoutManager.HORIZONTAL,
+            false
+        )
+
+        adaptadorComunidades = ComunidadHomeAdapter(mutableListOf()) { comunidad ->
+            if (ubicacionDestino == null) {
+                Toast.makeText(this@CrearCarrerasActivity,
+                    "Primero selecciona un destino para la carrera", Toast.LENGTH_SHORT).show()
+                return@ComunidadHomeAdapter
+            }
+            crearCarreraParaComunidad(comunidad)
+        }
+        binding.rvListaComunidades.adapter = adaptadorComunidades
+
         val ref = database.reference.child("comunidad")
         ref.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
             override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
-                val lista = mutableListOf<Comunidad>()
-                for (snap in snapshot.children) {
-                    val admin = snap.child("administrador").getValue(String::class.java)
-                    val participantesSnap = snap.child("participantes")
-                    val participantes = if (participantesSnap.exists() && participantesSnap.value != null) {
-                        (participantesSnap.value as? Map<String, Any>)?.keys?.toList() ?: emptyList()
-                    } else emptyList()
+                Log.d(ETIQUETA, "Datos recibidos de Firebase: ${snapshot.childrenCount} comunidades en total")
 
-                    if (admin == usuarioId || participantes.contains(usuarioId)) {
-                        val nombre = snap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
-                        val miembros = snap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        lista.add(Comunidad(nombre, R.drawable.ic_user, miembros, participantes))
+                if (!snapshot.exists() || snapshot.childrenCount.toInt() == 0) {
+                    binding.textViewSelectComunity.text = "No hay comunidades disponibles"
+                    return
+                }
+
+                val listaComunidades = mutableListOf<Comunidad>()
+
+                for (comunidadSnap in snapshot.children) {
+                    try {
+                        val comId = comunidadSnap.key ?: continue
+                        val nombreGrupo = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
+                        val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
+
+                        // Extraer participantes correctamente
+                        val participantes = mutableListOf<String>()
+                        val participantesNode = comunidadSnap.child("participantes")
+
+                        if (participantesNode.exists()) {
+                            // Los participantes están almacenados como un array de strings
+                            for (participante in participantesNode.children) {
+                                participante.getValue(String::class.java)?.let {
+                                    participantes.add(it)
+                                }
+                            }
+                        }
+
+                        // Verificar si el usuario es admin o participante
+                        if (adminId == usuarioId || participantes.contains(usuarioId)) {
+                            val miembros = comunidadSnap.child("miembros").getValue(Int::class.java)
+                                ?: participantes.size
+
+                            Log.d(ETIQUETA, "Añadiendo comunidad '$nombreGrupo' (ID: $comId) con ${participantes.size} participantes")
+
+                            listaComunidades.add(Comunidad(
+                                id = comId,
+                                nombre = nombreGrupo,
+                                imagen = R.drawable.ic_user,
+                                miembros = miembros,
+                                participantes = participantes
+                            ))
+                        }
+                    } catch (e: Exception) {
+                        Log.e(ETIQUETA, "Error procesando comunidad: ${e.message}", e)
                     }
                 }
 
-                adaptadorComunidades = ComunidadHomeAdapter(lista) { comunidad ->
-                    if (ubicacionDestino == null) {
-                        Toast.makeText(this@CrearCarrerasActivity, "Primero selecciona un destino para la carrera", Toast.LENGTH_SHORT).show()
-                        return@ComunidadHomeAdapter
+                runOnUiThread {
+                    if (listaComunidades.isEmpty()) {
+                        binding.textViewSelectComunity.text = "No perteneces a ninguna comunidad"
+                        return@runOnUiThread
                     }
 
-                    crearCarreraParaComunidad(comunidad)
-                }
-
-                binding.rvListaComunidades.apply {
-                    layoutManager = LinearLayoutManager(this@CrearCarrerasActivity, LinearLayoutManager.HORIZONTAL, false)
-                    adapter = adaptadorComunidades
+                    (binding.rvListaComunidades.adapter as? ComunidadHomeAdapter)?.let { adapter ->
+                        // Actualizar la lista del adaptador existente
+                        adapter.lista = listaComunidades
+                        adapter.notifyDataSetChanged()
+                    } ?: run {
+                        // Crear nuevo adaptador si no existe
+                        adaptadorComunidades = ComunidadHomeAdapter(listaComunidades) { comunidad ->
+                            if (ubicacionDestino == null) {
+                                Toast.makeText(this@CrearCarrerasActivity,
+                                    "Primero selecciona un destino para la carrera", Toast.LENGTH_SHORT).show()
+                                return@ComunidadHomeAdapter
+                            }
+                            crearCarreraParaComunidad(comunidad)
+                        }
+                        binding.rvListaComunidades.adapter = adaptadorComunidades
+                    }
                 }
             }
 
             override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
-                Toast.makeText(this@CrearCarrerasActivity, "Error al cargar comunidades: ${error.message}", Toast.LENGTH_SHORT).show()
+                Log.e(ETIQUETA, "Error cargando comunidades: ${error.message}")
+                Toast.makeText(this@CrearCarrerasActivity,
+                    "Error al cargar comunidades: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }

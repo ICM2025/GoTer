@@ -1,8 +1,13 @@
 package models
 
-class Comunidad (val nom: String, val icono: Int, val numMiembros: Int, val listaIdParticipantes: List<String>) {
-    val nombre: String = nom
-    val imagen: Int = icono
-    val miembros: Int = numMiembros
-    val participantes: List<String> = listaIdParticipantes
+data class Comunidad(
+    val id: String,                   // ID de la comunidad en Firebase
+    val nombre: String,               // Nombre del grupo
+    val imagen: Int,                  // Recurso de imagen
+    val miembros: Int,                // Número de miembros
+    val participantes: List<String>   // Lista de IDs de participantes
+) {
+    // Constructor secundario simplificado para compatibilidad
+    constructor(nombre: String, imagen: Int, miembros: Int, participantes: List<String>) :
+            this("", nombre, imagen, miembros, participantes)
 }

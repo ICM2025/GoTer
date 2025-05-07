@@ -7,7 +7,7 @@ import com.example.gooter_proyecto.databinding.ItemComunidadHomeBinding
 import models.Comunidad
 
 class ComunidadHomeAdapter(
-    private val lista: List<Comunidad>,
+    var lista: List<Comunidad>,
     private val onItemClick: (Comunidad) -> Unit
 ) : RecyclerView.Adapter<ComunidadHomeAdapter.ComunidadHomeViewHolder>() {
 

@@ -55,7 +55,10 @@ class CarreraActivity : AppCompatActivity() {
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!!
         accelerometerEventListener = createAccelerometerListener()
         binding.button2.setOnClickListener{
-            startActivity(Intent(this, CrearCarrerasActivity::class.java))
+            val intent = Intent(this, CrearCarrerasActivity::class.java).apply {
+                putExtra("modo_directo", false)
+            }
+            startActivity(intent)
         }
         binding.imageButton.setOnClickListener {
             startActivity(Intent(this,HomeActivity::class.java))

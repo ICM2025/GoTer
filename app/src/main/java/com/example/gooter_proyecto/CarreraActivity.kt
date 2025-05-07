@@ -90,7 +90,7 @@ class CarreraActivity : AppCompatActivity() {
             database.child("carreras").child(carreraKey!!).setValue(carrera).
             addOnSuccessListener {
                 val intent = Intent(baseContext, CrearCarrerasActivity::class.java).apply {
-                    putExtra("modo_directo", false)
+                    putExtra("modo_directo", true)
                     putExtra("carrera_id", carreraKey)
                 }
                 startActivity(intent)

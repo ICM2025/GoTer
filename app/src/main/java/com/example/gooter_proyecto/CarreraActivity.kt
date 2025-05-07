@@ -82,18 +82,18 @@ class CarreraActivity : AppCompatActivity() {
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
             val email = parent.getItemAtPosition(position).toString()
             var contrarioUid = mapCompetidores[email]
-            val carreraKey = database.child("carreras").push().key
+            val customKey = "Carrera_$contrarioUid"
             val jugadores = ArrayList<String>()
             jugadores.add(uid!!)
             jugadores.add(contrarioUid!!)
             val carrera = mapOf(
                 "jugadores" to jugadores,
             )
-            database.child("carreras").child(carreraKey!!).setValue(carrera).
+            database.child("carreras").child(customKey).setValue(carrera).
             addOnSuccessListener {
                 val intent = Intent(baseContext, CrearCarrerasActivity::class.java).apply {
                     putExtra("modo_directo", true)
-                    putExtra("carrera_id", carreraKey)
+                    putExtra("carrera_id", customKey)
                 }
                 startActivity(intent)
             }.addOnFailureListener{

@@ -12,7 +12,7 @@ import com.example.gooter_proyecto.databinding.ActivityCrearCarreraBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
-class CrearCarreraActivity : AppCompatActivity() {
+class CarreraActivity : AppCompatActivity() {
 
     val database = FirebaseDatabase.getInstance().reference
     private val email = FirebaseAuth.getInstance().currentUser?.email

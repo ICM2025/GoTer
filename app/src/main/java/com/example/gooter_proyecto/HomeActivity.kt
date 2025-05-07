@@ -1,7 +1,5 @@
 package com.example.gooter_proyecto
 
-import adapters.CanalAdapter
-import adapters.ComunidadAdapter
 import adapters.ComunidadHomeAdapter
 import adapters.NotificacionAdapter
 import android.content.Intent
@@ -13,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityHomeBinding
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
-import models.Canal
 import models.Comunidad
 import models.Notificacion
 
@@ -72,7 +69,7 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, MapsActivity::class.java))
         }
         binding.btnCorrer.setOnClickListener{
-            startActivity(Intent(this, CrearCarreraActivity::class.java))
+            startActivity(Intent(this, CarreraActivity::class.java))
         }
         binding.btnGrupos.setOnClickListener{
             startActivity(Intent(this, ComunidadesActivity::class.java))

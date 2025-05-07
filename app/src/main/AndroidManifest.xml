@@ -32,7 +32,7 @@
             android:exported="false"
             android:label="@string/title_activity_maps" />
         <activity
-            android:name=".CrearCarreraActivity"
+            android:name=".CarreraActivity"
             android:exported="false" />
         <activity
             android:name=".NotificacionesActivity"

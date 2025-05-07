@@ -1,5 +1,6 @@
 package com.example.gooter_proyecto
 
+import android.annotation.SuppressLint
 import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
@@ -12,6 +13,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Geocoder
 import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.os.Looper
 import android.os.StrictMode
@@ -54,6 +56,9 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import android.os.Handler
+import androidx.annotation.RequiresApi
+import com.google.firebase.database.GenericTypeIndicator
+import java.time.LocalDate
 
 class MapsActivity : AppCompatActivity() {
 
@@ -76,6 +81,11 @@ class MapsActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var locationUpdateHandler: Handler
     private lateinit var locationUpdateRunnable: Runnable
+    private lateinit var carreraId: String
+    private var carreraEnCurso = false
+    private var distanciaRecorrida = 0.0
+    private var ultimaUbicacion: GeoPoint? = null
+    private var carreraDestino: GeoPoint? = null
 
     // Lista para almacenar los marcadores de estacionamiento
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
@@ -107,6 +117,17 @@ class MapsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        auth = FirebaseAuth.getInstance()
+
+        carreraId = intent.getStringExtra("carrera_id") ?: ""
+
+        if (carreraId.isNotEmpty())
+        {
+            cargarDestinoCarrera()
+            observarParticipantes()
+            observarEstadoCarrera()
+        }
 
         // Configurar sensor de luz
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
@@ -164,6 +185,41 @@ class MapsActivity : AppCompatActivity() {
                 locationUpdateHandler.postDelayed(this, 7000)
             }
         }
+    }
+
+    private fun cargarDestinoCarrera() {
+        val carreraRef = FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId)
+        carreraRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val destino = snapshot.child("destinoCarrera")
+                val lat = destino.child("latitud").getValue(Double::class.java) ?: return
+                val lon = destino.child("longitud").getValue(Double::class.java) ?: return
+                val alt = destino.child("altitud").getValue(Double::class.java) ?: 0.0
+
+                carreraDestino = GeoPoint(lat, lon, alt)
+
+                // Crear marcador de destino
+                destinationMarker = createMarker(
+                    carreraDestino!!,
+                    "Destino de la carrera",
+                    "Punto final de la competencia",
+                    R.drawable.baseline_location_alt_24
+                )
+                destinationMarker?.let {
+                    map.overlays.add(it)
+                    map.invalidate()
+                }
+
+                // Si ya tenemos ubicación actual, trazar ruta
+                currentLocation?.let {
+                    drawDirectLine(it, carreraDestino!!)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@MapsActivity, "Error al cargar destino de carrera", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun guardarUsuarioUbicacionFirebase() {
@@ -266,37 +322,48 @@ class MapsActivity : AppCompatActivity() {
         })
     }
 
-    // Configuración del botón de ruta
     private fun setupRouteButton() {
         binding.botonGo.setOnClickListener {
-            val searchText = binding.editUbicacion.text.toString().trim()
+            if (!carreraEnCurso) {
+                // Cambiar estado a "en_curso"
+                FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId).child("estado")
+                    .setValue("en_curso")
 
-            // Siempre intentamos buscar la ubicación cuando hay texto
-            if (searchText.isNotEmpty()) {
-                Toast.makeText(this, "Buscando ubicación...", Toast.LENGTH_SHORT).show()
-
-                // La búsqueda actualizará destinationLocation y moverá la cámara
-                if (searchLocation()) {
-                    // Aseguramos que se trace la ruta después de la búsqueda
-                    drawRouteAfterDelay()
-                }
-            }
-            // Si no hay texto pero sí hay destino, solo trazamos la ruta
-            else if (currentLocation != null && destinationLocation != null) {
-                Toast.makeText(this, "Calculando ruta...", Toast.LENGTH_SHORT).show()
-
-                // Primero movemos la cámara al destino
-                map.controller.animateTo(destinationLocation)
-                map.controller.setZoom(16.0)
-
-                // Luego trazamos la ruta
-                drawDirectLine(currentLocation!!, destinationLocation!!)
-            }
-            // Si no hay destino ni texto, mostramos mensaje
-            else {
-                Toast.makeText(this, "Ingresa una dirección para crear la ruta", Toast.LENGTH_SHORT).show()
+                borrarNotificacionesAsociadas()
+                Toast.makeText(this, "¡Carrera iniciada!", Toast.LENGTH_SHORT).show()
+                carreraEnCurso = true
+            } else {
+                finalizarCarreraYRegistrarEstadisticas()
             }
         }
+    }
+
+    private fun borrarNotificacionesAsociadas() {
+        val db = FirebaseDatabase.getInstance().getReference("notificaciones")
+        db.get().addOnSuccessListener { snapshot ->
+            for (noti in snapshot.children) {
+                val meta = noti.child("metadatos")
+                if (meta.child("idCarrera").getValue(String::class.java) == carreraId) {
+                    noti.ref.removeValue()
+                }
+            }
+        }
+    }
+
+    @SuppressLint("NewApi")
+    private fun finalizarCarreraYRegistrarEstadisticas() {
+        val uid = auth.currentUser?.uid ?: return
+        val hoy = LocalDate.now().toString()
+        val statsRef = FirebaseDatabase.getInstance().getReference("estadisticasUsuarios").child(uid).child("diarias").child(hoy)
+
+        statsRef.child("distanciaRecorrida").setValue(distanciaRecorrida)
+        statsRef.child("tiempoActividad").setValue(0) // Reemplaza si tienes tiempo registrado
+
+        // Eliminar carrera
+        FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId).removeValue()
+
+        Toast.makeText(this, "Carrera finalizada. Distancia: ${distanciaRecorrida}km", Toast.LENGTH_LONG).show()
+        finish() // O regresar a HomeActivity
     }
 
     // Función para dibujar ruta después de un pequeño retraso
@@ -448,6 +515,16 @@ class MapsActivity : AppCompatActivity() {
             map.controller.animateTo(it)
         } ?: run {
             map.controller.animateTo(bogota)
+        }
+
+        if (carreraDestino != null && currentLocation != null) {
+            adjustZoomToShowRoute(currentLocation!!, carreraDestino!!)
+        } else {
+            currentLocation?.let {
+                map.controller.animateTo(it)
+            } ?: run {
+                map.controller.animateTo(bogota)
+            }
         }
 
         startSavingLocationUpdates()
@@ -618,31 +695,25 @@ class MapsActivity : AppCompatActivity() {
         return callback
     }
 
-    // Función updateUI optimizada
     fun updateUI(location: Location) {
         val newLocation = GeoPoint(location.latitude, location.longitude)
         val address = findAddress(LatLng(location.latitude, location.longitude))
 
-        val shouldMoveCamera = currentLocation == null ||
-                currentLocation!!.distanceToAsDouble(newLocation) > 30.0
+        // Acumular distancia
+        ultimaUbicacion?.let {
+            val d = distance(it.latitude, it.longitude, newLocation.latitude, newLocation.longitude)
+            distanciaRecorrida += d
+        }
+        ultimaUbicacion = newLocation
 
         currentLocation = newLocation
-
-        // Actualizar marcador de ubicación actual
         updateCurrentLocationMarker(newLocation, address)
+        map.controller.animateTo(newLocation)
 
-        if (shouldMoveCamera) {
-            map.controller.animateTo(newLocation)
+        // Trazar ruta si hay destino de carrera
+        carreraDestino?.let {
+            drawDirectLine(newLocation, it)
         }
-
-        // Actualizar ruta si existe destino
-        destinationLocation?.let {
-            if (routeOverlay != null) {
-                drawDirectLine(newLocation, it)
-            }
-        }
-
-        // Refrescar mapa
         map.invalidate()
     }
 
@@ -696,5 +767,54 @@ class MapsActivity : AppCompatActivity() {
         val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
         val result = RADIUS_OF_EARTH_KM * c
         return Math.round(result * 100.0) / 100.0
+    }
+
+    private fun observarParticipantes() {
+        val userId = auth.currentUser?.uid ?: return
+        val ref = FirebaseDatabase.getInstance().getReference("usuarios")
+
+        FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId).child("participantes")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val participantes = snapshot.children.mapNotNull {
+                        val value = it.value
+                        if (value is String) value else null
+                    }
+
+                    for (uid in participantes) {
+                        if (uid != userId) {
+                            ref.child(uid).child("ubicacion")
+                                .addValueEventListener(object : ValueEventListener {
+                                    override fun onDataChange(snap: DataSnapshot) {
+                                        val lat = snap.child("latitud").getValue(Double::class.java) ?: return
+                                        val lon = snap.child("longitud").getValue(Double::class.java) ?: return
+                                        val alt = snap.child("altitud").getValue(Double::class.java) ?: 0.0
+
+                                        val punto = GeoPoint(lat, lon, alt)
+                                        val marker = createMarker(punto, "Participante", "", R.drawable.ic_user)
+                                        map.overlays.add(marker)
+                                        map.invalidate()
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {}
+                                })
+                        }
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+    }
+
+
+    private fun observarEstadoCarrera() {
+        val ref = FirebaseDatabase.getInstance().getReference("modosCarrera").child(carreraId).child("estado")
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                carreraEnCurso = snapshot.getValue(String::class.java) == "en_curso"
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 }

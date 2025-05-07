@@ -41,7 +41,7 @@ class NotificacionesActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        notificacionAdapter = NotificacionAdapter(emptyList())
+        notificacionAdapter = NotificacionAdapter(emptyList(), this)
         binding.rvNotificaciones.apply {
             layoutManager = LinearLayoutManager(this@NotificacionesActivity)
             adapter = notificacionAdapter
@@ -51,7 +51,6 @@ class NotificacionesActivity : AppCompatActivity() {
     private fun loadNotificacionesTiempoReal() {
         val userId = auth.currentUser?.uid ?: return
 
-        // Consulta optimizada: solo notificaciones del usuario actual
         database.child("notificaciones")
             .orderByChild("destinatarioId")
             .equalTo(userId)
@@ -60,25 +59,42 @@ class NotificacionesActivity : AppCompatActivity() {
                     val notificaciones = mutableListOf<Notificacion>()
 
                     if (!snapshot.exists()) {
-                        // Mostrar estado vacío si no hay notificaciones
                         binding.rvNotificaciones.visibility = View.GONE
                         binding.emptyState.visibility = View.VISIBLE
                         return
                     }
 
                     for (notifSnapshot in snapshot.children) {
+                        val idNotificacion = notifSnapshot.key ?: ""
                         val titulo = notifSnapshot.child("tipo").getValue(String::class.java) ?: "Notificación"
                         val descripcion = notifSnapshot.child("mensaje").getValue(String::class.java) ?: ""
                         val remitente = notifSnapshot.child("emisorId").getValue(String::class.java) ?: "Sistema"
-                        val destinatario = userId // Ya sabemos que es el usuario actual
+                        val destinatario = userId
                         val fecha = notifSnapshot.child("fechaHora").getValue(String::class.java) ?: "Sin fecha"
+                        val leida = notifSnapshot.child("leida").getValue(Boolean::class.java) ?: false
+                        val accion = notifSnapshot.child("accion").getValue(String::class.java) ?: ""
+                        val tipo = notifSnapshot.child("tipo").getValue(String::class.java) ?: "General"
 
-                        notificaciones.add(Notificacion(titulo, descripcion, remitente, destinatario, fecha))
+                        val metadatos = notifSnapshot.child("metadatos").getValue(String::class.java)
+                            ?: notifSnapshot.child("metadatos").children.associate {
+                                it.key to it.value.toString()
+                            }.toString()
+
+                        notificaciones.add(Notificacion(
+                            idNotificacion = idNotificacion,
+                            titulo = titulo,
+                            descripcion = descripcion,
+                            remitente = remitente,
+                            destinatario = destinatario,
+                            fecha = fecha,
+                            leida = leida,
+                            accion = accion,
+                            tipo = tipo,
+                            metadatos = metadatos
+                        ))
                     }
 
-                    // Ordenar por fecha (más recientes primero)
                     notificaciones.sortByDescending { it.fecha }
-
                     notificacionAdapter.updateList(notificaciones)
                     binding.rvNotificaciones.visibility = View.VISIBLE
                     binding.emptyState.visibility = View.GONE

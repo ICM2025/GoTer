@@ -11,11 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityHomeBinding
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.*
 import models.Canal
 import models.Comunidad
 import models.Notificacion
@@ -24,20 +20,18 @@ import java.util.Calendar
 import java.util.Locale
 
 class HomeActivity : AppCompatActivity() {
-    private lateinit var binding : ActivityHomeBinding
+    private lateinit var binding: ActivityHomeBinding
     private lateinit var comunidadHomeAdapter: ComunidadHomeAdapter
     private lateinit var notificacionHomeAdapter: NotificacionAdapter
     private lateinit var auth: FirebaseAuth
     private lateinit var database: DatabaseReference
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding=ActivityHomeBinding.inflate(layoutInflater)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().reference
-
 
         val uid = auth.currentUser?.uid
 
@@ -73,13 +67,11 @@ class HomeActivity : AppCompatActivity() {
                     R.id.menu_notifications -> {
                         val i = Intent(baseContext, NotificacionesActivity::class.java)
                         startActivity(i)
-                        Toast.makeText(this, "Notificaciones", Toast.LENGTH_SHORT).show()
                         true
                     }
                     R.id.menu_perfil -> {
                         val i = Intent(baseContext, PerfilUsuarioActivity::class.java)
                         startActivity(i)
-                        Toast.makeText(this, "Perfil", Toast.LENGTH_SHORT).show()
                         true
                     }
                     R.id.menu_logout -> {
@@ -87,7 +79,6 @@ class HomeActivity : AppCompatActivity() {
                         val i = Intent(this, MainActivity::class.java)
                         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         startActivity(i)
-                        Toast.makeText(this, "SignOut", Toast.LENGTH_SHORT).show()
                         true
                     }
                     else -> false
@@ -97,19 +88,18 @@ class HomeActivity : AppCompatActivity() {
             popup.show()
         }
 
-        binding.btnMapa.setOnClickListener{
+        binding.btnMapa.setOnClickListener {
             startActivity(Intent(this, MapsActivity::class.java))
         }
-        binding.btnCorrer.setOnClickListener{
+        binding.btnCorrer.setOnClickListener {
             startActivity(Intent(this, CarreraActivity::class.java))
         }
-        binding.btnGrupos.setOnClickListener{
+        binding.btnGrupos.setOnClickListener {
             startActivity(Intent(this, ComunidadesActivity::class.java))
         }
-        binding.btnActividad.setOnClickListener{
+        binding.btnActividad.setOnClickListener {
             startActivity(Intent(this, EstadisticasFechaInicioActivity::class.java))
         }
-
     }
 
     private fun loadActivitySummary(userId: String) {
@@ -117,20 +107,17 @@ class HomeActivity : AppCompatActivity() {
 
         statsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Obtener datos del resumen total
                 val resumenTotal = snapshot.child("resumenTotal")
 
                 val totalDistance = resumenTotal.child("distanciaTotal").getValue(Double::class.java) ?: 0.0
                 val totalCalories = resumenTotal.child("caloriasTotal").getValue(Int::class.java) ?: 0
                 val totalTime = resumenTotal.child("tiempoTotal").getValue(Long::class.java) ?: 0
 
-                // Calcular promedios o valores recientes
                 val diarias = snapshot.child("diarias")
                 var recentDistance = 0.0
                 var recentCalories = 0
                 var recentTime = 0L
 
-                // Obtener datos de los últimos 7 días
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 val calendar = Calendar.getInstance()
 
@@ -145,13 +132,9 @@ class HomeActivity : AppCompatActivity() {
                     calendar.add(Calendar.DAY_OF_YEAR, -1)
                 }
 
-                // Actualizar la UI
                 runOnUiThread {
-                    // Mostrar datos recientes (últimos 7 días)
                     binding.tvNumKilometros.text = String.format("%.1f", recentDistance)
                     binding.tvNumCalorias.text = recentCalories.toString()
-
-                    // Convertir segundos a minutos para mostrar
                     val minutes = (recentTime / 60).toInt()
                     binding.tvNumMinutos.text = minutes.toString()
                 }
@@ -172,18 +155,42 @@ class HomeActivity : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val notificaciones = mutableListOf<Notificacion>()
                     for (notificacionSnap in snapshot.children) {
+                        val idNotificacion = notificacionSnap.key ?: ""
                         val titulo = notificacionSnap.child("tipo").getValue(String::class.java) ?: "Notificación"
                         val descripcion = notificacionSnap.child("mensaje").getValue(String::class.java) ?: ""
-                        val remitente = notificacionSnap.child("emisorId").getValue(String::class.java) ?: "Desconocido"
-                        val destinatario = notificacionSnap.child("destinatarioId").getValue(String::class.java) ?: "Desconocido"
-                        val fecha = notificacionSnap.child("fechaHora").getValue(String::class.java) ?: "Sin fecha"
+                        val remitente = notificacionSnap.child("emisorId").getValue(String::class.java) ?: "Sistema"
+                        val destinatario = userId
+                        val fecha = notificacionSnap.child("fechaHora").getValue(String::class.java) ?: ""
+                        val leida = notificacionSnap.child("leida").getValue(Boolean::class.java) ?: false
+                        val accion = notificacionSnap.child("accion").getValue(String::class.java) ?: ""
+                        val tipo = notificacionSnap.child("tipo").getValue(String::class.java) ?: "General"
 
-                        notificaciones.add(Notificacion(titulo, descripcion, remitente, destinatario, fecha))
+                        val metadatos = notificacionSnap.child("metadatos").getValue(String::class.java)
+                            ?: notificacionSnap.child("metadatos").children.associate {
+                                it.key to it.value.toString()
+                            }.toString()
+
+                        notificaciones.add(Notificacion(
+                            idNotificacion = idNotificacion,
+                            titulo = titulo,
+                            descripcion = descripcion,
+                            remitente = remitente,
+                            destinatario = destinatario,
+                            fecha = fecha,
+                            leida = leida,
+                            accion = accion,
+                            tipo = tipo,
+                            metadatos = metadatos
+                        ))
                     }
 
-                    notificacionHomeAdapter = NotificacionAdapter(notificaciones)
+                    notificacionHomeAdapter = NotificacionAdapter(notificaciones, this@HomeActivity)
                     binding.rvListaNotificaciones.apply {
-                        layoutManager = LinearLayoutManager(this@HomeActivity, LinearLayoutManager.VERTICAL, false)
+                        layoutManager = LinearLayoutManager(
+                            this@HomeActivity,
+                            LinearLayoutManager.VERTICAL,
+                            false
+                        )
                         adapter = notificacionHomeAdapter
                     }
                 }
@@ -193,7 +200,6 @@ class HomeActivity : AppCompatActivity() {
                 }
             })
     }
-
 
     private fun loadComunidades() {
         val userId = auth.currentUser?.uid ?: return
@@ -229,5 +235,4 @@ class HomeActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
-
 }

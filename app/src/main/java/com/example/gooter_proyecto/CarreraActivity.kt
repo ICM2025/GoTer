@@ -49,6 +49,9 @@ class CarreraActivity : AppCompatActivity() {
         binding.button2.setOnClickListener{
             startActivity(Intent(this, CrearCarrerasActivity::class.java))
         }
+        binding.imageButton.setOnClickListener {
+            startActivity(Intent(this,HomeActivity::class.java))
+        }
     }
     private fun createAccelerometerListener(): SensorEventListener {
         val ret : SensorEventListener = object : SensorEventListener {

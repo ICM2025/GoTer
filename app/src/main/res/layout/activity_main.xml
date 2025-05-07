@@ -5,10 +5,10 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/blue_background"
+    android:fitsSystemWindows="true"
+    android:background="@color/white"
     android:orientation="vertical"
     tools:context=".MainActivity">
-
 
     <ImageView
         android:id="@+id/imageView"
@@ -17,51 +17,57 @@
         android:layout_marginBottom="128dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/gorace" />
+        app:layout_constraintVertical_bias="0.544"
+        app:srcCompat="@drawable/logoapp" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="100dp"
         android:text="¿No tienes cuenta aún?"
-        android:textColor="@color/white"
+        android:textColor="@color/grisLetra"
         android:textSize="20sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iniciarSesion"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/iniciarSesion" />
 
     <TextView
         android:id="@+id/registrate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/bahiana"
-        android:text="¡Registrate! :)"
+        android:layout_width="170dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="9dp"
+        android:background="@drawable/rounded_blue"
+        android:gravity="center"
+        android:text="¡Registrate!"
         android:textAllCaps="false"
         android:textColor="@color/white"
-        android:textSize="34sp"
+        android:textSize="18dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/iniciarSesion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/bahiana"
+        android:layout_width="170dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="130dp"
+        android:background="@drawable/rounded_blue"
+        android:gravity="center"
         android:text="Iniciar Sesión"
         android:textColor="@color/white"
-        android:textSize="34sp"
+        android:textSize="21dp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView"
         app:layout_constraintVertical_bias="0.0" />

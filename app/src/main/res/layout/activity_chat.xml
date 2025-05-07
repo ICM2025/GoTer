@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"> <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize" android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_marginBottom="4dp"> <ImageButton
+    android:id="@+id/botonBack"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:scaleType="fitCenter"
+    app:srcCompat="@drawable/back_button"/>
+
+    <TextView
+        android:id="@+id/tvTitulo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="CHAT"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:paddingHorizontal="8dp"/> </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/listaMensajes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" android:background="@android:color/transparent"
+        android:layout_marginBottom="4dp"/> <LinearLayout
+        android:id="@+id/layoutInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="4dp"> <EditText
+        android:id="@+id/editTextMensaje"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Escribe un mensaje"
+        android:padding="12dp"
+        android:background="@android:drawable/edit_text"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="4dp"> <ImageButton
+            android:id="@+id/btnCargarImagen"
+            android:layout_width="40dp" android:layout_height="40dp" android:scaleType="fitCenter"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_image"
+            android:layout_marginEnd="8dp"
+            app:tint="@color/grisLetra"/>
+
+            <ImageButton
+                android:id="@+id/btnTomarFoto"
+                android:layout_width="40dp" android:layout_height="40dp" android:scaleType="fitCenter"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_camera"
+                android:layout_marginEnd="8dp"
+                app:tint="@color/grisLetra"/>
+
+            <ImageButton
+                android:id="@+id/btnGrabarAudio"
+                android:layout_width="40dp" android:layout_height="40dp" android:scaleType="fitCenter"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_microphone"
+                android:layout_marginEnd="8dp"
+                app:tint="@color/grisLetra"/>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" /> <Button
+                android:id="@+id/btnEnviar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="70dp" android:textSize="15sp" android:backgroundTint="@color/blue_buttons"
+                android:text="Enviar"/>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

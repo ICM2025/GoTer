@@ -2,9 +2,16 @@
 <resources>
     <color name="blue_buttons">#3186D6</color>
     <color name="blue_background">#1C225D</color>
-    <color name="textfield_background">#DEE8F1</color>
+    <color name="textfield_background">#EFF3FA</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="gray_hint">#A9A9A9</color>
     <color name="light_purple">#F3E3FF</color>
+    <color name="background_color">#3186D6</color>
+    <color name="grisLetra">#4C4E50</color>
+    <color name="blue_primary">#4285F4</color>
+    <color name="blue_text">#3D71C9</color>
+    <color name="light_blue">#EDF3FF</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="gray_text">#757575</color>
 </resources>

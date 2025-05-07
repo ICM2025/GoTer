@@ -2,8 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
 
     <application
         android:allowBackup="true"
@@ -16,6 +22,27 @@
         android:theme="@style/Theme.Gooter_proyecto"
         tools:targetApi="31">
         <activity
+            android:name=".CrearCarrerasActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HuellaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="YOUR_API_KEY" />
+
+        <activity
+            android:name=".MapsActivity"
+            android:exported="false"
+            android:label="@string/title_activity_maps" />
+        <activity
+            android:name=".CarreraActivity"
+            android:exported="false" />
+        <activity
             android:name=".NotificacionesActivity"
             android:exported="false" />
         <activity
@@ -24,11 +51,6 @@
         <activity
             android:name=".EstadisticasActivity"
             android:exported="false" />
-
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="@string/google_maps_key" />
-
         <activity
             android:name=".CrearComunidadActivity"
             android:exported="false" />
@@ -51,9 +73,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Principal_MapaActivity"
-            android:exported="false" />
-        <activity
             android:name=".EstadisticasFechaInicioActivity"
             android:exported="false" />
         <activity
@@ -62,6 +81,16 @@
         <activity
             android:name=".LoginUsuarioActivity"
             android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_path" />
+        </provider>
     </application>
 
 </manifest>

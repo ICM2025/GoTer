@@ -14,7 +14,7 @@
     <string name="nearest_parking">Parqueadero más cercano a...</string>
     <string name="edit_location_desc">Editar ubicación</string>
     <string name="default_location_hint">Facultad de ciencias básicas</string>
-    <string name="go_button">GO!</string>
+    <string name="go_button">¡GO!</string>
 
     <!-- Pantalla de Login -->
     <string name="login_title">Ingreso de usuario</string>
@@ -48,5 +48,21 @@
     <string name="stats_title">Estadísticas de actividad física</string>
     <string name="stats_distance">234 Km</string>
     <string name="stats_summary">Recorridos en los últimos x días</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="suggestion_text"><b>Sugerencia:</b> Agita tu dispositivo para encontrar corredores cercanos</string>
+
+
+    <!-- Pantalla de Crear Comunidad -->
+    <string name="visibilidad">Visibilidad.\nNadie puede encontrar este grupo. Solo miembros pueden ver quién está en el grupo y lo que se postea en él.</string>
+    <string name="crear_carrera">Crear Carrera</string>
+    <string name="text_invitacion">Configura una nueva carrera e invita a tus amigos a participar</string>
+    <string name="text_create">Crear Una Carrera</string>
+    <string name="text_init_c">Iniciar Carrera</string>
+    <string name="text_desc_init">Crea una nueva carrera o encuentra corredores\ncercanos para competir</string>
+
+    <string name="text_invite_communities">Puedes invitar a estas comunidades a tu carrera:</string>
+    <string name="text_create_race_title">Configurar Carrera</string> <string name="hint_destination">Ingresa ubicación o destino</string>
+    <string name="desc_back_button">Botón de regreso</string>
+    <string name="text_choose_destination_manually">O puedes escoger el destino de la carrera manualmente:</string>
 
 </resources>

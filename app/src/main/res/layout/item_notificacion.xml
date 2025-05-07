@@ -23,12 +23,17 @@
 
     <TextView
         android:id="@+id/descripcionNotificacion"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="12 miembros"
-        app:layout_constraintTop_toBottomOf="@id/tituloNotificacion"
-        app:layout_constraintStart_toStartOf="@id/tituloNotificacion" />
+        android:layout_marginEnd="8dp"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:text="Descripcion de la notificacion!"
+        android:textColor="@color/gray_text"
+        app:layout_constraintEnd_toStartOf="@id/btnGo"
+        app:layout_constraintStart_toStartOf="@id/tituloNotificacion"
+        app:layout_constraintTop_toBottomOf="@id/tituloNotificacion" />
 
     <Button
         android:id="@+id/btnGo"

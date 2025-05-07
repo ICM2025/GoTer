@@ -21,6 +21,9 @@ import com.google.firebase.database.ValueEventListener
 import models.Canal
 import models.Comunidad
 import models.Notificacion
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class HomeActivity : AppCompatActivity() {
     private lateinit var binding : ActivityHomeBinding
@@ -46,6 +49,7 @@ class HomeActivity : AppCompatActivity() {
                     if (snapshot.exists()) {
                         val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
                         binding.tvSaludo.text = "Hola, $nombre!"
+                        loadActivitySummary(uid)
                     } else {
                         Toast.makeText(this, "No se encontró el usuario", Toast.LENGTH_SHORT).show()
                     }
@@ -108,6 +112,57 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, EstadisticasFechaInicioActivity::class.java))
         }
 
+    }
+
+    private fun loadActivitySummary(userId: String) {
+        val statsRef = database.child("estadisticasUsuarios").child(userId)
+
+        statsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // Obtener datos del resumen total
+                val resumenTotal = snapshot.child("resumenTotal")
+
+                val totalDistance = resumenTotal.child("distanciaTotal").getValue(Double::class.java) ?: 0.0
+                val totalCalories = resumenTotal.child("caloriasTotal").getValue(Int::class.java) ?: 0
+                val totalTime = resumenTotal.child("tiempoTotal").getValue(Long::class.java) ?: 0
+
+                // Calcular promedios o valores recientes
+                val diarias = snapshot.child("diarias")
+                var recentDistance = 0.0
+                var recentCalories = 0
+                var recentTime = 0L
+
+                // Obtener datos de los últimos 7 días
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val calendar = Calendar.getInstance()
+
+                for (i in 0..6) {
+                    val dateKey = dateFormat.format(calendar.time)
+                    val dailyData = diarias.child(dateKey)
+
+                    recentDistance += dailyData.child("distanciaRecorrida").getValue(Double::class.java) ?: 0.0
+                    recentCalories += dailyData.child("caloriasGastadas").getValue(Int::class.java) ?: 0
+                    recentTime += dailyData.child("tiempoActividad").getValue(Long::class.java) ?: 0
+
+                    calendar.add(Calendar.DAY_OF_YEAR, -1)
+                }
+
+                // Actualizar la UI
+                runOnUiThread {
+                    // Mostrar datos recientes (últimos 7 días)
+                    binding.tvNumKilometros.text = String.format("%.1f", recentDistance)
+                    binding.tvNumCalorias.text = recentCalories.toString()
+
+                    // Convertir segundos a minutos para mostrar
+                    val minutes = (recentTime / 60).toInt()
+                    binding.tvNumMinutos.text = minutes.toString()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@HomeActivity, "Error al cargar estadísticas", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun loadNotificaciones() {

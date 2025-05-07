@@ -83,10 +83,12 @@ class CarreraActivity : AppCompatActivity() {
             val email = parent.getItemAtPosition(position).toString()
             var contrarioUid = mapCompetidores[email]
             val carreraKey = database.child("carreras").push().key
-            val carrera = hashMapOf(
-                "jugador1" to uid,
-                "jugador2" to contrarioUid,
-                )
+            val jugadores = ArrayList<String>()
+            jugadores.add(uid!!)
+            jugadores.add(contrarioUid!!)
+            val carrera = mapOf(
+                "jugadores" to jugadores,
+            )
             database.child("carreras").child(carreraKey!!).setValue(carrera).
             addOnSuccessListener {
                 val intent = Intent(baseContext, CrearCarrerasActivity::class.java).apply {
@@ -95,7 +97,6 @@ class CarreraActivity : AppCompatActivity() {
                 }
                 startActivity(intent)
             }.addOnFailureListener{
-
             }
         }
     }

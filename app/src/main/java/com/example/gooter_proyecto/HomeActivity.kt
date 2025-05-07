@@ -57,9 +57,8 @@ class HomeActivity : AppCompatActivity() {
             Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_SHORT).show()
         }
 
-
         loadComunidades()
-        configNotificacionesRecyclerView()
+        loadNotificaciones()
 
         val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
 
@@ -111,30 +110,43 @@ class HomeActivity : AppCompatActivity() {
 
     }
 
-    //Se esta usando adaptador de comunidades para la pantalla de notificaciones
-    //Hay que cambiarlo
-    private fun configNotificacionesRecyclerView() {
-        notificacionHomeAdapter = NotificacionAdapter(getNotificaciones())
-        binding.rvListaNotificaciones.apply {
-            layoutManager = LinearLayoutManager(this@HomeActivity,LinearLayoutManager.VERTICAL, false)
-            adapter = notificacionHomeAdapter
-        }
+    private fun loadNotificaciones() {
+        val userId = auth.currentUser?.uid ?: return
+        val notificacionesRef = database.child("notificaciones")
+
+        notificacionesRef.orderByChild("destinatarioId").equalTo(userId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val notificaciones = mutableListOf<Notificacion>()
+                    for (notificacionSnap in snapshot.children) {
+                        val titulo = notificacionSnap.child("tipo").getValue(String::class.java) ?: "Notificación"
+                        val descripcion = notificacionSnap.child("mensaje").getValue(String::class.java) ?: ""
+                        val remitente = notificacionSnap.child("emisorId").getValue(String::class.java) ?: "Desconocido"
+                        val destinatario = notificacionSnap.child("destinatarioId").getValue(String::class.java) ?: "Desconocido"
+                        val fecha = notificacionSnap.child("fechaHora").getValue(String::class.java) ?: "Sin fecha"
+
+                        notificaciones.add(Notificacion(titulo, descripcion, remitente, destinatario, fecha))
+                    }
+
+                    notificacionHomeAdapter = NotificacionAdapter(notificaciones)
+                    binding.rvListaNotificaciones.apply {
+                        layoutManager = LinearLayoutManager(this@HomeActivity, LinearLayoutManager.VERTICAL, false)
+                        adapter = notificacionHomeAdapter
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@HomeActivity, "Error al cargar notificaciones", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
-    private fun getNotificaciones(): List<Notificacion> {
-        return listOf(
-            Notificacion("Carrera con Diego", "En 15 minutos • 3km"),
-            Notificacion("Invitación a Grupo", "Corredores Matutinos • 8 miembros"),
-            Notificacion("Puntos Obtenidos", "+150 puntos esta semana"),
-            Notificacion("Tus estadisticas de la semana", "Haz mejorado 15% tu rendimiento"),
-        )
-    }
 
     private fun loadComunidades() {
         val userId = auth.currentUser?.uid ?: return
 
         val comunidadesRef = database.child("comunidad")
-        comunidadesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        comunidadesRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val comunidades = mutableListOf<Comunidad>()
                 for (comunidadSnap in snapshot.children) {

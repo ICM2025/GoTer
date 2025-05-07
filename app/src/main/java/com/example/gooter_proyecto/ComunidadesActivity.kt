@@ -43,7 +43,7 @@ class ComunidadesActivity : AppCompatActivity() {
         if (userId == null) return
 
         val comunidadesRef = database.child("comunidad")
-        comunidadesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        comunidadesRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val comunidades = mutableListOf<Comunidad>()
                 for (comunidadSnap in snapshot.children) {
@@ -78,7 +78,7 @@ class ComunidadesActivity : AppCompatActivity() {
         if (userId == null) return
 
         val canalesRef = database.child("canal")
-        canalesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        canalesRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val canales = mutableListOf<Canal>()
                 for (canalSnap in snapshot.children) {

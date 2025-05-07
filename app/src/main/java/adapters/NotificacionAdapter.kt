@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.gooter_proyecto.databinding.ItemNotificacionBinding
 import models.Notificacion
 
-class NotificacionAdapter(private val lista: List<Notificacion>) :
+class NotificacionAdapter(private var lista: List<Notificacion>) :
     RecyclerView.Adapter<NotificacionAdapter.NotificacionViewHolder>() {
 
     inner class NotificacionViewHolder(val binding: ItemNotificacionBinding) :
@@ -15,7 +15,9 @@ class NotificacionAdapter(private val lista: List<Notificacion>) :
             binding.tituloNotificacion.text = notificacion.titulo
             binding.descripcionNotificacion.text = notificacion.descripcion
 
-            // Falta reaccion a boton GO
+            binding.btnGo.setOnClickListener {
+                // TODO: Manejar el clic en el botón "GO"
+            }
         }
     }
 
@@ -29,4 +31,9 @@ class NotificacionAdapter(private val lista: List<Notificacion>) :
     }
 
     override fun getItemCount(): Int = lista.size
+
+    fun updateList(nuevaLista: List<Notificacion>) {
+        lista = nuevaLista
+        notifyDataSetChanged()
+    }
 }

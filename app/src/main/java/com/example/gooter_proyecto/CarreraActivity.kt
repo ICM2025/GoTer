@@ -18,6 +18,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import models.Usuario
+import org.checkerframework.checker.units.qual.Length
 
 class CarreraActivity : AppCompatActivity() {
 
@@ -48,7 +49,7 @@ class CarreraActivity : AppCompatActivity() {
     val carrerasRef = database.child("carreras")
     val docRef = database.child("usuariosDisponibles")
     var mapCompetidores = HashMap<String, String>()
-    var customKey : String = ""
+    var customKey : String = "Carrera_$uid"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityCarreraBinding.inflate(layoutInflater)
@@ -94,6 +95,7 @@ class CarreraActivity : AppCompatActivity() {
                 val key = snapshot.key
                 if (key != null && key.startsWith(userCarreraKeyPrefix)) {
                     val intent = Intent(baseContext, MapsActivity::class.java).apply {
+                        Toast.makeText(baseContext, customKey, Toast.LENGTH_SHORT).show()
                         putExtra("carrera_id", customKey)
                     }
                     startActivity(intent)

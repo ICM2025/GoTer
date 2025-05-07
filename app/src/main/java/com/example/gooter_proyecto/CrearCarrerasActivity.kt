@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.GestureDetector
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -57,13 +58,14 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
     private lateinit var detectorGestos: GestureDetector
 
+    private var modoDirecto: Boolean = false
+    private var carreraIdExistente: String? = null
+
     private val lanzadorPermisoUbicacion =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { concedido ->
             if (concedido) {
-                Log.d(ETIQUETA, "Permiso de ubicación concedido.")
                 iniciarActualizacionesUbicacion()
             } else {
-                Log.w(ETIQUETA, "Permiso de ubicación denegado.")
                 Toast.makeText(this, "Permiso de ubicación denegado.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -73,17 +75,23 @@ class CrearCarrerasActivity : AppCompatActivity() {
         binding = ActivityCrearCarrerasBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        Log.d(ETIQUETA, "onCreate iniciado.")
+        modoDirecto = intent.getBooleanExtra("modo_directo", false)
+        if (modoDirecto) {
+            carreraIdExistente = intent.getStringExtra("carrera_id")
+            if (carreraIdExistente == null) {
+                Toast.makeText(this, "Error: No se proporcionó ID de carrera en modo directo.", Toast.LENGTH_LONG).show()
+            }
+        }
 
         autenticacion = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
-        cargarComunidades()
+
+        configurarVistaSegunModo()
 
         Configuration.getInstance().load(this, androidx.preference.PreferenceManager.getDefaultSharedPreferences(this))
         mapa = binding.osmMap
         mapa.setTileSource(TileSourceFactory.MAPNIK)
         mapa.setMultiTouchControls(true)
-        Log.d(ETIQUETA, "Mapa OSMDroid configurado.")
 
         geocodificador = Geocoder(this)
         clienteUbicacion = LocationServices.getFusedLocationProviderClient(this)
@@ -92,7 +100,6 @@ class CrearCarrerasActivity : AppCompatActivity() {
             .build()
         callbackUbicacion = object : LocationCallback() {
             override fun onLocationResult(resultado: LocationResult) {
-                Log.d(ETIQUETA, "Resultado de ubicación recibido.")
                 resultado.lastLocation?.let { nuevaUbicacion(it) }
             }
         }
@@ -116,9 +123,31 @@ class CrearCarrerasActivity : AppCompatActivity() {
             }
             manejado
         }
+
         binding.buttonBack.setOnClickListener{
             startActivity(Intent(this, CarreraActivity::class.java))
-    }
+            finish()
+        }
+
+        binding.buttonIniciar.setOnClickListener {
+            if (ubicacionDestino == null) {
+                Toast.makeText(this, "Primero selecciona un destino para la carrera", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (modoDirecto) {
+                if (carreraIdExistente != null) {
+                    actualizarUbicacionParticipante(carreraIdExistente!!)
+                    val intent = Intent(this, MapsActivity::class.java).apply {
+                        putExtra("carrera_id", carreraIdExistente)
+                    }
+                    Toast.makeText(this, "Iniciando seguimiento de carrera existente", Toast.LENGTH_SHORT).show()
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this, "Error: ID de carrera no disponible para iniciar.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
 
         detectorGestos = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onDoubleTap(e: MotionEvent): Boolean {
@@ -131,8 +160,19 @@ class CrearCarrerasActivity : AppCompatActivity() {
         })
 
         mapa.setOnTouchListener { _, evento -> detectorGestos.onTouchEvent(evento) }
+    }
 
-        Log.d(ETIQUETA, "onCreate finalizado.")
+    private fun configurarVistaSegunModo() {
+        if (modoDirecto) {
+            binding.rvListaComunidades.visibility = View.GONE
+            binding.textViewSelectComunity.visibility = View.GONE
+            binding.buttonIniciar.visibility = View.VISIBLE
+        } else {
+            binding.rvListaComunidades.visibility = View.VISIBLE
+            binding.textViewSelectComunity.visibility = View.VISIBLE
+            binding.buttonIniciar.visibility = View.GONE
+            cargarComunidades()
+        }
     }
 
     override fun onResume() {
@@ -170,7 +210,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                     val admin = snap.child("administrador").getValue(String::class.java)
                     val participantesSnap = snap.child("participantes")
                     val participantes = if (participantesSnap.exists() && participantesSnap.value != null) {
-                        participantesSnap.children.mapNotNull { it.getValue(String::class.java) }
+                        (participantesSnap.value as? Map<String, Any>)?.keys?.toList() ?: emptyList()
                     } else emptyList()
 
                     if (admin == usuarioId || participantes.contains(usuarioId)) {
@@ -201,19 +241,16 @@ class CrearCarrerasActivity : AppCompatActivity() {
         })
     }
 
-    private fun crearCarreraParaComunidad(comunidad: Comunidad) {
+    private fun crearNuevaCarreraDirecta() {
         val usuarioId = autenticacion.currentUser?.uid ?: return
         val ubicacionDestino = this.ubicacionDestino ?: return
 
-        // Calcular distancia aproximada
         val distancia = ubicacionActual?.let {
             distancia(it.latitude, it.longitude, ubicacionDestino.latitude, ubicacionDestino.longitude)
         } ?: 0.0
 
-        // Crear ID único para la carrera
         val carreraId = database.reference.child("modosCarrera").push().key ?: return
 
-        // Crear objeto carrera - Solo incluir al creador como participante inicial
         val carrera = mapOf(
             "id" to carreraId,
             "organizadorId" to usuarioId,
@@ -230,20 +267,65 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 "altitud" to ubicacionDestino.altitude
             ),
             "distanciaTotal" to distancia,
-            "participantes" to listOf(usuarioId) // Solo incluir al creador como participante inicial
+            "participantes" to mapOf(usuarioId to true),
+            "modoDirecto" to true
         )
 
-        // Guardar carrera en Firebase
+        database.reference.child("modosCarrera").child(carreraId).setValue(carrera)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Carrera directa creada correctamente", Toast.LENGTH_SHORT).show()
+                actualizarUbicacionParticipante(carreraId)
+                val intent = Intent(this, MapsActivity::class.java).apply {
+                    putExtra("carrera_id", carreraId)
+                }
+                startActivity(intent)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error al crear carrera: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+
+    private fun crearCarreraParaComunidad(comunidad: Comunidad) {
+        val usuarioId = autenticacion.currentUser?.uid ?: return
+        val ubicacionDestino = this.ubicacionDestino ?: return
+
+        val distancia = ubicacionActual?.let {
+            distancia(it.latitude, it.longitude, ubicacionDestino.latitude, ubicacionDestino.longitude)
+        } ?: 0.0
+
+        val carreraId = database.reference.child("modosCarrera").push().key ?: return
+
+        val participantesMap = comunidad.participantes.associateWith { true }
+
+        val carrera = mapOf(
+            "id" to carreraId,
+            "organizadorId" to usuarioId,
+            "fechaInicio" to SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date()),
+            "estado" to "pendiente",
+            "inicioCarrera" to mapOf(
+                "latitud" to ubicacionActual?.latitude,
+                "longitud" to ubicacionActual?.longitude,
+                "altitud" to ubicacionActual?.altitude
+            ),
+            "destinoCarrera" to mapOf(
+                "latitud" to ubicacionDestino.latitude,
+                "longitud" to ubicacionDestino.longitude,
+                "altitud" to ubicacionDestino.altitude
+            ),
+            "distanciaTotal" to distancia,
+            "participantes" to participantesMap,
+            "comunidadId" to comunidad.nombre
+        )
+
         database.reference.child("modosCarrera").child(carreraId).setValue(carrera)
             .addOnSuccessListener {
                 Toast.makeText(this, "Carrera creada para ${comunidad.nombre}", Toast.LENGTH_SHORT).show()
                 enviarNotificacionesCarrera(comunidad, carreraId, distancia)
                 actualizarUbicacionParticipante(carreraId)
-                // Iniciar MapsActivity con el ID de la carrera
                 val intent = Intent(this, MapsActivity::class.java).apply {
                     putExtra("carrera_id", carreraId)
                 }
-
                 startActivity(intent)
             }
             .addOnFailureListener { e ->
@@ -258,11 +340,9 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
         val usuarioId = autenticacion.currentUser?.uid ?: return
 
-        // Escuchar cambios en la ubicación del usuario
         val ubicacionCallback = object : LocationCallback() {
             override fun onLocationResult(resultado: LocationResult) {
                 resultado.lastLocation?.let { ubicacion ->
-                    // Guardar ubicación del participante en la carrera
                     val ubicacionData = mapOf(
                         "latitud" to ubicacion.latitude,
                         "longitud" to ubicacion.longitude,
@@ -271,14 +351,13 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
                     database.reference.child("modosCarrera")
                         .child(carreraId)
-                        .child("participantes")
+                        .child("ubicacionesParticipantes") // Nodo para guardar ubicaciones por participante
                         .child(usuarioId)
                         .setValue(ubicacionData)
                 }
             }
         }
 
-        // Configurar solicitud de ubicación con alta frecuencia
         val solicitud = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000)
             .setMinUpdateIntervalMillis(2000)
             .build()
@@ -290,17 +369,14 @@ class CrearCarrerasActivity : AppCompatActivity() {
         val usuarioId = autenticacion.currentUser?.uid ?: return
         val fechaHora = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
 
-        // Obtener nombre del organizador
         database.reference.child("usuarios").child(usuarioId).child("nombre").get()
             .addOnSuccessListener { snapshot ->
                 val nombreOrganizador = snapshot.getValue(String::class.java) ?: "Un organizador"
 
-                // Usar listaIdParticipantes en lugar de participantes según la clase Comunidad definida
                 comunidad.participantes.forEach { participanteId ->
-                    if (participanteId != usuarioId) { // No enviar notificación a sí mismo
+                    if (participanteId != usuarioId) {
                         val notificacionId = database.reference.child("notificaciones").push().key ?: return@forEach
 
-                        // Crear notificación con carrera_id como metadato
                         val notificacion = mapOf(
                             "idNotificacion" to notificacionId,
                             "emisorId" to usuarioId,
@@ -310,7 +386,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                             "tipo" to "Carrera",
                             "mensaje" to "$nombreOrganizador ha creado una nueva carrera en ${comunidad.nombre} (${"%.1f".format(distancia)} km)",
                             "accion" to "ver_carrera",
-                            "metadatos" to mapOf("carrera_id" to carreraId) // Solo incluir el ID de la carrera
+                            "metadatos" to mapOf("carrera_id" to carreraId)
                         )
 
                         database.reference.child("notificaciones").child(notificacionId).setValue(notificacion)

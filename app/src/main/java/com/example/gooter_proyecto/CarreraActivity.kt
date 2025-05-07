@@ -94,11 +94,13 @@ class CarreraActivity : AppCompatActivity() {
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 val key = snapshot.key
                 if (key != null && key.startsWith(userCarreraKeyPrefix)) {
-                    val intent = Intent(baseContext, MapsActivity::class.java).apply {
-                        Toast.makeText(baseContext, customKey, Toast.LENGTH_SHORT).show()
-                        putExtra("carrera_id", customKey)
+                    if (snapshot.hasChild("location")) {
+                        val intent = Intent(baseContext, MapsActivity::class.java).apply {
+                            Toast.makeText(baseContext, customKey, Toast.LENGTH_SHORT).show()
+                            putExtra("carrera_id", customKey)
+                        }
+                        startActivity(intent)
                     }
-                    startActivity(intent)
                 }
             }
             override fun onChildRemoved(snapshot: DataSnapshot) {

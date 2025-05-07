@@ -89,6 +89,8 @@ class CarreraActivity : AppCompatActivity() {
         carrerasRef.addChildEventListener(object : ChildEventListener {
             val userCarreraKeyPrefix = "Carrera_$uid"
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+            }
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 val key = snapshot.key
                 if (key != null && key.startsWith(userCarreraKeyPrefix)) {
                     val intent = Intent(baseContext, MapsActivity::class.java).apply {
@@ -96,9 +98,6 @@ class CarreraActivity : AppCompatActivity() {
                     }
                     startActivity(intent)
                 }
-
-            }
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
             }
             override fun onChildRemoved(snapshot: DataSnapshot) {
             }

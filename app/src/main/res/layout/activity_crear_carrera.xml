@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/textfield_background"
     android:padding="16dp"
-    tools:context=".CrearCarreraActivity">
+    tools:context=".CarreraActivity">
 
     <TextView
         android:id="@+id/textView5"
@@ -26,7 +26,7 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginTop="20dp"
-        android:layout_marginBottom="12dp"
+        android:layout_marginBottom="5dp"
         android:background="#00FFFFFF"
         android:scaleType="centerCrop"
         android:src="@drawable/back_button"
@@ -38,7 +38,6 @@
         android:id="@+id/textView4"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:text="@string/text_init_c"
         android:textSize="21dp"
         android:textStyle="bold"
@@ -52,6 +51,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/busquedaText"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView5">
@@ -139,15 +139,39 @@
                 android:id="@+id/textView9"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
-                android:text="@string/suggestion_text"
                 android:gravity="left|center"
+                android:text="@string/suggestion_text"
                 android:textSize="13dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.0" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/busquedaText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text=""
+        app:layout_constraintBottom_toTopOf="@+id/listDisponibles"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <ListView
+        android:id="@+id/listDisponibles"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="invisible"
+        app:layout_constraintTop_toBottomOf="@+id/busquedaText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -190,7 +190,7 @@ class HomeActivity : AppCompatActivity() {
                             leida = leida,
                             accion = accion,
                             tipo = tipo,
-                            metadatos = metadatosString 
+                            metadatos = metadatosString
                         ))
                     }
 

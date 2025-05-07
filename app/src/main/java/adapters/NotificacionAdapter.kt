@@ -29,43 +29,56 @@ class NotificacionAdapter(
         }
 
         private fun handleNotificationAction(notificacion: Notificacion) {
+            if (notificacion.accion.isEmpty()) {
+                return
+            }
+
             try {
-                val metadatos = JSONObject(notificacion.metadatos)
+                val metadatos = if (notificacion.metadatos.isNotEmpty()) {
+                    JSONObject(notificacion.metadatos)
+                } else {
+                    JSONObject()
+                }
 
                 when (notificacion.accion) {
                     "ver_carrera" -> {
                         val carreraId = metadatos.optString("carrera_id", "")
-                        val intent = Intent(context, CarreraActivity::class.java).apply {
-                            putExtra("carrera_id", carreraId)
+                        if (carreraId.isNotEmpty()) {
+                            val intent = Intent(context, CarreraActivity::class.java).apply {
+                                putExtra("carrera_id", carreraId)
+                            }
+                            context.startActivity(intent)
                         }
-                        context.startActivity(intent)
                     }
 
                     "ver_mensajes" -> {
                         val grupoId = metadatos.optString("grupo_id", "")
-                        val intent = Intent(context, ChatActivity::class.java).apply {
-                            putExtra("grupo_id", grupoId)
-                            metadatos.optString("mensaje_id").takeIf { it.isNotEmpty() }?.let {
-                                putExtra("mensaje_id", it)
+                        if (grupoId.isNotEmpty()) {
+                            val intent = Intent(context, ChatActivity::class.java).apply {
+                                putExtra("grupo_id", grupoId)
+                                metadatos.optString("mensaje_id").takeIf { it.isNotEmpty() }?.let {
+                                    putExtra("mensaje_id", it)
+                                }
                             }
+                            context.startActivity(intent)
                         }
-                        context.startActivity(intent)
                     }
 
                     "responder_invitacion" -> {
                         val comunidadId = metadatos.optString("comunidad_id", "")
-                        val intent = Intent(context, ChatActivity::class.java).apply {
-                            putExtra("comunidad_id", comunidadId)
+                        if (comunidadId.isNotEmpty()) {
+                            val intent = Intent(context, ChatActivity::class.java).apply {
+                                putExtra("comunidad_id", comunidadId)
+                            }
+                            context.startActivity(intent)
                         }
-                        context.startActivity(intent)
                     }
 
                     else -> {
-                        // Acción por defecto o notificaciones sin acción específica
+
                     }
                 }
             } catch (e: Exception) {
-                // Handle JSON parsing error
                 e.printStackTrace()
             }
         }

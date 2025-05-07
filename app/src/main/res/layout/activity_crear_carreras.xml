@@ -7,19 +7,17 @@
     android:layout_height="match_parent"
     android:background="@color/textfield_background"
     android:padding="16dp"
-    tools:context=".CrearCarreraActivity">
-
-    <ImageButton
-        android:id="@+id/button_back"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="20dp"
-        android:background="#00FFFFFF"
-        android:scaleType="centerCrop"
-        android:src="@drawable/back_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="@string/desc_back_button" />
+    tools:context=".CrearCarrerasActivity"> <ImageButton
+    android:id="@+id/button_back"
+    android:layout_width="40dp"
+    android:layout_height="40dp"
+    android:layout_marginTop="20dp"
+    android:background="#00FFFFFF"
+    android:scaleType="centerCrop"
+    android:src="@drawable/back_button"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    android:contentDescription="@string/desc_back_button" />
 
     <TextView
         android:id="@+id/text_view_title"
@@ -52,18 +50,20 @@
         android:id="@+id/text_view_invite_communities"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp" android:text="@string/text_invite_communities" android:textSize="16sp"
-        android:textStyle="bold" app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="24dp"
+        android:text="@string/text_invite_communities"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edit_text_destination" />
 
     <LinearLayout
+        android:id="@+id/linear_layout_communities"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginStart="15dp"
         android:layout_marginTop="5dp"
-        android:layout_marginEnd="15dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/text_view_invite_communities">
@@ -76,6 +76,15 @@
             android:padding="8dp"/>
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/text_view_choose_destination_manually"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp" android:text="@string/text_choose_destination_manually" android:textSize="16sp"
+        android:textStyle="bold" app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linear_layout_communities" />
 
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <org.osmdroid.views.MapView
+        android:id="@+id/osmMap"
+        android:layout_width="0dp"  android:layout_height="0dp" android:layout_marginTop="8dp" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"   app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@+id/text_view_choose_destination_manually" /> </androidx.constraintlayout.widget.ConstraintLayout>

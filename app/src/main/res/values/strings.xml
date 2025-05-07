@@ -60,8 +60,9 @@
     <string name="text_init_c">Iniciar Carrera</string>
     <string name="text_desc_init">Crea una nueva carrera o encuentra corredores\ncercanos para competir</string>
 
-    <string name="text_invite_communities">Puedes invitar a estas comunidades o canales a tu carrera:</string>
+    <string name="text_invite_communities">Puedes invitar a estas comunidades a tu carrera:</string>
     <string name="text_create_race_title">Configurar Carrera</string> <string name="hint_destination">Ingresa ubicación o destino</string>
     <string name="desc_back_button">Botón de regreso</string>
+    <string name="text_choose_destination_manually">O puedes escoger el destino de la carrera manualmente:</string>
 
 </resources>

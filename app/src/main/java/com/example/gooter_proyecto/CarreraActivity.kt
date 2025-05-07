@@ -1,5 +1,6 @@
 package com.example.gooter_proyecto
 
+import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -45,7 +46,9 @@ class CarreraActivity : AppCompatActivity() {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)!!
         accelerometerEventListener = createAccelerometerListener()
-
+        binding.button2.setOnClickListener{
+            startActivity(Intent(this, CrearCarrerasActivity::class.java))
+        }
     }
     private fun createAccelerometerListener(): SensorEventListener {
         val ret : SensorEventListener = object : SensorEventListener {

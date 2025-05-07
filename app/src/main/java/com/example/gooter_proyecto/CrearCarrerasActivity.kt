@@ -406,7 +406,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
             distancia(it.latitude, it.longitude, ubicacionDestino.latitude, ubicacionDestino.longitude)
         } ?: 0.0
 
-        val carreraId = database.reference.child("modosCarrera").push().key ?: return
+        val carreraId = database.reference.child("carreras").push().key ?: return
 
         val carrera = mapOf(
             "id" to carreraId,
@@ -428,7 +428,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
             "modoDirecto" to true
         )
 
-        database.reference.child("modosCarrera").child(carreraId).setValue(carrera)
+        database.reference.child("carreras").child(carreraId).setValue(carrera)
             .addOnSuccessListener {
                 Toast.makeText(this, "Carrera directa creada correctamente", Toast.LENGTH_SHORT).show()
                 actualizarUbicacionParticipante(carreraId)
@@ -506,7 +506,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                         "timestamp" to System.currentTimeMillis()
                     )
 
-                    database.reference.child("modosCarrera")
+                    database.reference.child("carreras")
                         .child(carreraId)
                         .child("ubicacionesParticipantes") // Nodo para guardar ubicaciones por participante
                         .child(usuarioId)

@@ -144,7 +144,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                         "longitud" to ubicacionDestino!!.longitude,
                         "altitud" to 0.0
                     )
-                    databases.child("carreras").child(carreraIdExistente!!).setValue(locationData).addOnSuccessListener {
+                    databases.child("carreras").child(carreraIdExistente!!).child("location").setValue(locationData).addOnSuccessListener {
                         val intent = Intent(this, MapsActivity::class.java).apply {
                             putExtra("carrera_id", carreraIdExistente)
                         }

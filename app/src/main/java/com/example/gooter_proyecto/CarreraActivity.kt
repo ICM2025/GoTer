@@ -16,6 +16,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import models.Usuario
 
 class CarreraActivity : AppCompatActivity() {
 
@@ -44,7 +45,7 @@ class CarreraActivity : AppCompatActivity() {
     private var idUnicoUser : String = ""
     lateinit var binding: ActivityCarreraBinding
     val docRef = database.child("usuariosDisponibles")
-    val listCompetidores = ArrayList<String>()
+    var mapCompetidores = HashMap<String, String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         binding = ActivityCarreraBinding.inflate(layoutInflater)
@@ -64,8 +65,12 @@ class CarreraActivity : AppCompatActivity() {
                 var listTemporal = ArrayList<String>()
                 for(child : DataSnapshot in snapshot.children) {
                     if(child.child("email").getValue(String::class.java) != email) {
-                        listTemporal.add(child.child("email").getValue(String::class.java)!!)
-
+                        var email = child.child("email").getValue(String::class.java)!!
+                        listTemporal.add(email)
+                        var uid = child.child("uid").getValue(String::class.java)!!
+                        mapCompetidores = hashMapOf(
+                            email to uid
+                        )
                     }
                 }
                 addUsersList(listTemporal)
@@ -74,6 +79,25 @@ class CarreraActivity : AppCompatActivity() {
 
             }
         })
+        binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
+            val email = parent.getItemAtPosition(position).toString()
+            var contrarioUid = mapCompetidores[email]
+            val carreraKey = database.child("carreras").push().key
+            val carrera = hashMapOf(
+                "jugador1" to uid,
+                "jugador2" to contrarioUid,
+                )
+            database.child("carreras").child(carreraKey!!).setValue(carrera).
+            addOnSuccessListener {
+                val intent = Intent(baseContext, CrearCarrerasActivity::class.java).apply {
+                    putExtra("modo_directo", false)
+                    putExtra("carrera_id", carreraKey)
+                }
+                startActivity(intent)
+            }.addOnFailureListener{
+
+            }
+        }
     }
 
     private fun addUsersList(listTemporal: ArrayList<String>) {

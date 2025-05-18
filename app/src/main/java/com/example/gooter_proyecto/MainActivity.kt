@@ -32,5 +32,8 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(baseContext, LoginUsuarioActivity::class.java))
         }
         //bindign pa llamar la primera pantalla,  de esa a login o registro
+
+        // Solicita permiso para notificaciones
+        NotificacionesDisponibles.getInstance().inicializar(this)
     }
 }

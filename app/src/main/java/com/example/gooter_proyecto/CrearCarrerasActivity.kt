@@ -25,6 +25,7 @@ import com.example.gooter_proyecto.databinding.ActivityCrearCarrerasBinding
 import com.google.android.gms.location.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.gson.Gson
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -32,6 +33,15 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import models.Comunidad
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.Response
+import org.json.JSONObject
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -523,34 +533,65 @@ class CrearCarrerasActivity : AppCompatActivity() {
     }
 
     private fun enviarNotificacionesCarrera(comunidad: Comunidad, carreraId: String, distancia: Double) {
-        val usuarioId = autenticacion.currentUser?.uid ?: return
-        val fechaHora = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
+        // URL de la Cloud Function (reemplaza con la URL real de tu función)
+        val url = "https://us-central1-tu-proyecto.cloudfunctions.net/notifyCommunityChallengeAvailable"
 
-        database.reference.child("usuarios").child(usuarioId).child("nombre").get()
-            .addOnSuccessListener { snapshot ->
-                val nombreOrganizador = snapshot.getValue(String::class.java) ?: "Un organizador"
+        // Crear mapa de datos para la petición
+        val dataMap = mapOf(
+            "nombreComunidad" to comunidad.nombre,
+            "carreraUid" to carreraId
+        )
 
-                comunidad.participantes.forEach { participanteId ->
-                    if (participanteId != usuarioId) {
-                        val notificacionId = database.reference.child("notificaciones").push().key ?: return@forEach
+        // Convertir a JSON con Gson
+        val payload = Gson().toJson(dataMap)
+        Log.d("EnviarNotificacion", "Enviando notificación de carrera: $payload")
 
-                        val notificacion = mapOf(
-                            "idNotificacion" to notificacionId,
-                            "emisorId" to usuarioId,
-                            "destinatarioId" to participanteId,
-                            "fechaHora" to fechaHora,
-                            "leida" to false,
-                            "tipo" to "Carrera",
-                            "mensaje" to "$nombreOrganizador ha creado una nueva carrera en ${comunidad.nombre} (${"%.1f".format(distancia)} km)",
-                            "accion" to "ver_carrera",
-                            "metadatos" to mapOf("carrera_id" to carreraId)
-                        )
+        // Crear cuerpo de la petición
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val body = RequestBody.create(mediaType, payload)
 
-                        database.reference.child("notificaciones").child(notificacionId).setValue(notificacion)
+        // Crear la petición
+        val request = Request.Builder()
+            .url(url)
+            .post(body)
+            .build()
+
+        // Enviar la petición de forma asíncrona
+        OkHttpClient().newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("EnviarNotificacion", "Error al llamar a la Cloud Function", e)
+                // Opcional: Mostrar mensaje al usuario
+                // Handler(Looper.getMainLooper()).post {
+                //     Toast.makeText(context, "No se pudo enviar notificaciones: ${e.message}", Toast.LENGTH_SHORT).show()
+                // }
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    Log.e("EnviarNotificacion", "Error de Cloud Function: ${response.code}")
+                } else {
+                    // Procesar respuesta
+                    val responseBody = response.body?.string()
+                    Log.i("EnviarNotificacion", "Notificación enviada con éxito: $responseBody")
+
+                    try {
+                        // Parsear la respuesta JSON
+                        val jsonResponse = JSONObject(responseBody)
+                        val success = jsonResponse.optInt("success", 0)
+                        val failure = jsonResponse.optInt("failure", 0)
+
+                        // Opcional: Guardar registro
+                    } catch (e: Exception) {
+                        Log.e("EnviarNotificacion", "Error al procesar la respuesta", e)
                     }
                 }
+
+                response.close()
             }
+        })
+
     }
+
 
     private fun iniciarActualizacionesUbicacion() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {

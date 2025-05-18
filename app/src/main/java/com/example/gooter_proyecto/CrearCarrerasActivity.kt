@@ -534,7 +534,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
     private fun enviarNotificacionesCarrera(comunidad: Comunidad, carreraId: String, distancia: Double) {
         // URL de la Cloud Function (reemplaza con la URL real de tu función)
-        val url = "https://us-central1-tu-proyecto.cloudfunctions.net/notifyCommunityChallengeAvailable"
+        val url = "https://us-central1-go-oter-ee454.cloudfunctions.net/notifyCommunityChallengeAvailable"
 
         // Crear mapa de datos para la petición
         val dataMap = mapOf(

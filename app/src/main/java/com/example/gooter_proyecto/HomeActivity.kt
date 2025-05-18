@@ -100,6 +100,7 @@ class HomeActivity : AppCompatActivity() {
         binding.btnActividad.setOnClickListener {
             startActivity(Intent(this, EstadisticasFechaInicioActivity::class.java))
         }
+        NotificacionesDisponibles.getInstance().inicializar(this)
     }
 
     private fun loadActivitySummary(userId: String) {

@@ -22,40 +22,43 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         Log.d(TAG, "From: ${remoteMessage.from}")
 
-        // Prioriza el manejo de la carga de datos, que es lo que enviaría la Cloud Function
+        // Si viene payload de datos, lo procesamos
         if (remoteMessage.data.isNotEmpty()) {
             Log.d(TAG, "Message data payload: ${remoteMessage.data}")
 
-            // Obtener datos comunes
+            // Extraemos los campos comunes
             val title = remoteMessage.data["title"] ?: "Notificación"
-            val body = remoteMessage.data["body"] ?: "Tienes una nueva notificación"
+            val body  = remoteMessage.data["body"]  ?: "Tienes una nueva notificación"
 
-            // Comprobar tipo de notificación
             when (remoteMessage.data["type"]) {
-                // Notificación de carrera en comunidad
                 "community_challenge" -> {
-                    val carreraUid = remoteMessage.data["carreraUid"]
+                    // Estos campos vienen de nuestra Cloud Function
+                    val carreraUid      = remoteMessage.data["carreraUid"]
+                    val comunidadId     = remoteMessage.data["comunidadId"]
                     val comunidadNombre = remoteMessage.data["comunidadNombre"]
-                    val comunidadId = remoteMessage.data["comunidadId"]
 
-                    Log.d(TAG, "Carrera disponible: $carreraUid en comunidad: $comunidadNombre ($comunidadId)")
+                    Log.d(TAG, "🏃‍♀️ Nueva carrera $carreraUid en comunidad $comunidadNombre ($comunidadId)")
 
-                    // Enviar notificación con intent específico para abrir la vista de carrera
-                    sendCommunityRaceNotification(title, body, carreraUid, comunidadId)
+                    sendCommunityRaceNotification(
+                        title,
+                        body,
+                        carreraUid,
+                        comunidadId,
+                        comunidadNombre
+                    )
                 }
-
-                // Notificación de jugador disponible (caso existente)
                 else -> {
-                    val correo = remoteMessage.data["correo"]
-                    Log.d(TAG, "Notificación estándar - User ID from message: $correo")
-                    sendNotification(title, body)
+                    // Cualquier otra notificación genérica
+                    sendGenericNotification(title, body)
                 }
             }
+
         } else if (remoteMessage.notification != null) {
+            // Fallback a notification payload si hubiera
             Log.d(TAG, "Message Notification Body: ${remoteMessage.notification!!.body}")
-            sendNotification(
-                remoteMessage.notification!!.title ?: "Título predeterminado",
-                remoteMessage.notification!!.body ?: "Mensaje"
+            sendGenericNotification(
+                remoteMessage.notification!!.title ?: "Notificación",
+                remoteMessage.notification!!.body  ?: ""
             )
         }
     }
@@ -70,11 +73,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         token?.let {
             val userId = FirebaseAuth.getInstance().currentUser?.uid
             if (userId != null) {
-                // Guarda el token en Realtime Database bajo el ID del usuario
-                val database = FirebaseDatabase.getInstance().getReference("usuarios")
-                database.child(userId).child("fcmToken").setValue(token)
-                    .addOnSuccessListener { Log.d(TAG, "FCM token saved to Realtime Database") }
-                    .addOnFailureListener { e -> Log.e(TAG, "Failed to save FCM token", e) }
+                FirebaseDatabase.getInstance()
+                    .getReference("usuarios")
+                    .child(userId)
+                    .child("fcmToken")
+                    .setValue(token)
+                    .addOnSuccessListener {
+                        Log.d(TAG, "FCM token saved to Realtime Database")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Failed to save FCM token", e)
+                    }
             } else {
                 Log.w(TAG, "User not logged in, cannot save FCM token.")
             }
@@ -82,10 +91,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     /**
-     * Crea y muestra una notificación para carreras de comunidad
+     * Notificación específica para carreras de comunidad.
      */
-    private fun sendCommunityRaceNotification(title: String, messageBody: String, carreraUid: String?, comunidadId: String?) {
-        // Intent específico para abrir la vista de la carrera
+    private fun sendCommunityRaceNotification(
+        title: String,
+        messageBody: String,
+        carreraUid: String?,
+        comunidadId: String?,
+        comunidadNombre: String?
+    ) {
+        // Intent a MapsActivity (o la que muestre la carrera)
         val intent = Intent(this, MapsActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra("carrera_id", carreraUid)
@@ -98,7 +113,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            this, 1 /* Request code diferente para distinguir notificaciones */, intent,
+            this,
+            carreraUid.hashCode(), // distinto por cada carrera
+            intent,
             pendingIntentFlag
         )
 
@@ -114,30 +131,32 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Desde Android Oreo (API 26), los Canales de Notificación son obligatorios.
+        // Crear canal si es necesario (API 26+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Gooter - Vamos a correr",
+                "Gooter - Carreras en comunidad",
                 NotificationManager.IMPORTANCE_HIGH
-            )
-            channel.description = "Notificaciones cuando hay carreras disponibles en tus comunidades"
+            ).apply {
+                description = "Notificaciones cuando hay nuevas carreras en tus comunidades"
+            }
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Usar el ID de carrera como parte del ID de notificación para asegurar que cada carrera tenga su propia notificación
-        val notificationId = carreraUid?.hashCode() ?: 1
-        notificationManager.notify(notificationId, notificationBuilder.build())
+        // Usamos hash de carreraUid para tener IDs únicos
+        notificationManager.notify(carreraUid.hashCode(), notificationBuilder.build())
     }
 
     /**
-     * Crea y muestra una notificación simple.
+     * Notificación genérica.
      */
-    private fun sendNotification(title: String, messageBody: String) {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    private fun sendGenericNotification(title: String, messageBody: String) {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
 
         val pendingIntentFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
@@ -146,7 +165,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         val pendingIntent = PendingIntent.getActivity(
-            this, 0 /* Request code */, intent,
+            this,
+            0,
+            intent,
             pendingIntentFlag
         )
 
@@ -162,19 +183,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Desde Android Oreo (API 26), los Canales de Notificación son obligatorios.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
-                "Jugador Disponible", // Nombre visible del canal en la configuración del teléfono
+                "Gooter - General",
                 NotificationManager.IMPORTANCE_HIGH
-            )
-            channel.description = "Notificaciones cuando hay jugadores disponibles"
+            ).apply {
+                description = "Notificaciones generales de la app"
+            }
             notificationManager.createNotificationChannel(channel)
         }
 
-        notificationManager.notify(0 /* Un ID único para esta notificación */, notificationBuilder.build())
+        notificationManager.notify(0, notificationBuilder.build())
     }
 }

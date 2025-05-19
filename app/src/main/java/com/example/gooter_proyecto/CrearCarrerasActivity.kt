@@ -488,7 +488,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
         database.reference.child("carreras").child(carreraId).setValue(carrera)
             .addOnSuccessListener {
                 Toast.makeText(this, "Carrera creada para ${comunidad.nombre}", Toast.LENGTH_SHORT).show()
-                enviarNotificacionesCarrera(comunidad, carreraId, distancia)
+                enviarNotificacionesCarrera(comunidad, carreraId, usuarioId)
                 actualizarUbicacionParticipante(carreraId)
                 val intent = Intent(this, MapsActivity::class.java).apply {
                     putExtra("carrera_id", carreraId)
@@ -532,14 +532,15 @@ class CrearCarrerasActivity : AppCompatActivity() {
         clienteUbicacion.requestLocationUpdates(solicitud, ubicacionCallback, Looper.getMainLooper())
     }
 
-    private fun enviarNotificacionesCarrera(comunidad: Comunidad, carreraId: String, distancia: Double) {
-        // URL de la Cloud Function (reemplaza con la URL real de tu función)
+    private fun enviarNotificacionesCarrera(comunidad: Comunidad, carreraId: String, usuarioID: String) {
+
         val url = "https://us-central1-go-oter-ee454.cloudfunctions.net/notifyCommunityChallengeAvailable"
 
         // Crear mapa de datos para la petición
         val dataMap = mapOf(
             "nombreComunidad" to comunidad.nombre,
-            "carreraUid" to carreraId
+            "carreraUid" to carreraId,
+            "creadorUid" to usuarioID
         )
 
         // Convertir a JSON con Gson
@@ -560,10 +561,6 @@ class CrearCarrerasActivity : AppCompatActivity() {
         OkHttpClient().newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 Log.e("EnviarNotificacion", "Error al llamar a la Cloud Function", e)
-                // Opcional: Mostrar mensaje al usuario
-                // Handler(Looper.getMainLooper()).post {
-                //     Toast.makeText(context, "No se pudo enviar notificaciones: ${e.message}", Toast.LENGTH_SHORT).show()
-                // }
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -589,6 +586,8 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 response.close()
             }
         })
+
+        //AQUI TAMBIEN CREARIA LA NOTIFICACION QUE SE VE EN EL HOME Y EN EL OTRO LADO
 
     }
 

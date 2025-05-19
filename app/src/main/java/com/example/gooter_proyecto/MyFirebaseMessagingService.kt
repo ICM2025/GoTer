@@ -100,7 +100,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         comunidadId: String?,
         comunidadNombre: String?
     ) {
-        // Intent a MapsActivity (o la que muestre la carrera)
         val intent = Intent(this, MapsActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra("carrera_id", carreraUid)
@@ -114,7 +113,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val pendingIntent = PendingIntent.getActivity(
             this,
-            carreraUid.hashCode(), // distinto por cada carrera
+            carreraUid.hashCode(),
             intent,
             pendingIntentFlag
         )

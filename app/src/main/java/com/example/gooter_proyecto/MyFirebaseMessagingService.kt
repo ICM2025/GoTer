@@ -100,6 +100,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         comunidadId: String?,
         comunidadNombre: String?
     ) {
+        Log.d(TAG, "Carrera n: $carreraUid")
         val intent = Intent(this, MapsActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             putExtra("carrera_id", carreraUid)

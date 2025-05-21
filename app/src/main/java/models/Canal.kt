@@ -6,26 +6,29 @@ data class Canal(
     val imagen: Int,
     var seguido: Boolean = false,
     var miembros: Int = 0,
-    val administrador: String = ""
+    val administrador: String = "",
+    val idChat : String
 ) {
 
-    constructor(nom: String, imagen: Int, seguido: Boolean, numMiembros: Int) :
+    constructor(nom: String, imagen: Int, seguido: Boolean, numMiembros: Int, idChat: String) :
             this(
                 id = "",
                 nombre = nom,
                 imagen = imagen,
                 seguido = seguido,
-                miembros = numMiembros
+                miembros = numMiembros,
+                idChat = idChat
             )
 
     // Constructor para crear desde datos de Firebase
-    constructor(id: String, canalData: Map<String, Any>) : this(
+    constructor(id: String, canalData: Map<String, Any>, idChat: String) : this(
         id = id,
         nombre = canalData["nombreGrupo"] as? String ?: "",
         imagen = 0,
         seguido = false,
         miembros = (canalData["miembros"] as? List<*>)?.size ?: 0,
-        administrador = canalData["administrador"] as? String ?: ""
+        administrador = canalData["administrador"] as? String ?: "",
+        idChat = idChat
     )
 
     

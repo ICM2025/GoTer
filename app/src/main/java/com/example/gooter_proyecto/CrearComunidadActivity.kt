@@ -72,6 +72,20 @@ class CrearComunidadActivity : AppCompatActivity() {
     }
 
     private fun crearComunidad(idComunidad: String, nombre: String, fechaCreacion: String, administradorId: String) {
+
+        // Crea una referencia al nuevo chat y guárdala en una variable
+        val newChatRef = database.child("chats").push()
+
+        // Puedes acceder al ID generado así:
+        val chatId = newChatRef.key
+
+        // Crear los datos del chat
+        val chatData = mapOf("name" to "chat de $nombre")
+
+        // Guardar los datos bajo ese ID
+        newChatRef.setValue(chatData)
+
+
         val comunidadMap = hashMapOf(
             "nombreGrupo" to nombre,
             "descripcion" to "Esta es la descripción de la comunidad",
@@ -81,7 +95,8 @@ class CrearComunidadActivity : AppCompatActivity() {
             "participantes" to listOf(administradorId),
             "eventos" to listOf<String>(),
             "imagenGrupo" to "",  // Sin imagen por ahora
-            "mensajes" to HashMap<String, Any>()  // Mensajes vacíos inicialmente
+            //"mensajes" to HashMap<String, Any>(),  // Mensajes vacíos inicialmente
+            "chatId" to chatId
         )
 
         // Guardar en Firebase
@@ -96,6 +111,18 @@ class CrearComunidadActivity : AppCompatActivity() {
     }
 
     private fun crearCanal(idCanal: String, nombre: String, fechaCreacion: String, administradorId: String) {
+        // Crea una referencia al nuevo chat y guárdala en una variable
+        val newChatRef = database.child("chats").push()
+
+        // Puedes acceder al ID generado así:
+        val chatId = newChatRef.key
+
+        // Crear los datos del chat
+        val chatData = mapOf("name" to "chat de $nombre")
+
+        // Guardar los datos bajo ese ID
+        newChatRef.setValue(chatData)
+
         val canalMap = hashMapOf(
             "nombreGrupo" to nombre,
             "descripcion" to "Esta es la descripción de la comunidad",
@@ -106,7 +133,8 @@ class CrearComunidadActivity : AppCompatActivity() {
             "eventos" to listOf<String>(),
             "imagenGrupo" to "",  // Sin imagen por ahora
             "mensajes" to HashMap<String, Any>(),  // Mensajes vacíos inicialmente
-            "privado" to false  // Es público (canal)
+            "privado" to false, // Es público (canal)
+            "chatId" to chatId
         )
 
         // Guardar en Firebase

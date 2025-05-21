@@ -88,6 +88,8 @@ class MapsActivity : AppCompatActivity() {
     private var distanciaRecorrida = 0.0
     private var ultimaUbicacion: GeoPoint? = null
     private var carreraDestino: GeoPoint? = null
+    private var permisoSolicitado = false
+    private var gpsDialogShown = false
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
 
@@ -105,11 +107,9 @@ class MapsActivity : AppCompatActivity() {
     val locationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
         ActivityResultCallback {
+            permisoSolicitado = true
             if (it) {
                 locationSettings()
-            } else {
-                Toast.makeText(this, "No hay permiso para acceder al GPS", Toast.LENGTH_SHORT)
-                    .show()
             }
         }
     )
@@ -133,11 +133,10 @@ class MapsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        gpsDialogShown = false
         auth = FirebaseAuth.getInstance()
         // Solicita permiso para notificaciones
         NotificacionesDisponibles.getInstance().inicializar(this)
-
         carreraId = intent.getStringExtra("carrera_id") ?: ""
 
         if (carreraId.isNotEmpty())
@@ -194,7 +193,6 @@ class MapsActivity : AppCompatActivity() {
             }
         }
 
-
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         sensorEventListener = createSensorEventListener()
@@ -211,9 +209,7 @@ class MapsActivity : AppCompatActivity() {
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
-        locationClient = LocationServices.getFusedLocationProviderClient(this)
-        locationRequest = createLocationRequest()
-        locationCallback = createLocationCallback()
+        inicializarSuscrLocalizacion()
 
         binding.btnMyLocation.setOnClickListener {
             goToMyLocation()
@@ -234,6 +230,39 @@ class MapsActivity : AppCompatActivity() {
 
         askNotificationPermission()
 
+    }
+
+    private fun inicializarSuscrLocalizacion() {
+        locationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationRequest = createLocationRequest()
+        locationCallback = createLocationCallback()
+        suscribirLocalizacion()
+    }
+
+    private fun suscribirLocalizacion() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            )
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permiso concedido, continuar con la lógica de localización
+            locationSettings()
+        } else {
+            // Permiso no concedido
+            if (!permisoSolicitado && shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                // Mostrar explicación si el usuario ya lo denegó antes
+                Toast.makeText(
+                    this,
+                    "El permiso es necesario para acceder a las funciones de localización.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            // Solicitar el permiso (ya sea la primera vez o después de la explicación)
+            if (!permisoSolicitado) {
+                locationPermission.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        }
     }
 
     private fun cargarDestinoCarrera() {
@@ -507,13 +536,14 @@ class MapsActivity : AppCompatActivity() {
         )
         map.onResume()
         map.controller.setZoom(18.0)
+
         if (ActivityCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             locationSettings()
-        } else {
+        } else if (!permisoSolicitado) {
             locationPermission.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
 

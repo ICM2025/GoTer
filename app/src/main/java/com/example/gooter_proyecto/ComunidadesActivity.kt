@@ -50,14 +50,16 @@ class ComunidadesActivity : AppCompatActivity() {
                     val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
                     val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
                     val idChat = comunidadSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
+                    val idComunidad = comunidadSnap.key
                     if (adminId == userId || participantes.contains(userId)) {
                         val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        comunidades.add(Comunidad(nombre, R.drawable.background_username, miembros, participantes,idChat))
+                        comunidades.add(Comunidad(idComunidad.toString(), nombre, R.drawable.background_username, miembros, participantes,idChat))
                     }
                 }
                 comunidadAdapter = ComunidadAdapter(comunidades) { comunidad ->
                     val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
+                        putExtra("comunidadId", comunidad.id)
                         putExtra("nombreGrupo", comunidad.nombre)
                         putExtra("chatId", comunidad.idChat)
                     }

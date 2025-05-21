@@ -2,6 +2,7 @@ package com.example.gooter_proyecto
 
 import adapters.ChatAdapter
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
@@ -41,11 +42,10 @@ class ChatActivity : AppCompatActivity() {
     private val email = FirebaseAuth.getInstance().currentUser?.email
     private val uid = FirebaseAuth.getInstance().currentUser?.uid
     val usuario = hashMapOf(
+        "nombre" to "",
         "email" to email,
         "uid" to uid
     )
-
-
 
 
     // Lanzador para seleccionar imagen de galería
@@ -75,8 +75,6 @@ class ChatActivity : AppCompatActivity() {
         ActivityResultCallback { isGranted ->
             if (isGranted) {
                 Toast.makeText(this, "Permiso de audio concedido", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Permiso de audio denegado", Toast.LENGTH_SHORT).show()
             }
         }
     )
@@ -87,8 +85,6 @@ class ChatActivity : AppCompatActivity() {
         ActivityResultCallback { isGranted ->
             if (isGranted) {
                 Toast.makeText(this, "Permiso de almacenamiento concedido", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Permiso de almacenamiento denegado", Toast.LENGTH_SHORT).show()
             }
         }
     )
@@ -96,15 +92,24 @@ class ChatActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         val nombreGrupo = intent.getStringExtra("nombreGrupo")
         val idChat = intent.getStringExtra("chatId")
+        val idComunidad = intent.getStringExtra("comunidadId")
+        cargarNombreUsuario()
+
+        Log.i("idComunidad", idComunidad.toString())
 
         databaseRef = FirebaseDatabase.getInstance().getReference("chats").child(idChat!!).child("mensajes")
         cargarMensajesDesdeFirebase()
         binding.tvTitulo.text = nombreGrupo
+        binding.addPersona.setOnClickListener {
+            var i = Intent(this, AddPersonasComunidadActivity::class.java)
+            i.putExtra("id_comunidad", idComunidad)
+            startActivity(i)
+        }
         adapter = ChatAdapter(mensajes)
         binding.listaMensajes.layoutManager = LinearLayoutManager(this)
         binding.listaMensajes.adapter = adapter
@@ -125,9 +130,10 @@ class ChatActivity : AppCompatActivity() {
         // Enviar texto
         binding.btnEnviar.setOnClickListener {
             val texto = binding.editTextMensaje.text.toString()
+            Log.e("el nombre es" , usuario["nombre"].toString())
             if (texto.isNotEmpty()) {
                 val mensaje = Mensaje(
-                    nombre = "sigma",
+                    nombre = usuario["nombre"].toString(),
                     correo = email,
                     propioMensaje = false,
                     contenido = texto,
@@ -145,6 +151,7 @@ class ChatActivity : AppCompatActivity() {
                     }
             }
         }
+
 
 
         // Seleccionar imagen de la galería
@@ -172,14 +179,32 @@ class ChatActivity : AppCompatActivity() {
             grabarAudio()
         }
 
-
-
         binding.botonBack.setOnClickListener {
             //regresa a ComunidadesActivity
             finish()
         }
     }
 
+    private fun cargarNombreUsuario() {
+        var database = FirebaseDatabase.getInstance().reference
+        if (uid != null) {
+            database.child("usuarios").child(uid).get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val nombreSnapshot = snapshot.child("nombre").getValue(String::class.java) ?: ""
+                        val apellidoSnapshot = snapshot.child("apellidos").getValue(String::class.java) ?: ""
+                        usuario["nombre"] = nombreSnapshot + " " +  apellidoSnapshot[0] + "."
+                    } else {
+                        Toast.makeText(this, "No se encontró el usuario", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al obtener datos del usuario", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            Toast.makeText(this, "Usuario no autenticado", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private fun cargarMensajesDesdeFirebase() {
         databaseRef.addValueEventListener(object : ValueEventListener {
@@ -190,6 +215,7 @@ class ChatActivity : AppCompatActivity() {
                     if (mensaje != null) {
                         if(mensaje.correo == email){
                             mensaje.propioMensaje = true
+                            mensaje.nombre = "Tu"
                         }
                         mensajes.add(mensaje)
                     }

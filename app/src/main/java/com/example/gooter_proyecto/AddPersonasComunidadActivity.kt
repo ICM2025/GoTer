@@ -35,6 +35,10 @@ class AddPersonasComunidadActivity : AppCompatActivity() {
                 loadUsuarios(databaseRef, it)
             }
         }
+
+        binding.botonBack.setOnClickListener {
+            finish()
+        }
     }
 
     private fun loadUsuarios(databaseRef: DatabaseReference, idComunidad: String) {

@@ -1,6 +1,7 @@
 package models
 data class Mensaje(
     var nombre: String? = null,
+    var correo: String? = null,
     var propioMensaje: Boolean = false,
     var contenido: String? = null,
     var tipo: String? = null,
@@ -8,5 +9,5 @@ data class Mensaje(
     var timestamp: Long = 0
 ) {
     // Constructor vacío requerido por Firebase
-    constructor() : this("", false, "", "", null, 0)
+    constructor() : this("", "", false, "", "", null, 0)
 }

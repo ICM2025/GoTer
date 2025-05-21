@@ -32,7 +32,7 @@ class ChatAdapter(private val mensajes: List<Mensaje>) : RecyclerView.Adapter<Ch
 
     class MensajeViewHolder(private val binding: ItemMensajeBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(mensaje: Mensaje) {
-            if (mensaje.propioMensaje) {
+            if (!mensaje.propioMensaje) {
                 // Show sender, hide receiver
                 binding.senderLayout.visibility = View.VISIBLE
                 binding.receiverLayout.visibility = View.GONE

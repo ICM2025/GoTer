@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityChatBinding
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -37,6 +38,12 @@ class ChatActivity : AppCompatActivity() {
     var rutaAudio: String? = null
     var estaGrabando = false
     private lateinit var databaseRef: DatabaseReference
+    private val email = FirebaseAuth.getInstance().currentUser?.email
+    private val uid = FirebaseAuth.getInstance().currentUser?.uid
+    val usuario = hashMapOf(
+        "email" to email,
+        "uid" to uid
+    )
 
 
 
@@ -120,8 +127,9 @@ class ChatActivity : AppCompatActivity() {
             val texto = binding.editTextMensaje.text.toString()
             if (texto.isNotEmpty()) {
                 val mensaje = Mensaje(
-                    nombre = "sigma", // O el nombre del usuario actual
-                    propioMensaje = true,
+                    nombre = "sigma",
+                    correo = email,
+                    propioMensaje = false,
                     contenido = texto,
                     tipo = "TEXTO",
                     uri = "",
@@ -180,6 +188,9 @@ class ChatActivity : AppCompatActivity() {
                 for (mensajeSnap in snapshot.children) {
                     val mensaje = mensajeSnap.getValue(Mensaje::class.java)
                     if (mensaje != null) {
+                        if(mensaje.correo == email){
+                            mensaje.propioMensaje = true
+                        }
                         mensajes.add(mensaje)
                     }
                 }

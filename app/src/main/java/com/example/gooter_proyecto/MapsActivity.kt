@@ -58,6 +58,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import android.os.Handler
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import com.google.firebase.database.GenericTypeIndicator
 import java.time.LocalDate
 
@@ -113,6 +114,20 @@ class MapsActivity : AppCompatActivity() {
         }
     )
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Toast.makeText(this, "Notificaciones permitidas en MapMenu", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(
+                this,
+                "Las notificaciones están deshabilitadas en MapMenu",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,6 +135,8 @@ class MapsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
+        // Solicita permiso para notificaciones
+        NotificacionesDisponibles.getInstance().inicializar(this)
 
         carreraId = intent.getStringExtra("carrera_id") ?: ""
 
@@ -214,6 +231,9 @@ class MapsActivity : AppCompatActivity() {
                 locationUpdateHandler.postDelayed(this, 7000)
             }
         }
+
+        askNotificationPermission()
+
     }
 
     private fun cargarDestinoCarrera() {
@@ -539,6 +559,29 @@ class MapsActivity : AppCompatActivity() {
             }
         }
         return sel
+    }
+
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.d("MapMenuActivity", "Notification permission already granted.")
+                // Ya tienes el permiso
+            } else if (shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
+                // Opcional: Muestra una UI explicando por qué necesitas el permiso.
+                // Por ahora, solo lo solicitamos.
+                Log.d("MapMenuActivity", "Showing rationale or requesting permission.")
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                // Solicita el permiso
+                Log.d("MapMenuActivity", "Requesting notification permission.")
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     override fun onPause() {

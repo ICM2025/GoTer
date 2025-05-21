@@ -58,6 +58,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import android.os.Handler
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import com.google.firebase.database.GenericTypeIndicator
 import java.time.LocalDate
 
@@ -87,6 +88,8 @@ class MapsActivity : AppCompatActivity() {
     private var distanciaRecorrida = 0.0
     private var ultimaUbicacion: GeoPoint? = null
     private var carreraDestino: GeoPoint? = null
+    private var permisoSolicitado = false
+    private var gpsDialogShown = false
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
 
@@ -104,23 +107,36 @@ class MapsActivity : AppCompatActivity() {
     val locationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
         ActivityResultCallback {
+            permisoSolicitado = true
             if (it) {
                 locationSettings()
-            } else {
-                Toast.makeText(this, "No hay permiso para acceder al GPS", Toast.LENGTH_SHORT)
-                    .show()
             }
         }
     )
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Toast.makeText(this, "Notificaciones permitidas en MapMenu", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(
+                this,
+                "Las notificaciones están deshabilitadas en MapMenu",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        gpsDialogShown = false
         auth = FirebaseAuth.getInstance()
-
+        // Solicita permiso para notificaciones
+        NotificacionesDisponibles.getInstance().inicializar(this)
         carreraId = intent.getStringExtra("carrera_id") ?: ""
 
         if (carreraId.isNotEmpty())
@@ -177,7 +193,6 @@ class MapsActivity : AppCompatActivity() {
             }
         }
 
-
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
         sensorEventListener = createSensorEventListener()
@@ -194,9 +209,7 @@ class MapsActivity : AppCompatActivity() {
         val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
-        locationClient = LocationServices.getFusedLocationProviderClient(this)
-        locationRequest = createLocationRequest()
-        locationCallback = createLocationCallback()
+        inicializarSuscrLocalizacion()
 
         binding.btnMyLocation.setOnClickListener {
             goToMyLocation()
@@ -212,6 +225,42 @@ class MapsActivity : AppCompatActivity() {
             override fun run() {
                 guardarUsuarioUbicacionFirebase()
                 locationUpdateHandler.postDelayed(this, 7000)
+            }
+        }
+
+        askNotificationPermission()
+
+    }
+
+    private fun inicializarSuscrLocalizacion() {
+        locationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationRequest = createLocationRequest()
+        locationCallback = createLocationCallback()
+        suscribirLocalizacion()
+    }
+
+    private fun suscribirLocalizacion() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            )
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permiso concedido, continuar con la lógica de localización
+            locationSettings()
+        } else {
+            // Permiso no concedido
+            if (!permisoSolicitado && shouldShowRequestPermissionRationale(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                // Mostrar explicación si el usuario ya lo denegó antes
+                Toast.makeText(
+                    this,
+                    "El permiso es necesario para acceder a las funciones de localización.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            // Solicitar el permiso (ya sea la primera vez o después de la explicación)
+            if (!permisoSolicitado) {
+                locationPermission.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
     }
@@ -487,13 +536,14 @@ class MapsActivity : AppCompatActivity() {
         )
         map.onResume()
         map.controller.setZoom(18.0)
+
         if (ActivityCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             locationSettings()
-        } else {
+        } else if (!permisoSolicitado) {
             locationPermission.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
@@ -539,6 +589,29 @@ class MapsActivity : AppCompatActivity() {
             }
         }
         return sel
+    }
+
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                Log.d("MapMenuActivity", "Notification permission already granted.")
+                // Ya tienes el permiso
+            } else if (shouldShowRequestPermissionRationale(android.Manifest.permission.POST_NOTIFICATIONS)) {
+                // Opcional: Muestra una UI explicando por qué necesitas el permiso.
+                // Por ahora, solo lo solicitamos.
+                Log.d("MapMenuActivity", "Showing rationale or requesting permission.")
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                // Solicita el permiso
+                Log.d("MapMenuActivity", "Requesting notification permission.")
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     override fun onPause() {

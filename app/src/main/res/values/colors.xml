@@ -14,4 +14,5 @@
     <color name="light_blue">#EDF3FF</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="gray_text">#757575</color>
+    <color name="notification_color">#FF5722</color>
 </resources>

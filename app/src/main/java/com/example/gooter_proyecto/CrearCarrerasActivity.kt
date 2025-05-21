@@ -25,6 +25,7 @@ import com.example.gooter_proyecto.databinding.ActivityCrearCarrerasBinding
 import com.google.android.gms.location.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.gson.Gson
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -32,6 +33,15 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
 import models.Comunidad
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.Response
+import org.json.JSONObject
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -331,7 +341,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                         val comId = comunidadSnap.key ?: continue
                         val nombreGrupo = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
-
+                        val chatId = comunidadSnap.child("chatId").getValue(String::class.java)?: "Sin nombre"
                         // Extraer participantes correctamente
                         val participantes = mutableListOf<String>()
                         val participantesNode = comunidadSnap.child("participantes")
@@ -357,7 +367,8 @@ class CrearCarrerasActivity : AppCompatActivity() {
                                 nombre = nombreGrupo,
                                 imagen = R.drawable.ic_user,
                                 miembros = miembros,
-                                participantes = participantes
+                                participantes = participantes,
+                                idChat = chatId
                             ))
                         }
                     } catch (e: Exception) {
@@ -478,7 +489,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
         database.reference.child("carreras").child(carreraId).setValue(carrera)
             .addOnSuccessListener {
                 Toast.makeText(this, "Carrera creada para ${comunidad.nombre}", Toast.LENGTH_SHORT).show()
-                enviarNotificacionesCarrera(comunidad, carreraId, distancia)
+                enviarNotificacionesCarrera(comunidad, carreraId, usuarioId)
                 actualizarUbicacionParticipante(carreraId)
                 val intent = Intent(this, MapsActivity::class.java).apply {
                     putExtra("carrera_id", carreraId)
@@ -522,35 +533,65 @@ class CrearCarrerasActivity : AppCompatActivity() {
         clienteUbicacion.requestLocationUpdates(solicitud, ubicacionCallback, Looper.getMainLooper())
     }
 
-    private fun enviarNotificacionesCarrera(comunidad: Comunidad, carreraId: String, distancia: Double) {
-        val usuarioId = autenticacion.currentUser?.uid ?: return
-        val fechaHora = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
+    private fun enviarNotificacionesCarrera(comunidad: Comunidad, carreraId: String, usuarioID: String) {
 
-        database.reference.child("usuarios").child(usuarioId).child("nombre").get()
-            .addOnSuccessListener { snapshot ->
-                val nombreOrganizador = snapshot.getValue(String::class.java) ?: "Un organizador"
+        val url = "https://us-central1-go-oter-ee454.cloudfunctions.net/notifyCommunityChallengeAvailable"
 
-                comunidad.participantes.forEach { participanteId ->
-                    if (participanteId != usuarioId) {
-                        val notificacionId = database.reference.child("notificaciones").push().key ?: return@forEach
+        // Crear mapa de datos para la petición
+        val dataMap = mapOf(
+            "nombreComunidad" to comunidad.nombre,
+            "carreraUid" to carreraId,
+            "creadorUid" to usuarioID
+        )
 
-                        val notificacion = mapOf(
-                            "idNotificacion" to notificacionId,
-                            "emisorId" to usuarioId,
-                            "destinatarioId" to participanteId,
-                            "fechaHora" to fechaHora,
-                            "leida" to false,
-                            "tipo" to "Carrera",
-                            "mensaje" to "$nombreOrganizador ha creado una nueva carrera en ${comunidad.nombre} (${"%.1f".format(distancia)} km)",
-                            "accion" to "ver_carrera",
-                            "metadatos" to mapOf("carrera_id" to carreraId)
-                        )
+        // Convertir a JSON con Gson
+        val payload = Gson().toJson(dataMap)
+        Log.d("EnviarNotificacion", "Enviando notificación de carrera: $payload")
 
-                        database.reference.child("notificaciones").child(notificacionId).setValue(notificacion)
+        // Crear cuerpo de la petición
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val body = RequestBody.create(mediaType, payload)
+
+        // Crear la petición
+        val request = Request.Builder()
+            .url(url)
+            .post(body)
+            .build()
+
+        // Enviar la petición de forma asíncrona
+        OkHttpClient().newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("EnviarNotificacion", "Error al llamar a la Cloud Function", e)
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (!response.isSuccessful) {
+                    Log.e("EnviarNotificacion", "Error de Cloud Function: ${response.code}")
+                } else {
+                    // Procesar respuesta
+                    val responseBody = response.body?.string()
+                    Log.i("EnviarNotificacion", "Notificación enviada con éxito: $responseBody")
+
+                    try {
+                        // Parsear la respuesta JSON
+                        val jsonResponse = JSONObject(responseBody)
+                        val success = jsonResponse.optInt("success", 0)
+                        val failure = jsonResponse.optInt("failure", 0)
+
+                        // Opcional: Guardar registro
+                    } catch (e: Exception) {
+                        Log.e("EnviarNotificacion", "Error al procesar la respuesta", e)
                     }
                 }
+
+                response.close()
             }
+        })
+
+        //AQUI TAMBIEN CREARIA LA NOTIFICACION QUE SE VE EN EL HOME Y EN EL OTRO LADO
+
     }
+
 
     private fun iniciarActualizacionesUbicacion() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {

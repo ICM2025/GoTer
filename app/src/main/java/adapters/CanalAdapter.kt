@@ -27,6 +27,8 @@ class CanalAdapter(
         // Configurar el botón según el estado actual
         holder.binding.ButtonSeguir.text = if (canal.seguido) "Siguiendo" else "Seguir"
 
+        //aca falta añadir que cuando se oprima se agregue el jugador a esa comunidad
+
         // Cambiar estado de seguimiento al hacer clic
         holder.binding.ButtonSeguir.setOnClickListener {
             canal.seguido = !canal.seguido

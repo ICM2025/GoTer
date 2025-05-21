@@ -49,16 +49,17 @@ class ComunidadesActivity : AppCompatActivity() {
                 for (comunidadSnap in snapshot.children) {
                     val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
                     val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
-
+                    val idChat = comunidadSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
                     if (adminId == userId || participantes.contains(userId)) {
                         val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        comunidades.add(Comunidad(nombre, R.drawable.background_username, miembros, participantes))
+                        comunidades.add(Comunidad(nombre, R.drawable.background_username, miembros, participantes,idChat))
                     }
                 }
                 comunidadAdapter = ComunidadAdapter(comunidades) { comunidad ->
                     val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
                         putExtra("nombreGrupo", comunidad.nombre)
+                        putExtra("chatId", comunidad.idChat)
                     }
                     startActivity(intent)
                 }
@@ -84,17 +85,18 @@ class ComunidadesActivity : AppCompatActivity() {
                 for (canalSnap in snapshot.children) {
                     val adminId = canalSnap.child("administrador").getValue(String::class.java)
                     val miembros = canalSnap.child("miembros").children.mapNotNull { it.getValue(String::class.java) }
-
+                    val idChat = canalSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
                     if (adminId == userId || miembros.contains(userId)) {
                         val nombre = canalSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val privado = canalSnap.child("privado").getValue(Boolean::class.java) ?: false
-                        canales.add(Canal(nombre, R.drawable.background_username, privado, miembros.size))
+                        canales.add(Canal(nombre, R.drawable.background_username, privado, miembros.size, idChat))
                     }
                 }
 
                 canalAdapter = CanalAdapter(canales) { canal ->
                     val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
-                        putExtra("nombreGrupo", canal.nombre)
+                        intent.putExtra("nombreGrupo", canal.nombre)
+                        intent.putExtra("chatId", canal.idChat)
                     }
                     startActivity(intent)
                 }

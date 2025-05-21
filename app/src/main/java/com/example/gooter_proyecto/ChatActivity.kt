@@ -14,12 +14,18 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Color
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityChatBinding
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import models.Mensaje
-import models.TipoMensaje
 import java.io.File
 import java.io.IOException
 
@@ -31,6 +37,16 @@ class ChatActivity : AppCompatActivity() {
     var grabadora: MediaRecorder? = null
     var rutaAudio: String? = null
     var estaGrabando = false
+    private lateinit var databaseRef: DatabaseReference
+    private val email = FirebaseAuth.getInstance().currentUser?.email
+    private val uid = FirebaseAuth.getInstance().currentUser?.uid
+    val usuario = hashMapOf(
+        "email" to email,
+        "uid" to uid
+    )
+
+
+
 
     // Lanzador para seleccionar imagen de galería
     private val galeriaLauncher = registerForActivityResult(
@@ -51,20 +67,7 @@ class ChatActivity : AppCompatActivity() {
         }
     )
 
-    // Lanzador para grabar audio
-    private val audioLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
-        ActivityResultCallback { resultado ->
-            if (resultado.resultCode == Activity.RESULT_OK) {
-                val audioUri: Uri? = resultado.data?.data
-                audioUri?.let {
-                    mensajes.add(Mensaje("Audio grabado", TipoMensaje.AUDIO, uri = it.toString()))
-                    adapter.notifyItemInserted(mensajes.size - 1)
-                    binding.listaMensajes.scrollToPosition(mensajes.size - 1)
-                }
-            }
-        }
-    )
+
 
     // Permiso para grabar audio
     val audioPermission = registerForActivityResult(
@@ -93,17 +96,21 @@ class ChatActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         val nombreGrupo = intent.getStringExtra("nombreGrupo")
+        val idChat = intent.getStringExtra("chatId")
+
+        databaseRef = FirebaseDatabase.getInstance().getReference("chats").child(idChat!!).child("mensajes")
+        cargarMensajesDesdeFirebase()
         binding.tvTitulo.text = nombreGrupo
         adapter = ChatAdapter(mensajes)
         binding.listaMensajes.layoutManager = LinearLayoutManager(this)
         binding.listaMensajes.adapter = adapter
-
         requestAudioPermission()
         requestStoragePermission()
+
 
         val readPermission = android.Manifest.permission.READ_EXTERNAL_STORAGE
         if (ContextCompat.checkSelfPermission(this, readPermission) == PackageManager.PERMISSION_DENIED) {
@@ -119,13 +126,26 @@ class ChatActivity : AppCompatActivity() {
         binding.btnEnviar.setOnClickListener {
             val texto = binding.editTextMensaje.text.toString()
             if (texto.isNotEmpty()) {
-                Toast.makeText(this, "Mensaje enviado", Toast.LENGTH_SHORT).show()
-                mensajes.add(Mensaje(texto, TipoMensaje.TEXTO))
-                adapter.notifyItemInserted(mensajes.size - 1)
-                binding.editTextMensaje.text.clear()
-                binding.listaMensajes.scrollToPosition(mensajes.size - 1)
+                val mensaje = Mensaje(
+                    nombre = "sigma",
+                    correo = email,
+                    propioMensaje = false,
+                    contenido = texto,
+                    tipo = "TEXTO",
+                    uri = "",
+                    timestamp = System.currentTimeMillis()
+                )
+                databaseRef.push().setValue(mensaje)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Mensaje enviado", Toast.LENGTH_SHORT).show()
+                        binding.editTextMensaje.text.clear()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Error al enviar el mensaje", Toast.LENGTH_SHORT).show()
+                    }
             }
         }
+
 
         // Seleccionar imagen de la galería
         binding.btnCargarImagen.setOnClickListener {
@@ -146,15 +166,42 @@ class ChatActivity : AppCompatActivity() {
             camaraLauncher.launch(uri)
         }
 
+
         // Grabar audio
         binding.btnGrabarAudio.setOnClickListener {
             grabarAudio()
         }
 
+
+
         binding.botonBack.setOnClickListener {
             //regresa a ComunidadesActivity
             finish()
         }
+    }
+
+
+    private fun cargarMensajesDesdeFirebase() {
+        databaseRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                mensajes.clear()
+                for (mensajeSnap in snapshot.children) {
+                    val mensaje = mensajeSnap.getValue(Mensaje::class.java)
+                    if (mensaje != null) {
+                        if(mensaje.correo == email){
+                            mensaje.propioMensaje = true
+                        }
+                        mensajes.add(mensaje)
+                    }
+                }
+                adapter.notifyDataSetChanged()
+                binding.listaMensajes.scrollToPosition(mensajes.size - 1)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@ChatActivity, "Error al cargar mensajes", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun requestAudioPermission() {
@@ -206,7 +253,7 @@ class ChatActivity : AppCompatActivity() {
 
             // Agrega el mensaje al chat
             rutaAudio?.let {
-                mensajes.add(Mensaje("Audio grabado", TipoMensaje.AUDIO, uri = it))
+                //mensajes.add(Mensaje("Audio grabado", TipoMensaje.AUDIO, uri = it))
                 adapter.notifyItemInserted(mensajes.size - 1)
                 binding.listaMensajes.scrollToPosition(mensajes.size - 1)
             }
@@ -219,7 +266,7 @@ class ChatActivity : AppCompatActivity() {
         val imageStream = getContentResolver().openInputStream(uri)
         // Convierte los bytes de la imagen en un objeto que Android puede mostrar
         val bitmap = BitmapFactory.decodeStream(imageStream)
-        mensajes.add(Mensaje("Mensaje", TipoMensaje.IMAGEN, uri = uri.toString()))
+        //mensajes.add(Mensaje("Mensaje", TipoMensaje.IMAGEN, uri = uri.toString()))
         adapter.notifyItemInserted(mensajes.size - 1)
         binding.listaMensajes.scrollToPosition(mensajes.size - 1)
     }

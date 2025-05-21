@@ -3,6 +3,7 @@ package com.example.gooter_proyecto
 import adapters.ComunidadHomeAdapter
 import adapters.NotificacionAdapter
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -100,7 +101,61 @@ class HomeActivity : AppCompatActivity() {
         binding.btnActividad.setOnClickListener {
             startActivity(Intent(this, EstadisticasFechaInicioActivity::class.java))
         }
+        permisoNotificaciones()
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == 1001) {
+            val prefs = getSharedPreferences("permisos", MODE_PRIVATE)
+            val editor = prefs.edit()
+
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                NotificacionesDisponibles.getInstance().inicializar(this)
+                editor.putInt("rechazos_notificaciones", 0).apply()
+            } else {
+                val rechazosActuales = prefs.getInt("rechazos_notificaciones", 0)
+                editor.putInt("rechazos_notificaciones", rechazosActuales + 1).apply()
+            }
+        }
+    }
+
+
+    private fun permisoNotificaciones() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val prefs = getSharedPreferences("permisos", MODE_PRIVATE)
+            val rechazos = prefs.getInt("rechazos_notificaciones", 0)
+
+            val permiso = android.Manifest.permission.POST_NOTIFICATIONS
+
+            if (checkSelfPermission(permiso) == PackageManager.PERMISSION_GRANTED) {
+                NotificacionesDisponibles.getInstance().inicializar(this)
+            } else {
+                // Si ya ha rechazado dos veces, no pedimos más
+                if (rechazos >= 2) return
+
+                // Si rechazó una vez, mostramos racional si aplica
+                if (rechazos == 1 && shouldShowRequestPermissionRationale(permiso)) {
+                    Toast.makeText(
+                        this,
+                        "La app necesita el permiso de notificaciones para avisarte de novedades importantes.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                requestPermissions(arrayOf(permiso), 1001)
+            }
+        } else {
+            NotificacionesDisponibles.getInstance().inicializar(this)
+        }
+    }
+
+
 
     private fun loadActivitySummary(userId: String) {
         val statsRef = database.child("estadisticasUsuarios").child(userId)
@@ -221,11 +276,11 @@ class HomeActivity : AppCompatActivity() {
                 for (comunidadSnap in snapshot.children) {
                     val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
                     val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
-
+                    val idChat = comunidadSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
                     if (adminId == userId || participantes.contains(userId)) {
                         val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        comunidades.add(Comunidad(nombre, R.drawable.ic_user, miembros, participantes))
+                        comunidades.add(Comunidad(nombre, R.drawable.ic_user, miembros, participantes, idChat))
                     }
                 }
 

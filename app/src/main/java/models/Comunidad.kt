@@ -5,9 +5,10 @@ data class Comunidad(
     val nombre: String,               // Nombre del grupo
     val imagen: Int,                  // Recurso de imagen
     val miembros: Int,                // Número de miembros
-    val participantes: List<String>   // Lista de IDs de participantes
+    val participantes: List<String>,   // Lista de IDs de participantes
+    val idChat : String
 ) {
     // Constructor secundario simplificado para compatibilidad
-    constructor(nombre: String, imagen: Int, miembros: Int, participantes: List<String>) :
-            this("", nombre, imagen, miembros, participantes)
+    constructor(nombre: String, imagen: Int, miembros: Int, participantes: List<String>, idChat: String) :
+            this("", nombre, imagen, miembros, participantes, idChat)
 }

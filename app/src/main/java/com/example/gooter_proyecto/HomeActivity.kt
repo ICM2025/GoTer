@@ -222,11 +222,11 @@ class HomeActivity : AppCompatActivity() {
                 for (comunidadSnap in snapshot.children) {
                     val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
                     val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
-
+                    val idChat = comunidadSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
                     if (adminId == userId || participantes.contains(userId)) {
                         val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        comunidades.add(Comunidad(nombre, R.drawable.ic_user, miembros, participantes))
+                        comunidades.add(Comunidad(nombre, R.drawable.ic_user, miembros, participantes, idChat))
                     }
                 }
 

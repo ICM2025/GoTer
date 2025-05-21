@@ -341,7 +341,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                         val comId = comunidadSnap.key ?: continue
                         val nombreGrupo = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
-
+                        val chatId = comunidadSnap.child("chatId").getValue(String::class.java)?: "Sin nombre"
                         // Extraer participantes correctamente
                         val participantes = mutableListOf<String>()
                         val participantesNode = comunidadSnap.child("participantes")
@@ -367,7 +367,8 @@ class CrearCarrerasActivity : AppCompatActivity() {
                                 nombre = nombreGrupo,
                                 imagen = R.drawable.ic_user,
                                 miembros = miembros,
-                                participantes = participantes
+                                participantes = participantes,
+                                idChat = chatId
                             ))
                         }
                     } catch (e: Exception) {

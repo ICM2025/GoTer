@@ -14,14 +14,17 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Color
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityChatBinding
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import models.Mensaje
-import models.TipoMensaje
 import java.io.File
 import java.io.IOException
 
@@ -34,6 +37,7 @@ class ChatActivity : AppCompatActivity() {
     var rutaAudio: String? = null
     var estaGrabando = false
     private lateinit var databaseRef: DatabaseReference
+
 
 
 
@@ -55,6 +59,7 @@ class ChatActivity : AppCompatActivity() {
             }
         }
     )
+
 
 
     // Permiso para grabar audio
@@ -88,7 +93,10 @@ class ChatActivity : AppCompatActivity() {
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val nombreGrupo = intent.getStringExtra("nombreGrupo")
-        databaseRef = FirebaseDatabase.getInstance().getReference("chats").child(nombreGrupo!!)
+        val idChat = intent.getStringExtra("chatId")
+
+        databaseRef = FirebaseDatabase.getInstance().getReference("chats").child(idChat!!).child("mensajes")
+        cargarMensajesDesdeFirebase()
         binding.tvTitulo.text = nombreGrupo
         adapter = ChatAdapter(mensajes)
         binding.listaMensajes.layoutManager = LinearLayoutManager(this)
@@ -112,11 +120,11 @@ class ChatActivity : AppCompatActivity() {
             val texto = binding.editTextMensaje.text.toString()
             if (texto.isNotEmpty()) {
                 val mensaje = Mensaje(
-                    nombre = "Tú", // O el nombre del usuario actual
+                    nombre = "sigma", // O el nombre del usuario actual
                     propioMensaje = true,
                     contenido = texto,
                     tipo = "TEXTO",
-                    uri = null,
+                    uri = "",
                     timestamp = System.currentTimeMillis()
                 )
                 databaseRef.push().setValue(mensaje)
@@ -129,6 +137,7 @@ class ChatActivity : AppCompatActivity() {
                     }
             }
         }
+
 
         // Seleccionar imagen de la galería
         binding.btnCargarImagen.setOnClickListener {
@@ -149,10 +158,13 @@ class ChatActivity : AppCompatActivity() {
             camaraLauncher.launch(uri)
         }
 
+
         // Grabar audio
         binding.btnGrabarAudio.setOnClickListener {
             grabarAudio()
         }
+
+
 
         binding.botonBack.setOnClickListener {
             //regresa a ComunidadesActivity
@@ -205,7 +217,6 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    /*
     private fun grabarAudio() {
         if (!estaGrabando) {
             rutaAudio = "${getExternalFilesDir(null)?.absolutePath}/grabacion.3gp"
@@ -231,21 +242,20 @@ class ChatActivity : AppCompatActivity() {
 
             // Agrega el mensaje al chat
             rutaAudio?.let {
-                mensajes.add(Mensaje("Audio grabado", TipoMensaje.AUDIO, uri = it))
+                //mensajes.add(Mensaje("Audio grabado", TipoMensaje.AUDIO, uri = it))
                 adapter.notifyItemInserted(mensajes.size - 1)
                 binding.listaMensajes.scrollToPosition(mensajes.size - 1)
             }
             Toast.makeText(this, "Grabación terminada", Toast.LENGTH_SHORT).show()
         }
     }
-     */
 
     private fun loadImage(uri: Uri) {
         // Abre iamgen desde la ruta
         val imageStream = getContentResolver().openInputStream(uri)
         // Convierte los bytes de la imagen en un objeto que Android puede mostrar
         val bitmap = BitmapFactory.decodeStream(imageStream)
-        mensajes.add(Mensaje("Mensaje", TipoMensaje.IMAGEN, uri = uri.toString()))
+        //mensajes.add(Mensaje("Mensaje", TipoMensaje.IMAGEN, uri = uri.toString()))
         adapter.notifyItemInserted(mensajes.size - 1)
         binding.listaMensajes.scrollToPosition(mensajes.size - 1)
     }

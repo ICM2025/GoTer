@@ -58,8 +58,8 @@ class ComunidadesActivity : AppCompatActivity() {
                 }
                 comunidadAdapter = ComunidadAdapter(comunidades) { comunidad ->
                     val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
-                        intent.putExtra("nombreGrupo", comunidad.nombre)
-                        intent.putExtra("chatId", comunidad.idChat)
+                        putExtra("nombreGrupo", comunidad.nombre)
+                        putExtra("chatId", comunidad.idChat)
                     }
                     startActivity(intent)
                 }

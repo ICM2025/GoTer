@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.gooter_proyecto.databinding.ItemMensajeBinding
 import models.Mensaje
-import models.TipoMensaje
 
 
 
@@ -33,46 +32,101 @@ class ChatAdapter(private val mensajes: List<Mensaje>) : RecyclerView.Adapter<Ch
 
     class MensajeViewHolder(private val binding: ItemMensajeBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(mensaje: Mensaje) {
-            when (mensaje.tipo) {
-                TipoMensaje.TEXTO -> {
-                    binding.textViewMensaje.text = mensaje.contenido
-                    binding.textViewMensaje.visibility = View.VISIBLE
-                    binding.imageViewImagen.visibility = View.GONE
-                    binding.audioPlayer.visibility = View.GONE
-                }
-                TipoMensaje.IMAGEN -> {
-                    binding.imageViewImagen.visibility = View.VISIBLE
-                    Glide.with(binding.root.context).load(mensaje.uri).into(binding.imageViewImagen)
-                    binding.textViewMensaje.visibility = View.GONE
-                    binding.audioPlayer.visibility = View.GONE
-                }
-                TipoMensaje.AUDIO -> {
-                    binding.audioPlayer.visibility = View.VISIBLE
-                    binding.textViewMensaje.visibility = View.GONE
-                    binding.imageViewImagen.visibility = View.GONE
+            if (mensaje.propioMensaje) {
+                // Show sender, hide receiver
+                binding.senderLayout.visibility = View.VISIBLE
+                binding.receiverLayout.visibility = View.GONE
 
-                    binding.audioPlayer.setOnClickListener {
-                        val uriAudio = mensaje.uri
-                        if (uriAudio != null) {
-                            try {
-                                val mediaPlayer = MediaPlayer()
-                                val context = binding.root.context
+                binding.textSenderName.text = mensaje.nombre ?: "You"
 
-                                val audioUri = Uri.parse(uriAudio)
-                                Log.d("REPRODUCCION", "URI del audio: $uriAudio")
-                                mediaPlayer.setDataSource(context, audioUri)  // CORRECTO PARA URI
-                                mediaPlayer.prepare()
-                                mediaPlayer.start()
+                when (mensaje.tipo) {
+                    "TEXTO" -> {
+                        binding.textSenderMessage.text = mensaje.contenido
+                        binding.textSenderMessage.visibility = View.VISIBLE
+                        binding.imageSender.visibility = View.GONE
+                        binding.audioSender.visibility = View.GONE
+                    }
+                    "IMAGEN" -> {
+                        binding.imageSender.visibility = View.VISIBLE
+                        Glide.with(binding.root.context).load(mensaje.uri).into(binding.imageSender)
+                        binding.textSenderMessage.visibility = View.GONE
+                        binding.audioSender.visibility = View.GONE
+                    }
+                    "AUDIO" -> {
+                        binding.audioSender.visibility = View.VISIBLE
+                        binding.textSenderMessage.visibility = View.GONE
+                        binding.imageSender.visibility = View.GONE
 
-                                Toast.makeText(context, "Reproduciendo audio...", Toast.LENGTH_SHORT).show()
-                                binding.audioPlayer.setText("Reproduccion")
+                        binding.audioSender.setOnClickListener {
+                            val uriAudio = mensaje.uri
+                            if (uriAudio != null) {
+                                try {
+                                    val mediaPlayer = MediaPlayer()
+                                    val context = binding.root.context
+                                    val audioUri = Uri.parse(uriAudio)
+                                    mediaPlayer.setDataSource(context, audioUri)
+                                    mediaPlayer.prepare()
+                                    mediaPlayer.start()
 
-                            } catch (e: Exception) {
-                                Toast.makeText(binding.root.context, "Error al reproducir audio", Toast.LENGTH_SHORT).show()
-                                e.printStackTrace()
+                                    Toast.makeText(context, "Reproduciendo audio...", Toast.LENGTH_SHORT).show()
+                                    binding.audioSender.text = "Reproduciendo"
+
+                                } catch (e: Exception) {
+                                    Toast.makeText(binding.root.context, "Error al reproducir audio", Toast.LENGTH_SHORT).show()
+                                    e.printStackTrace()
+                                }
+                            } else {
+                                Toast.makeText(binding.root.context, "No se encontró el archivo de audio", Toast.LENGTH_SHORT).show()
                             }
-                        } else {
-                            Toast.makeText(binding.root.context, "No se encontró el archivo de audio", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } else {
+                // Show receiver, hide sender
+                binding.senderLayout.visibility = View.GONE
+                binding.receiverLayout.visibility = View.VISIBLE
+
+                binding.textReceiverName.text = mensaje.nombre ?: "Other"
+
+                when (mensaje.tipo) {
+                    "TEXTO" -> {
+                        binding.textReceiverMessage.text = mensaje.contenido
+                        binding.textReceiverMessage.visibility = View.VISIBLE
+                        binding.imageReceiver.visibility = View.GONE
+                        binding.audioReceiver.visibility = View.GONE
+                    }
+                    "IMAGEN" -> {
+                        binding.imageReceiver.visibility = View.VISIBLE
+                        Glide.with(binding.root.context).load(mensaje.uri).into(binding.imageReceiver)
+                        binding.textReceiverMessage.visibility = View.GONE
+                        binding.audioReceiver.visibility = View.GONE
+                    }
+                    "AUDIO" -> {
+                        binding.audioReceiver.visibility = View.VISIBLE
+                        binding.textReceiverMessage.visibility = View.GONE
+                        binding.imageReceiver.visibility = View.GONE
+
+                        binding.audioReceiver.setOnClickListener {
+                            val uriAudio = mensaje.uri
+                            if (uriAudio != null) {
+                                try {
+                                    val mediaPlayer = MediaPlayer()
+                                    val context = binding.root.context
+                                    val audioUri = Uri.parse(uriAudio)
+                                    mediaPlayer.setDataSource(context, audioUri)
+                                    mediaPlayer.prepare()
+                                    mediaPlayer.start()
+
+                                    Toast.makeText(context, "Reproduciendo audio...", Toast.LENGTH_SHORT).show()
+                                    binding.audioReceiver.text = "Reproduciendo"
+
+                                } catch (e: Exception) {
+                                    Toast.makeText(binding.root.context, "Error al reproducir audio", Toast.LENGTH_SHORT).show()
+                                    e.printStackTrace()
+                                }
+                            } else {
+                                Toast.makeText(binding.root.context, "No se encontró el archivo de audio", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }

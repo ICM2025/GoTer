@@ -1,28 +1,112 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="15dp">
+    android:padding="8dp">
 
-    <TextView
-        android:id="@+id/textViewMensaje"
+    <!-- Sender bubble -->
+    <LinearLayout
+        android:id="@+id/senderLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:textSize="16dp"
-        android:text="Texto del mensaje" />
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="80dp"
+        android:orientation="vertical"
+        android:background="@drawable/text_rounded"
+        android:backgroundTint="#2196F3"
+        android:padding="8dp">
 
-    <ImageView
-        android:id="@+id/imageViewImagen"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:visibility="gone"
-        android:src="@drawable/ic_launcher_background" />
+        <!-- Sender name -->
+        <TextView
+            android:id="@+id/text_sender_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sender Name"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:paddingBottom="4dp"/>
 
-    <Button
-        android:id="@+id/audioPlayer"
+        <!-- Text message -->
+        <TextView
+            android:id="@+id/text_sender_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hello How are you?"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
+        <!-- Image message (fixed size, reserving space) -->
+        <ImageView
+            android:id="@+id/image_sender"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"/>
+
+        <!-- Audio player button (fixed size, reserving space) -->
+        <Button
+            android:id="@+id/audio_sender"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Play Audio"
+            android:visibility="gone"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp" />
+    </LinearLayout>
+
+    <!-- Receiver bubble -->
+    <LinearLayout
+        android:id="@+id/receiverLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Reproducir"
-        android:backgroundTint="@color/blue_buttons"
-        android:visibility="gone" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="80dp"
+        android:orientation="vertical"
+        android:background="@drawable/text_rounded"
+        android:backgroundTint="#4CAF50"
+        android:padding="8dp">
+
+        <!-- Receiver name -->
+        <TextView
+            android:id="@+id/text_receiver_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Receiver Name"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:paddingBottom="4dp"/>
+
+        <!-- Text message -->
+        <TextView
+            android:id="@+id/text_receiver_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="I am fine."
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
+        <!-- Image message (fixed size, reserving space) -->
+        <ImageView
+            android:id="@+id/image_receiver"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"/>
+
+        <!-- Audio player button (fixed size, reserving space) -->
+        <Button
+            android:id="@+id/audio_receiver"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Play Audio"
+            android:visibility="gone"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp" />
+    </LinearLayout>
+
 </RelativeLayout>

@@ -137,6 +137,7 @@ class MapsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        roadManager = OSRMRoadManager(this, "ANDROID")
         gpsDialogShown = false
         auth = FirebaseAuth.getInstance()
         // Solicita permiso para notificaciones

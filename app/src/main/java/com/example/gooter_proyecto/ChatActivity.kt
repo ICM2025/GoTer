@@ -26,9 +26,12 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import models.Mensaje
 import java.io.File
 import java.io.IOException
+import java.util.UUID
 
 class ChatActivity : AppCompatActivity() {
     private lateinit var binding: ActivityChatBinding
@@ -39,14 +42,16 @@ class ChatActivity : AppCompatActivity() {
     var rutaAudio: String? = null
     var estaGrabando = false
     private lateinit var databaseRef: DatabaseReference
+    private lateinit var chatRef: DatabaseReference
+    private lateinit var storageRef: StorageReference
     private val email = FirebaseAuth.getInstance().currentUser?.email
     private val uid = FirebaseAuth.getInstance().currentUser?.uid
+    private var idChat: String? = null
     val usuario = hashMapOf(
         "nombre" to "",
         "email" to email,
         "uid" to uid
     )
-
 
     // Lanzador para seleccionar imagen de galería
     private val galeriaLauncher = registerForActivityResult(
@@ -66,8 +71,6 @@ class ChatActivity : AppCompatActivity() {
             }
         }
     )
-
-
 
     // Permiso para grabar audio
     val audioPermission = registerForActivityResult(
@@ -89,20 +92,22 @@ class ChatActivity : AppCompatActivity() {
         }
     )
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val nombreGrupo = intent.getStringExtra("nombreGrupo")
-        val idChat = intent.getStringExtra("chatId")
+        idChat = intent.getStringExtra("chatId")
         val idComunidad = intent.getStringExtra("comunidadId")
         cargarNombreUsuario()
 
         Log.i("idComunidad", idComunidad.toString())
 
         databaseRef = FirebaseDatabase.getInstance().getReference("chats").child(idChat!!).child("mensajes")
+        chatRef = FirebaseDatabase.getInstance().getReference("chats").child(idChat!!)
+        storageRef = FirebaseStorage.getInstance().reference.child("chatsUris")
+
         cargarMensajesDesdeFirebase()
         binding.tvTitulo.text = nombreGrupo
         binding.addPersona.setOnClickListener {
@@ -115,7 +120,6 @@ class ChatActivity : AppCompatActivity() {
         binding.listaMensajes.adapter = adapter
         requestAudioPermission()
         requestStoragePermission()
-
 
         val readPermission = android.Manifest.permission.READ_EXTERNAL_STORAGE
         if (ContextCompat.checkSelfPermission(this, readPermission) == PackageManager.PERMISSION_DENIED) {
@@ -152,8 +156,6 @@ class ChatActivity : AppCompatActivity() {
             }
         }
 
-
-
         // Seleccionar imagen de la galería
         binding.btnCargarImagen.setOnClickListener {
             galeriaLauncher.launch("image/*")
@@ -172,7 +174,6 @@ class ChatActivity : AppCompatActivity() {
             // Lanza la camara
             camaraLauncher.launch(uri)
         }
-
 
         // Grabar audio
         binding.btnGrabarAudio.setOnClickListener {
@@ -287,14 +288,63 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
+    //Aqui basicamente agregue que se suba al storage, que agarre la url y guarda el mensaje en la base de datos
+
     private fun loadImage(uri: Uri) {
-        // Abre iamgen desde la ruta
-        val imageStream = getContentResolver().openInputStream(uri)
-        // Convierte los bytes de la imagen en un objeto que Android puede mostrar
-        val bitmap = BitmapFactory.decodeStream(imageStream)
-        //mensajes.add(Mensaje("Mensaje", TipoMensaje.IMAGEN, uri = uri.toString()))
-        adapter.notifyItemInserted(mensajes.size - 1)
-        binding.listaMensajes.scrollToPosition(mensajes.size - 1)
+
+        val nombreImagen = "imagen_${UUID.randomUUID()}.jpg"
+        val imageRef = storageRef.child(nombreImagen)
+
+        // Subir imagen a Firebase Storage
+        imageRef.putFile(uri)
+            .addOnSuccessListener { taskSnapshot ->
+                imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    val urlImagen = downloadUri.toString()
+                    val mensaje = Mensaje(
+                        nombre = usuario["nombre"].toString(),
+                        correo = email,
+                        propioMensaje = false,
+                        contenido = "",
+                        tipo = "IMAGEN",
+                        uri = urlImagen,
+                        timestamp = System.currentTimeMillis()
+                    )
+                        //base de datos
+                    databaseRef.push().setValue(mensaje)
+                        .addOnSuccessListener {
+                            guardarUrlImagenEnChat(urlImagen)
+                            Toast.makeText(this, "Imagen enviada", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(this, "Error al enviar imagen", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Toast.makeText(this, "Error al subir imagen: ${exception.message}", Toast.LENGTH_SHORT).show()
+                Log.e("ChatActivity", "Error al subir imagen", exception)
+            }
     }
 
+    //Y aqui lo que haces es guardar en la base de datos la imagen con la url del storage
+
+    private fun guardarUrlImagenEnChat(urlImagen: String) {
+        chatRef.get().addOnSuccessListener { snapshot ->
+            var contadorImagenes = 1
+            while (snapshot.hasChild("urlImagen$contadorImagenes")) {
+                contadorImagenes++
+            }
+            //guarda las imagenes con un contador pues pa identificar asi mas soft
+            val campoImagen = "urlImagen$contadorImagenes"
+            chatRef.child(campoImagen).setValue(urlImagen)
+                .addOnSuccessListener {
+                    Log.d("ChatActivity", "URL de imagen guardada como $campoImagen")
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("ChatActivity", "Error al guardar URL de imagen", exception)
+                }
+        }.addOnFailureListener { exception ->
+            Log.e("ChatActivity", "Error al obtener información del chat", exception)
+        }
+    }
 }

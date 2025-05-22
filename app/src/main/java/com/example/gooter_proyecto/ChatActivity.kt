@@ -278,13 +278,69 @@ class ChatActivity : AppCompatActivity() {
             estaGrabando = false
             binding.btnGrabarAudio.setBackgroundColor(Color.GRAY)
 
-            // Agrega el mensaje al chat
-            rutaAudio?.let {
-                //mensajes.add(Mensaje("Audio grabado", TipoMensaje.AUDIO, uri = it))
-                adapter.notifyItemInserted(mensajes.size - 1)
-                binding.listaMensajes.scrollToPosition(mensajes.size - 1)
+            rutaAudio?.let { rutaLocal ->
+                subirAudioAStorage(rutaLocal)
             }
             Toast.makeText(this, "Grabación terminada", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun subirAudioAStorage(rutaLocal: String) {
+        Toast.makeText(this, "Subiendo audio...", Toast.LENGTH_SHORT).show()
+
+        val nombreAudio = "audio_${UUID.randomUUID()}.3gp"
+        val audioRef = storageRef.child(nombreAudio)
+        val archivoAudio = Uri.fromFile(File(rutaLocal))
+
+        audioRef.putFile(archivoAudio)
+            .addOnSuccessListener { taskSnapshot ->
+                audioRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                    val urlAudio = downloadUri.toString()
+
+                    val mensaje = Mensaje(
+                        nombre = usuario["nombre"].toString(),
+                        correo = email,
+                        propioMensaje = false,
+                        contenido = "",
+                        tipo = "AUDIO",
+                        uri = urlAudio,
+                        timestamp = System.currentTimeMillis()
+                    )
+
+                    databaseRef.push().setValue(mensaje)
+                        .addOnSuccessListener {
+                            guardarUrlAudioEnChat(urlAudio)
+                            Toast.makeText(this, "Audio enviado", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(this, "Error al enviar audio", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Toast.makeText(this, "Error al subir audio: ${exception.message}", Toast.LENGTH_SHORT).show()
+                Log.e("ChatActivity", "Error al subir audio", exception)
+            }
+    }
+
+    private fun guardarUrlAudioEnChat(urlAudio: String) {
+        chatRef.get().addOnSuccessListener { snapshot ->
+            var contadorAudios = 1
+
+            while (snapshot.hasChild("urlAudio$contadorAudios")) {
+                contadorAudios++
+            }
+
+            val campoAudio = "urlAudio$contadorAudios"
+            chatRef.child(campoAudio).setValue(urlAudio)
+                .addOnSuccessListener {
+                    Log.d("ChatActivity", "URL de audio guardada como $campoAudio")
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("ChatActivity", "Error al guardar URL de audio", exception)
+                }
+        }.addOnFailureListener { exception ->
+            Log.e("ChatActivity", "Error al obtener información del chat", exception)
         }
     }
 

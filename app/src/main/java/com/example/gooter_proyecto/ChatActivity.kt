@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import android.graphics.Color
 import android.util.Log
+import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -129,6 +130,10 @@ class ChatActivity : AppCompatActivity() {
             storagePermission.launch(readPermission)
         } else {
             Toast.makeText(this, "Permiso de lectura ya concedido", Toast.LENGTH_SHORT).show()
+        }
+
+        if (intent.getStringExtra("canalId") != null) {
+            binding.addPersona.visibility = View.GONE
         }
 
         // Enviar texto

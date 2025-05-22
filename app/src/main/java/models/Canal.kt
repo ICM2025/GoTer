@@ -20,6 +20,16 @@ data class Canal(
                 idChat = idChat
             )
 
+    constructor(id: String, nom: String, imagen: Int, seguido: Boolean, numMiembros: Int, idChat: String) :
+            this(
+                id = id,
+                nombre = nom,
+                imagen = imagen,
+                seguido = seguido,
+                miembros = numMiembros,
+                idChat = idChat
+            )
+
     // Constructor para crear desde datos de Firebase
     constructor(id: String, canalData: Map<String, Any>, idChat: String) : this(
         id = id,

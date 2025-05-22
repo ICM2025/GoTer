@@ -88,17 +88,27 @@ class ComunidadesActivity : AppCompatActivity() {
                     val adminId = canalSnap.child("administrador").getValue(String::class.java)
                     val miembros = canalSnap.child("miembros").children.mapNotNull { it.getValue(String::class.java) }
                     val idChat = canalSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
-                    if (adminId == userId || miembros.contains(userId)) {
-                        val nombre = canalSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
-                        val privado = canalSnap.child("privado").getValue(Boolean::class.java) ?: false
-                        canales.add(Canal(nombre, R.drawable.background_username, privado, miembros.size, idChat))
-                    }
+                    val idCanal = canalSnap.key
+                    val nombre = canalSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
+                    val privado = canalSnap.child("privado").getValue(Boolean::class.java) ?: false
+
+                    canales.add(
+                        Canal(
+                            idCanal.toString(),
+                            nombre,
+                            R.drawable.background_username,
+                            privado,
+                            miembros.size,
+                            idChat
+                        )
+                    )
                 }
 
                 canalAdapter = CanalAdapter(canales) { canal ->
                     val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
-                        intent.putExtra("nombreGrupo", canal.nombre)
-                        intent.putExtra("chatId", canal.idChat)
+                        putExtra("nombreGrupo", canal.nombre)
+                        putExtra("chatId", canal.idChat)
+                        putExtra("canalId", canal.idChat)
                     }
                     startActivity(intent)
                 }
@@ -110,7 +120,6 @@ class ComunidadesActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
-
 
 
 }

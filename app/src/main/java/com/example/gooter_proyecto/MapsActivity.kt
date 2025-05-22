@@ -61,6 +61,8 @@ import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import com.google.firebase.database.GenericTypeIndicator
 import java.time.LocalDate
+import org.osmdroid.bonuspack.routing.OSRMRoadManager
+import org.osmdroid.bonuspack.routing.RoadManager
 
 class MapsActivity : AppCompatActivity() {
 
@@ -90,6 +92,8 @@ class MapsActivity : AppCompatActivity() {
     private var carreraDestino: GeoPoint? = null
     private var permisoSolicitado = false
     private var gpsDialogShown = false
+    private lateinit var roadManager: RoadManager
+    private var roadOverlay: Polyline? = null
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
 
@@ -641,23 +645,22 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun drawDirectLine(start: GeoPoint, end: GeoPoint) {
+        val routePoints = ArrayList<GeoPoint>()
+
         routeOverlay?.let {
             map.overlays.remove(it)
         }
-
-        val polyline = Polyline().apply {
+        routePoints.add(start)
+        routePoints.add(end)
+        val road = roadManager.getRoad(routePoints)
+        roadOverlay = RoadManager.buildRoadOverlay(road).apply {
             outlinePaint.color = Color.BLUE
-            outlinePaint.strokeWidth = 10F
-            setPoints(arrayListOf(start, end))
+            outlinePaint.strokeWidth = 10f
         }
 
-        map.overlays.add(polyline)
-        routeOverlay = polyline
-
+        map.overlays.add(roadOverlay)
         adjustZoomToShowRoute(start, end)
-
         map.invalidate()
-
         showDistanceBetweenPoints(start, end)
     }
 

@@ -82,6 +82,5 @@ dependencies {
     implementation ("com.google.firebase:firebase-messaging-ktx")
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
     implementation ("com.google.code.gson:gson:2.9.0")
-
-
+    implementation ("com.github.MKergall:osmbonuspack:6.8.0")
 }

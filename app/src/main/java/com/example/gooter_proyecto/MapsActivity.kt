@@ -144,6 +144,22 @@ class MapsActivity : AppCompatActivity() {
         NotificacionesDisponibles.getInstance().inicializar(this)
         carreraId = intent.getStringExtra("carrera_id") ?: ""
 
+        val uid = auth.currentUser?.uid
+        if (uid != null) {
+            FirebaseDatabase.getInstance().reference.child("usuarios").child(uid).get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
+                        binding.textSaludo.text = "Hola, $nombre!"
+                    } else {
+                        Toast.makeText(this, "No se encontró el usuario", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al obtener datos del usuario", Toast.LENGTH_SHORT).show()
+                }
+        }
+
         if (carreraId.isNotEmpty())
         {
             binding.normalLayout.visibility = View.GONE

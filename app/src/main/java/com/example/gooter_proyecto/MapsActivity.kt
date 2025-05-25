@@ -793,7 +793,7 @@ class MapsActivity : AppCompatActivity() {
             location,
             "Tu ubicación",
             address ?: "Estás aquí",
-            R.drawable.baseline_location_alt_24
+            R.drawable.baseline_directions_bike_24
         )
 
         map.overlays.add(newMarker)

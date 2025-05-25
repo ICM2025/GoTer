@@ -35,7 +35,7 @@ class HomeActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance().reference
 
         val uid = auth.currentUser?.uid
-
+        NotificacionesDisponibles.getInstance().inicializar(this)
         if (uid != null) {
             database.child("usuarios").child(uid).get()
                 .addOnSuccessListener { snapshot ->

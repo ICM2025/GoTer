@@ -105,13 +105,28 @@ class ComunidadesActivity : AppCompatActivity() {
                 }
 
                 canalAdapter = CanalAdapter(canales) { canal ->
-                    val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
-                        putExtra("nombreGrupo", canal.nombre)
-                        putExtra("chatId", canal.idChat)
-                        putExtra("canalId", canal.idChat)
+                    verificarPertenenciaACanal(userId!!, canal.id) { pertenece ->
+                        if (pertenece) {
+                            val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
+                                putExtra("nombreGrupo", canal.nombre)
+                                putExtra("chatId", canal.idChat)
+                                putExtra("canalId", canal.id)
+                            }
+                            startActivity(intent)
+                        } else {
+                            Log.i("CanalAcceso", "El usuario no pertenece al canal ${canal.nombre}")
+                            runOnUiThread {
+                                android.widget.Toast.makeText(
+                                    this@ComunidadesActivity,
+                                    "Debes seguir el canal para entrar",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                     }
-                    startActivity(intent)
                 }
+
+
                 binding.rvListaCanales.layoutManager = LinearLayoutManager(this@ComunidadesActivity)
                 binding.rvListaCanales.adapter = canalAdapter
                 Log.d("Firebase", "Canales encontrados: ${canales.size}")
@@ -120,6 +135,24 @@ class ComunidadesActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
+
+    private fun verificarPertenenciaACanal(usuarioId: String, canalId: String, callback: (Boolean) -> Unit) {
+        val database = FirebaseDatabase.getInstance().reference
+        val participantesRef = database.child("canal").child(canalId).child("participantes")
+
+        participantesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val pertenece = snapshot.children.any { it.getValue(String::class.java) == usuarioId }
+                callback(pertenece)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error al verificar pertenencia: ${error.message}")
+                callback(false)
+            }
+        })
+    }
+
 
 
 }

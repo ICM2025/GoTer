@@ -51,6 +51,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.13.0")
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
     implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.firestore.ktx)
     annotationProcessor ("com.github.bumptech.glide:compiler:4.12.0")
     implementation ("com.google.code.gson:gson:2.8.9")
     implementation(libs.androidx.core.ktx)

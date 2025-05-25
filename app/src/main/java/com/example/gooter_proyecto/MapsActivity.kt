@@ -6,7 +6,17 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -59,7 +69,11 @@ import com.google.firebase.database.ValueEventListener
 import android.os.Handler
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.firebase.database.GenericTypeIndicator
+import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalDate
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
@@ -789,6 +803,67 @@ class MapsActivity : AppCompatActivity() {
             map.overlays.remove(it)
         }
 
+        val user = auth.currentUser
+        val uid = user?.uid
+
+        if (uid != null) {
+            val database = FirebaseDatabase.getInstance()
+            val userRef = database.getReference("usuarios").child(uid)
+
+            userRef.child("urlFotoPerfil").get().addOnSuccessListener { snapshot ->
+                val urlFotoPerfil = snapshot.getValue(String::class.java)
+
+                if (!urlFotoPerfil.isNullOrEmpty()) {
+                    // Si tiene foto de perfil, cargarla y usarla como icono
+                    loadProfileImageAsMarker(location, address, urlFotoPerfil)
+                } else {
+                    // Si no tiene foto de perfil, usar el icono por defecto
+                    createAndAddMarkerWithDefaultIcon(location, address)
+                }
+            }.addOnFailureListener {
+                // En caso de error, usar el icono por defecto
+                createAndAddMarkerWithDefaultIcon(location, address)
+            }
+        } else {
+            // Si no hay usuario autenticado, usar icono por defecto
+            createAndAddMarkerWithDefaultIcon(location, address)
+        }
+    }
+
+    private fun loadProfileImageAsMarker(location: GeoPoint, address: String?, imageUrl: String) {
+        Glide.with(this)
+            .asBitmap()
+            .load(imageUrl)
+            .placeholder(R.drawable.baseline_directions_bike_24)
+            .error(R.drawable.baseline_directions_bike_24)
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    val resizedBitmap = resizeBitmapForMarker(resource, false) // false = usuario actual (rojo)
+
+                    createMarkerWithCustomIcon(location, address, resizedBitmap)
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+                    createAndAddMarkerWithDefaultIcon(location, address)
+                }
+            })
+    }
+
+    private fun createMarkerWithCustomIcon(location: GeoPoint, address: String?, bitmap: Bitmap) {
+        val marker = Marker(map)
+        marker.title = "Tu ubicación"
+        marker.subDescription = address ?: "Estás aquí"
+        marker.position = location
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+
+        val drawable = BitmapDrawable(resources, bitmap)
+        marker.icon = drawable
+
+        map.overlays.add(marker)
+        currentLocationMarker = marker
+        map.invalidate()
+    }
+    private fun createAndAddMarkerWithDefaultIcon(location: GeoPoint, address: String?) {
         val newMarker = createMarker(
             location,
             "Tu ubicación",
@@ -796,8 +871,97 @@ class MapsActivity : AppCompatActivity() {
             R.drawable.baseline_directions_bike_24
         )
 
-        map.overlays.add(newMarker)
-        currentLocationMarker = newMarker
+        newMarker?.let {
+            map.overlays.add(it)
+            currentLocationMarker = it
+            map.invalidate()
+        }
+    }
+
+    private fun resizeBitmapForMarker(bitmap: Bitmap, isRival: Boolean = false): Bitmap {
+        val size = (50 * resources.displayMetrics.density).toInt()  // Era 80
+        val markerSize = (70 * resources.displayMetrics.density).toInt()  // Era 100
+
+        // Crear un canvas para dibujar el marcador personalizado
+        val markerBitmap = Bitmap.createBitmap(markerSize, markerSize + 20, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(markerBitmap)
+
+        // Configurar los paints
+        val borderPaint = Paint().apply {
+            color = if (isRival) Color.parseColor("#38A169") else Color.parseColor("#fc6603") // Verde para rivales, rojo para usuario
+            isAntiAlias = true
+            style = Paint.Style.FILL
+        }
+
+        val innerPaint = Paint().apply {
+            color = Color.WHITE
+            isAntiAlias = true
+            style = Paint.Style.FILL
+        }
+
+        val imagePaint = Paint().apply {
+            isAntiAlias = true
+        }
+
+        // Calcular el centro del círculo
+        val centerX = markerSize / 2f
+        val centerY = markerSize / 2f
+        val outerRadius = (markerSize / 2f) * 0.9f
+        val innerRadius = outerRadius * 0.85f
+        val imageRadius = innerRadius * 0.8f
+
+        // Dibujar el círculo exterior (borde)
+        canvas.drawCircle(centerX, centerY, outerRadius, borderPaint)
+
+        // Dibujar el círculo interior (fondo blanco)
+        canvas.drawCircle(centerX, centerY, innerRadius, innerPaint)
+
+        // Redimensionar y hacer circular la imagen de perfil
+        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, (imageRadius * 2).toInt(), (imageRadius * 2).toInt(), true)
+        val circularBitmap = createCircularBitmap(scaledBitmap)
+
+        // Dibujar la imagen circular en el centro
+        val imageLeft = centerX - imageRadius
+        val imageTop = centerY - imageRadius
+        canvas.drawBitmap(circularBitmap, imageLeft, imageTop, imagePaint)
+
+        // Dibujar la parte puntiaguda del marcador (como un pin)
+        val path = Path()
+        val bottomPointX = centerX
+        val bottomPointY = centerY + outerRadius + 10  // Era + 15
+        val leftPointX = centerX - 10  // Era - 15
+        val rightPointX = centerX + 10  // Era + 15
+        val leftPointY = centerY + outerRadius - 7  // Era - 10
+        val rightPointY = centerY + outerRadius - 7  // Era - 10
+
+        path.moveTo(bottomPointX, bottomPointY)
+        path.lineTo(leftPointX, leftPointY)
+        path.lineTo(rightPointX, rightPointY)
+        path.close()
+
+        canvas.drawPath(path, borderPaint)
+
+        return markerBitmap
+    }
+
+    private fun createCircularBitmap(bitmap: Bitmap): Bitmap {
+        val size = minOf(bitmap.width, bitmap.height)
+        val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+
+        val paint = Paint().apply {
+            isAntiAlias = true
+        }
+
+        val rect = Rect(0, 0, size, size)
+        val rectF = RectF(rect)
+
+        canvas.drawOval(rectF, paint)
+
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(bitmap, rect, rect, paint)
+
+        return output
     }
 
     fun findAddress(location: LatLng): String? {
@@ -847,38 +1011,110 @@ class MapsActivity : AppCompatActivity() {
 
                     for (uid in participantes) {
                         if (uid != userId) {
-                            ref.child(uid).child("ubicacion")
-                                .addValueEventListener(object : ValueEventListener {
-                                    override fun onDataChange(snap: DataSnapshot) {
-                                        val lat = snap.child("latitud").getValue(Double::class.java) ?: return
-                                        val lon = snap.child("longitud").getValue(Double::class.java) ?: return
-                                        val alt = snap.child("altitud").getValue(Double::class.java) ?: 0.0
+                            // Primero obtener la foto de perfil del rival
+                            ref.child(uid).child("urlFotoPerfil").get().addOnSuccessListener { fotoSnapshot ->
+                                val urlFotoPerfil = fotoSnapshot.getValue(String::class.java)
 
-                                        // Remover marcador anterior si existe
-                                        participantMarkers[uid]?.let { oldMarker ->
-                                            map.overlays.remove(oldMarker)
+                                // Luego observar la ubicación del rival
+                                ref.child(uid).child("ubicacion")
+                                    .addValueEventListener(object : ValueEventListener {
+                                        override fun onDataChange(snap: DataSnapshot) {
+                                            val lat = snap.child("latitud").getValue(Double::class.java) ?: return
+                                            val lon = snap.child("longitud").getValue(Double::class.java) ?: return
+                                            val alt = snap.child("altitud").getValue(Double::class.java) ?: 0.0
+
+                                            // Remover marcador anterior si existe
+                                            participantMarkers[uid]?.let { oldMarker ->
+                                                map.overlays.remove(oldMarker)
+                                            }
+
+                                            val punto = GeoPoint(lat, lon, alt)
+
+                                            if (!urlFotoPerfil.isNullOrEmpty()) {
+                                                // Si tiene foto de perfil, cargarla
+                                                loadRivalProfileImageAsMarker(punto, uid, urlFotoPerfil)
+                                            } else {
+                                                // Si no tiene foto, usar icono por defecto
+                                                createAndAddRivalMarkerWithDefaultIcon(punto, uid)
+                                            }
                                         }
 
-                                        val punto = GeoPoint(lat, lon, alt)
-                                        val marker = createMarker(punto, "Participante", "",
-                                            R.drawable.baseline_bike_scooter_24
-                                        )
-                                        marker?.let { nonNullMarker ->
-                                            // Guardar referencia del nuevo marcador
-                                            participantMarkers[uid] = nonNullMarker
-                                            map.overlays.add(nonNullMarker)
-                                            map.invalidate()
-                                        }
-                                    }
+                                        override fun onCancelled(error: DatabaseError) {}
+                                    })
+                            }.addOnFailureListener {
+                                // Si falla obtener la foto, observar ubicación con icono por defecto
+                                ref.child(uid).child("ubicacion")
+                                    .addValueEventListener(object : ValueEventListener {
+                                        override fun onDataChange(snap: DataSnapshot) {
+                                            val lat = snap.child("latitud").getValue(Double::class.java) ?: return
+                                            val lon = snap.child("longitud").getValue(Double::class.java) ?: return
+                                            val alt = snap.child("altitud").getValue(Double::class.java) ?: 0.0
 
-                                    override fun onCancelled(error: DatabaseError) {}
-                                })
+                                            participantMarkers[uid]?.let { oldMarker ->
+                                                map.overlays.remove(oldMarker)
+                                            }
+
+                                            val punto = GeoPoint(lat, lon, alt)
+                                            createAndAddRivalMarkerWithDefaultIcon(punto, uid)
+                                        }
+
+                                        override fun onCancelled(error: DatabaseError) {}
+                                    })
+                            }
                         }
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {}
             })
+    }
+
+    private fun loadRivalProfileImageAsMarker(location: GeoPoint, uid: String, imageUrl: String) {
+        Glide.with(this)
+            .asBitmap()
+            .load(imageUrl)
+            .placeholder(R.drawable.baseline_bike_scooter_24)
+            .error(R.drawable.baseline_bike_scooter_24)
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    val resizedBitmap = resizeBitmapForMarker(resource, true) // true = rival (verde)
+                    createRivalMarkerWithCustomIcon(location, uid, resizedBitmap)
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) {
+                    createAndAddRivalMarkerWithDefaultIcon(location, uid)
+                }
+            })
+    }
+
+    private fun createRivalMarkerWithCustomIcon(location: GeoPoint, uid: String, bitmap: Bitmap) {
+        val marker = Marker(map)
+        marker.title = "Rival"
+        marker.subDescription = "Participante"
+        marker.position = location
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+
+        val drawable = BitmapDrawable(resources, bitmap)
+        marker.icon = drawable
+
+        participantMarkers[uid] = marker
+        map.overlays.add(marker)
+        map.invalidate()
+    }
+
+    private fun createAndAddRivalMarkerWithDefaultIcon(location: GeoPoint, uid: String) {
+        val marker = createMarker(
+            location,
+            "Rival",
+            "Participante",
+            R.drawable.baseline_bike_scooter_24
+        )
+
+        marker?.let {
+            participantMarkers[uid] = it
+            map.overlays.add(it)
+            map.invalidate()
+        }
     }
     
     private fun observarEstadoCarrera() {

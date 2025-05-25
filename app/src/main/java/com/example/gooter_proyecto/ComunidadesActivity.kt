@@ -25,6 +25,9 @@ class ComunidadesActivity : AppCompatActivity() {
     private lateinit var canalAdapter: CanalAdapter
     private lateinit var database: DatabaseReference
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
+    private var comunidadesDelUsuario: List<Comunidad> = emptyList()
+    private var todasLasComunidades: List<Comunidad> = emptyList()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +40,14 @@ class ComunidadesActivity : AppCompatActivity() {
         binding.ButtonCrearComunidad.setOnClickListener {
             startActivity(Intent(baseContext, CrearComunidadActivity::class.java))
         }
+        binding.Buscar.addTextChangedListener(object : android.text.TextWatcher {
+            override fun afterTextChanged(s: android.text.Editable?) {
+                filtrarComunidades(s.toString())
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
     }
 
     private fun loadComunidades() {
@@ -45,36 +56,120 @@ class ComunidadesActivity : AppCompatActivity() {
         val comunidadesRef = database.child("comunidad")
         comunidadesRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val comunidades = mutableListOf<Comunidad>()
+                val comunidadesUsuarioTemp = mutableListOf<Comunidad>()
+                val todasTemp = mutableListOf<Comunidad>()
+
                 for (comunidadSnap in snapshot.children) {
                     val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
                     val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
                     val idChat = comunidadSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
                     val idComunidad = comunidadSnap.key
+                    val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
+                    val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
+
+                    val comunidad = Comunidad(idComunidad.toString(), nombre, R.drawable.background_username, miembros, participantes, idChat)
+
+                    todasTemp.add(comunidad) // guardar todas
+
                     if (adminId == userId || participantes.contains(userId)) {
-                        val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
-                        val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        comunidades.add(Comunidad(idComunidad.toString(), nombre, R.drawable.background_username, miembros, participantes,idChat))
+                        comunidadesUsuarioTemp.add(comunidad)
                     }
                 }
-                comunidadAdapter = ComunidadAdapter(comunidades) { comunidad ->
-                    val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
-                        putExtra("comunidadId", comunidad.id)
-                        putExtra("nombreGrupo", comunidad.nombre)
-                        putExtra("chatId", comunidad.idChat)
-                    }
-                    startActivity(intent)
-                }
-                binding.ListaComunidades.layoutManager = LinearLayoutManager(this@ComunidadesActivity)
-                binding.ListaComunidades.adapter = comunidadAdapter
-                Log.d("Firebase", "Comunidades encontradas: ${comunidades.size}")
-                if (comunidades.isEmpty()) {
-                    binding.ListaComunidades.visibility = View.GONE
-                    binding.tvSinComunidades.visibility = View.VISIBLE
-                }
+
+                comunidadesDelUsuario = comunidadesUsuarioTemp
+                todasLasComunidades = todasTemp
+
+                mostrarComunidades(comunidadesDelUsuario, true)
             }
             override fun onCancelled(error: DatabaseError) {}
         })
+    }
+
+    private fun mostrarComunidades(lista: List<Comunidad>, esDelUsuario: Boolean) {
+        comunidadAdapter = ComunidadAdapter(lista) { comunidad ->
+            if (esDelUsuario) {
+                val intent = Intent(this@ComunidadesActivity, ChatActivity::class.java).apply {
+                    putExtra("comunidadId", comunidad.id)
+                    putExtra("nombreGrupo", comunidad.nombre)
+                    putExtra("chatId", comunidad.idChat)
+                }
+                startActivity(intent)
+            } else {
+                solicitudComunidad(comunidad)
+            }
+        }
+
+        binding.ListaComunidades.apply {
+            layoutManager = LinearLayoutManager(this@ComunidadesActivity)
+            adapter = comunidadAdapter
+            visibility = if (lista.isEmpty()) View.GONE else View.VISIBLE
+        }
+
+        binding.tvSinComunidades.visibility = if (lista.isEmpty()) View.VISIBLE else View.GONE
+    }
+
+    private fun solicitudComunidad(comunidad: Comunidad) {
+        val database = FirebaseDatabase.getInstance()
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val notificacionId = database.reference.child("notificaciones").push().key ?: return
+        val fechaHora = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+
+        // Obtener el nombre del usuario para el mensaje
+        database.reference.child("usuarios").child(uid).child("nombre").get()
+            .addOnSuccessListener { snapshot ->
+                val nombreUsuario = snapshot.getValue(String::class.java) ?: "Un usuario"
+
+                // Armar metadatos
+                val metadatos = mapOf(
+                    "usuarioId" to uid,
+                    "comunidadId" to comunidad.id
+                )
+
+                // Crear la notificación
+                val notificacion = mapOf(
+                    "idNotificacion" to notificacionId,
+                    "emisorId" to uid,
+                    "destinatarioId" to comunidad.participantes.first(), // o comunidad.administrador si lo tienes en el objeto
+                    "fechaHora" to fechaHora,
+                    "leida" to false,
+                    "tipo" to "Solicitud",
+                    "mensaje" to "$nombreUsuario ha solicitado unirse a tu comunidad \"${comunidad.nombre}\"",
+                    "accion" to "solicitud_usuario",
+                    "metadatos" to org.json.JSONObject(metadatos).toString()
+                )
+
+                database.reference.child("notificaciones").child(notificacionId)
+                    .setValue(notificacion)
+                    .addOnSuccessListener {
+                        android.widget.Toast.makeText(
+                            this,
+                            "Solicitud enviada correctamente",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    .addOnFailureListener {
+                        android.widget.Toast.makeText(
+                            this,
+                            "Error al enviar solicitud",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    }
+            }
+    }
+
+
+    private fun filtrarComunidades(texto: String) {
+        if (texto.isBlank()) {
+            binding.MisComunidades.text = "Mis Comunidades"
+            mostrarComunidades(comunidadesDelUsuario, true)
+        } else {
+            binding.MisComunidades.text = "Comunidades a las que puedes solicitar unirte"
+            val resultado = todasLasComunidades.filter { comunidad ->
+                comunidad.nombre.contains(texto.trim(), ignoreCase = true) &&
+                        !comunidadesDelUsuario.any { it.id == comunidad.id }
+            }
+            mostrarComunidades(resultado, false)
+        }
     }
 
     private fun loadCanales() {

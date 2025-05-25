@@ -57,6 +57,10 @@ class UserAdapter(
                     }
                 }
             }
+            miembros.get().addOnSuccessListener { snapshot ->
+                val miembrosActuales = snapshot.getValue(Int::class.java) ?: 0
+                miembros.setValue(miembrosActuales + 1)
+            }
         }
 
         return view

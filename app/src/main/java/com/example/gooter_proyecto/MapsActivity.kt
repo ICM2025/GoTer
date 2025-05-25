@@ -67,6 +67,7 @@ import org.osmdroid.bonuspack.routing.RoadManager
 class MapsActivity : AppCompatActivity() {
 
     val RADIUS_OF_EARTH_KM = 6378
+    private val participantMarkers = mutableMapOf<String, Marker>()
     private lateinit var binding: ActivityMapsBinding
     private lateinit var map: MapView
     private val bogota = GeoPoint(4.62, -74.07)
@@ -236,6 +237,7 @@ class MapsActivity : AppCompatActivity() {
             goToMyLocation()
         }
         binding.botonBack.setOnClickListener {
+            clearParticipantMarkers()
             startActivity(Intent(this, HomeActivity::class.java))
             finish()
         }
@@ -439,6 +441,7 @@ class MapsActivity : AppCompatActivity() {
         FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).removeValue()
 
         Toast.makeText(this, "Carrera finalizada. Distancia: ${distanciaRecorrida}km", Toast.LENGTH_LONG).show()
+        clearParticipantMarkers()
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
     }
@@ -635,12 +638,18 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        clearParticipantMarkers()
+    }
+
     override fun onPause() {
         super.onPause()
         map.onPause()
         stopLocationUpdates()
         sensorManager.unregisterListener(sensorEventListener)
         stopSavingLocationUpdates()
+        clearParticipantMarkers()
     }
 
     fun createMarker(p: GeoPoint, title: String, desc: String, iconID: Int): Marker? {
@@ -852,8 +861,17 @@ class MapsActivity : AppCompatActivity() {
                                         val lon = snap.child("longitud").getValue(Double::class.java) ?: return
                                         val alt = snap.child("altitud").getValue(Double::class.java) ?: 0.0
 
+                                        // Remover marcador anterior si existe
+                                        participantMarkers[uid]?.let { oldMarker ->
+                                            map.overlays.remove(oldMarker)
+                                        }
+
                                         val punto = GeoPoint(lat, lon, alt)
-                                        val marker = createMarker(punto, "Participante", "", R.drawable.star_ic)
+                                        val marker = createMarkerWithBicycleIcon(punto, "Rival", uid)
+
+                                        // Guardar referencia del nuevo marcador
+                                        participantMarkers[uid] = marker
+
                                         map.overlays.add(marker)
                                         map.invalidate()
                                     }
@@ -866,6 +884,31 @@ class MapsActivity : AppCompatActivity() {
 
                 override fun onCancelled(error: DatabaseError) {}
             })
+    }
+
+    // Función para crear marcador con ícono de bicicleta personalizado
+    private fun createMarkerWithBicycleIcon(punto: GeoPoint, titulo: String, participantId: String): Marker {
+        val marker = Marker(map)
+        marker.position = punto
+        marker.title = titulo
+        marker.snippet = "ID: $participantId"
+
+        // Crear el ícono de bicicleta personalizado
+        val bicycleIcon = ContextCompat.getDrawable(this, R.drawable.bicycle_marker)
+        marker.icon = bicycleIcon
+
+        // Configuraciones adicionales del marcador
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+
+        return marker
+    }
+
+    private fun clearParticipantMarkers() {
+        participantMarkers.values.forEach { marker ->
+            map.overlays.remove(marker)
+        }
+        participantMarkers.clear()
+        map.invalidate()
     }
 
     private fun observarEstadoCarrera() {

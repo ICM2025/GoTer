@@ -11,8 +11,13 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.compose.animation.core.snap
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import models.Usuario
+import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class UserAdapter(
     var contexto: Context,
@@ -45,9 +50,10 @@ class UserAdapter(
             Log.i("Correo del usuario buscado: ", usuario.correo.toString())
             val uniqueId = participantes.push()
             query.get().addOnSuccessListener { snapshot ->
-                if(snapshot.exists()) {
+                if (snapshot.exists()) {
                     for (userSnapshot in snapshot.children) {
                         uniqueId.setValue(userSnapshot.key)
+                        enviarNotificacion(userSnapshot.key.toString())
                     }
                 }
             }
@@ -55,4 +61,61 @@ class UserAdapter(
 
         return view
     }
+
+    private fun enviarNotificacion(usuarioId: String) {
+        val fechaHora = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
+        val database = FirebaseDatabase.getInstance()
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        database.reference.child("usuarios").child(uid).get()
+            .addOnSuccessListener { snapshotEmisor ->
+                val nombre = snapshotEmisor.child("nombre").getValue(String::class.java) ?: ""
+
+                database.reference.child("usuarios").child(usuarioId).child("nombre").get()
+                    .addOnSuccessListener {
+                        val notificacionId = database.reference.child("notificaciones").push().key
+
+                        if (notificacionId != null) {
+                            val comunidadQuery = database.reference.child("comunidad").orderByKey().equalTo(comunidadId)
+                            comunidadQuery.get().addOnSuccessListener { snapshotComunidad ->
+                                if (snapshotComunidad.exists()) {
+                                    for (comunidadSnapshot in snapshotComunidad.children) {
+                                        val nombreGrupo = comunidadSnapshot.child("nombreGrupo").value.toString()
+                                        val chatId = comunidadSnapshot.child("chatId").value.toString()
+
+                                        val metadatos = mapOf(
+                                            "nombreGrupo" to nombreGrupo,
+                                            "chatId" to chatId,
+                                            "comunidadId" to comunidadId
+                                        )
+
+                                        val notificacion = mapOf(
+                                            "idNotificacion" to notificacionId,
+                                            "emisorId" to uid,
+                                            "destinatarioId" to usuarioId,
+                                            "fechaHora" to fechaHora,
+                                            "leida" to false,
+                                            "tipo" to nombreGrupo,
+                                            "mensaje" to "$nombre te ha agregado a la comunidad $nombreGrupo",
+                                            "accion" to "launch_comunidad",
+                                            "metadatos" to JSONObject(metadatos).toString()
+                                        )
+
+                                        database.reference.child("notificaciones").child(notificacionId)
+                                            .setValue(notificacion)
+                                            .addOnSuccessListener {
+                                                Log.i("NOTI", "Notificación de invitación enviada")
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Log.e("NOTI", "Error al enviar notificación: ${e.message}")
+                                            }
+                                    }
+                                }
+                            }
+                        }
+                    }
+            }
+    }
+
+
 }

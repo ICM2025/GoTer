@@ -62,12 +62,30 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="25dp"
         android:layout_marginTop="35dp"
-        android:text="Mis Comunidades"
+        android:text="Mis Comunidades y Canales"
         android:textColor="@color/black"
         android:textSize="16dp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/Buscar" />
+
+    <TextView
+        android:id="@+id/tvSinComunidades"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginEnd="35dp"
+        android:text="Aún no perteneces a ninguna comunidad"
+        android:textColor="@color/black"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:padding="16dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/MisComunidades"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ListaComunidades"
@@ -82,7 +100,7 @@
         android:scrollbars="vertical"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/MisComunidades" />
+        app:layout_constraintTop_toBottomOf="@+id/tvSinComunidades" />
 
     <Button
         android:id="@+id/ButtonCrearComunidad"

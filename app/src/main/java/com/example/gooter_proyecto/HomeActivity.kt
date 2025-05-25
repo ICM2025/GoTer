@@ -260,6 +260,8 @@ class HomeActivity : AppCompatActivity() {
                         )
                         adapter = notificacionHomeAdapter
                     }
+                    Log.i("COMUNIDADES_EMPTY:", notificaciones.isEmpty().toString())
+                    binding.tvSinNotificaciones.visibility = if (notificaciones.isEmpty()) View.VISIBLE else View.GONE
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -279,16 +281,19 @@ class HomeActivity : AppCompatActivity() {
                     val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
                     val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
                     val idChat = comunidadSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
+                    val idComunidad = comunidadSnap.key ?: ""
                     if (adminId == userId || participantes.contains(userId)) {
                         val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        comunidades.add(Comunidad(nombre, R.drawable.ic_user, miembros, participantes, idChat))
+                        comunidades.add(Comunidad(idComunidad, nombre, R.drawable.ic_user, miembros, participantes, idChat))
                     }
                 }
 
                 comunidadHomeAdapter = ComunidadHomeAdapter(comunidades) { comunidad ->
                     val intent = Intent(this@HomeActivity, ChatActivity::class.java).apply {
                         putExtra("nombreGrupo", comunidad.nombre)
+                        putExtra("chatId", comunidad.idChat)
+                        putExtra("comunidadId", comunidad.id)
                     }
                     startActivity(intent)
                 }
@@ -297,7 +302,7 @@ class HomeActivity : AppCompatActivity() {
                     layoutManager = LinearLayoutManager(this@HomeActivity, LinearLayoutManager.HORIZONTAL, false)
                     adapter = comunidadHomeAdapter
                 }
-                Log.i("COMUNIDADES", comunidades.isEmpty().toString())
+                Log.i("COMUNIDADES_EMPTY:", comunidades.isEmpty().toString())
                 binding.tvSinComunidades.visibility = if (comunidades.isEmpty()) View.VISIBLE else View.GONE
             }
 

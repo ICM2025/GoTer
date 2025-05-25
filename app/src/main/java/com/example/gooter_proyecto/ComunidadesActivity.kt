@@ -70,7 +70,7 @@ class ComunidadesActivity : AppCompatActivity() {
                 Log.d("Firebase", "Comunidades encontradas: ${comunidades.size}")
                 if (comunidades.isEmpty()) {
                     binding.ListaComunidades.visibility = View.GONE
-                    binding.TusComunidades.text = "No estás en ninguna comunidad aún"
+                    binding.tvSinComunidades.visibility = View.VISIBLE
                 }
             }
             override fun onCancelled(error: DatabaseError) {}

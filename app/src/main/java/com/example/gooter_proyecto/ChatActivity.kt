@@ -116,6 +116,13 @@ class ChatActivity : AppCompatActivity() {
             i.putExtra("id_comunidad", idComunidad)
             startActivity(i)
         }
+        binding.salir.setOnClickListener {
+            var i = Intent(this, ComunidadesActivity::class.java)
+            if (idComunidad != null) {
+                salirComunidad(idComunidad)
+            }
+            startActivity(i)
+        }
         adapter = ChatAdapter(mensajes)
         binding.listaMensajes.layoutManager = LinearLayoutManager(this)
         binding.listaMensajes.adapter = adapter
@@ -134,6 +141,7 @@ class ChatActivity : AppCompatActivity() {
 
         if (intent.getStringExtra("canalId") != null) {
             binding.addPersona.visibility = View.GONE
+            binding.salir.visibility = View.GONE
         }
 
         // Enviar texto
@@ -189,6 +197,25 @@ class ChatActivity : AppCompatActivity() {
             //regresa a ComunidadesActivity
             finish()
         }
+    }
+
+    private fun salirComunidad(idComunidad : String) {
+        val participantesRef = FirebaseDatabase.getInstance().getReference("comunidad").child(idComunidad).child("participantes")
+        participantesRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (participanteSnap in snapshot.children) {
+                    val userIdInList = participanteSnap.getValue(String::class.java)
+                    if (userIdInList == FirebaseAuth.getInstance().currentUser?.uid) {
+                        participanteSnap.ref.removeValue()
+                        Log.i("COMUNIDAD", "Usuario eliminado de la comunidad ${idComunidad}")
+                        break
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error al intentar eliminar: ${error.message}")
+            }
+        })
     }
 
     private fun cargarNombreUsuario() {

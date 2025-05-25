@@ -34,6 +34,15 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
+        <Button
+            android:id="@+id/salir"
+            android:layout_width="2dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@color/blue_buttons"
+            android:padding="8dp"
+            android:text="Salir" />
+
         <ImageView
             android:id="@+id/addPersona"
             android:layout_width="40dp"

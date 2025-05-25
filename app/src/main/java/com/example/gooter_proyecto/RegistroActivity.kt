@@ -3,9 +3,12 @@ package com.example.gooter_proyecto
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gooter_proyecto.databinding.ActivityRegistroBinding
 import com.google.firebase.Firebase
@@ -16,6 +19,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import com.google.firebase.storage.FirebaseStorage
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -27,6 +31,10 @@ class RegistroActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegistroBinding
     private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
+    private lateinit var storage: FirebaseStorage
+    private var selectedImageUri: Uri? = null
+    private lateinit var pickImageLauncher: ActivityResultLauncher<String>
+
 
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,6 +44,16 @@ class RegistroActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
+        storage = FirebaseStorage.getInstance()
+
+        pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            selectedImageUri = uri
+            binding.ivProfilePhoto.setImageURI(uri) // Asumiendo que tienes un ImageView para la foto
+        }
+
+        binding.ivProfilePhoto.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
         setUpBinding()
 
         binding.ingresarRegistro.setOnClickListener {
@@ -82,17 +100,20 @@ class RegistroActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user: FirebaseUser? = auth.currentUser
-                    guardarDatosUsuario(nombre, apellidos, usuario, fechaNacimiento)
+                    if (selectedImageUri != null) {
+                        if (user != null) {
+                            subirImagenyGuardarDatos(user, nombre, apellidos, usuario, fechaNacimiento)
+                        }
+                    } else {
+                        guardarDatosUsuario(nombre, apellidos, usuario, fechaNacimiento)
+                    }
+
                     Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
                     val usuarioId = user?.uid
                     val fechaHora =
                         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(
                             Date()
                         )
-                    if (usuarioId != null) {
-                        enviarNotificacionBienvenida(usuarioId, fechaHora)
-                        agregarCanalGeneral(usuarioId)
-                    }
                     startActivity(Intent(this, LoginUsuarioActivity::class.java))
                     finish()
                 } else {
@@ -100,6 +121,85 @@ class RegistroActivity : AppCompatActivity() {
                 }
             }
     }
+
+    private fun subirImagenyGuardarDatos(
+        firebaseUser: FirebaseUser,
+        nombre: String,
+        apellidos: String,
+        usuario: String,
+        fechaNacimiento: String
+    ) {
+        val fileName = "${firebaseUser.uid}.jpg"
+        val imageRef = storage.reference.child("profileFotos/$fileName")
+
+        selectedImageUri?.let { uri ->
+            imageRef.putFile(uri)
+                .addOnSuccessListener {
+                    imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                        guardarDatosUsuario(nombre, apellidos, usuario, fechaNacimiento, downloadUrl.toString())
+                    }.addOnFailureListener {
+                        Toast.makeText(this, "Error al obtener URL de imagen", Toast.LENGTH_SHORT).show()
+                        guardarDatosUsuario(nombre, apellidos, usuario, fechaNacimiento, "")
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    Toast.makeText(this, "Error al subir imagen: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    guardarDatosUsuario(nombre, apellidos, usuario, fechaNacimiento, "")
+                }
+        }
+    }
+
+    private fun guardarDatosUsuario(
+        nombre: String,
+        apellidos: String,
+        nombreUsuario: String,
+        fechaNacimiento: String,
+        urlFoto: String = ""
+    ) {
+        val usuario = FirebaseAuth.getInstance().currentUser
+        val uid = usuario?.uid
+        if (uid != null) {
+            val datosUsuario = mutableMapOf<String, Any>(
+                "nombre" to nombre,
+                "apellidos" to apellidos,
+                "nombreUsuario" to nombreUsuario,
+                "fechaNacimiento" to fechaNacimiento,
+                "correo" to usuario.email.toString()
+            )
+
+            if (urlFoto.isNotEmpty()) {
+                datosUsuario["urlFotoPerfil"] = urlFoto
+            }
+
+            val database = FirebaseDatabase.getInstance().reference
+            val userRef = database.child("usuarios").child(uid)
+
+            userRef.setValue(datosUsuario)
+                .addOnSuccessListener {
+                    val insigniasIniciales = mapOf(
+                        "primeraCarrera" to false,
+                        "primeros10km" to false,
+                        "mediaMaraton" to false,
+                        "reto7diasSeguidos" to false
+                    )
+                    userRef.child("insignias").setValue(insigniasIniciales)
+
+                    val fechaHora = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
+                    enviarNotificacionBienvenida(uid, fechaHora)
+                    agregarCanalGeneral(uid)
+
+                    // Y redirigimos al login
+                    Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, LoginUsuarioActivity::class.java))
+                    finish()
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Registro", "Error al guardar datos: ${e.message}")
+                }
+        }
+    }
+
+
 
     private fun agregarCanalGeneral(usuarioId: String) {
         val database = FirebaseDatabase.getInstance().reference

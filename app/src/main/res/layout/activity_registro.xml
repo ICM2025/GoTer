@@ -41,6 +41,17 @@
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
+            <ImageView
+                android:id="@+id/ivProfilePhoto"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center_horizontal"
+                android:scaleType="centerCrop"
+                android:contentDescription="Foto de perfil"
+                android:src="@drawable/profileiconpng910" />
+
+
             <EditText
                 android:id="@+id/nombreRegistro"
                 android:layout_width="match_parent"

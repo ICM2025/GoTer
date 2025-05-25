@@ -5,6 +5,8 @@ import adapters.NotificacionAdapter
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -295,6 +297,8 @@ class HomeActivity : AppCompatActivity() {
                     layoutManager = LinearLayoutManager(this@HomeActivity, LinearLayoutManager.HORIZONTAL, false)
                     adapter = comunidadHomeAdapter
                 }
+                Log.i("COMUNIDADES", comunidades.isEmpty().toString())
+                binding.tvSinComunidades.visibility = if (comunidades.isEmpty()) View.VISIBLE else View.GONE
             }
 
             override fun onCancelled(error: DatabaseError) {}

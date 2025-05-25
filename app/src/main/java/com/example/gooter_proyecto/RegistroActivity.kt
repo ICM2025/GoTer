@@ -4,19 +4,29 @@ import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.gooter_proyecto.databinding.ActivityRegistroBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import org.json.JSONObject
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.regex.Pattern
 
 class RegistroActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRegistroBinding
     private lateinit var auth: FirebaseAuth
+    private lateinit var database: FirebaseDatabase
 
     @SuppressLint("SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,6 +35,7 @@ class RegistroActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance()
         setUpBinding()
 
         binding.ingresarRegistro.setOnClickListener {
@@ -59,13 +70,29 @@ class RegistroActivity : AppCompatActivity() {
         }
     }
 
-    private fun registerUser(nombre: String, apellidos: String, usuario: String, fechaNacimiento: String, email: String, password: String) {
+    private fun registerUser(
+        nombre: String,
+        apellidos: String,
+        usuario: String,
+        fechaNacimiento: String,
+        email: String,
+        password: String
+    ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val user: FirebaseUser? = auth.currentUser
                     guardarDatosUsuario(nombre, apellidos, usuario, fechaNacimiento)
                     Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
+                    val usuarioId = user?.uid
+                    val fechaHora =
+                        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(
+                            Date()
+                        )
+                    if (usuarioId != null) {
+                        enviarNotificacionBienvenida(usuarioId, fechaHora)
+                        agregarCanalGeneral(usuarioId)
+                    }
                     startActivity(Intent(this, LoginUsuarioActivity::class.java))
                     finish()
                 } else {
@@ -74,7 +101,103 @@ class RegistroActivity : AppCompatActivity() {
             }
     }
 
-    private fun guardarDatosUsuario(nombre: String, apellidos: String, nombreUsuario: String, fechaNacimiento: String) {
+    private fun agregarCanalGeneral(usuarioId: String) {
+        val database = FirebaseDatabase.getInstance().reference
+        val participantesRef = database.child("canal").child("general-gorace").child("participantes")
+        val refUsuarios = database.child("usuarios")
+        val query = refUsuarios.orderByKey().equalTo(usuarioId)
+
+        query.get().addOnSuccessListener { snapshot ->
+            if (snapshot.exists()) {
+                for (userSnapshot in snapshot.children) {
+                    Log.i("RegistroCanalGeneral", "Usuario encontrado: ${userSnapshot.key}")
+                    participantesRef.push().setValue(userSnapshot.key)
+                    enviarNotificacionCanalGeneral(usuarioId)
+                }
+            }
+        }
+    }
+
+    private fun enviarNotificacionCanalGeneral(usuarioId: String) {
+        val fechaHora =
+            SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(
+                Date()
+            )
+        database.reference.child("usuarios").child(usuarioId).child("nombre").get()
+            .addOnSuccessListener { snapshot ->
+
+                val notificacionId =
+                    database.reference.child("notificaciones").push().key
+
+                if (notificacionId != null) {
+                    val metadatos = mapOf(
+                        "nombreGrupo" to "General GoRace!",
+                        "chatId" to "chatgeneral",
+                        "canalId" to "general-gorace"
+                    )
+
+                    val notificacion = mapOf(
+                        "idNotificacion" to notificacionId,
+                        "emisorId" to "GoRace!",
+                        "destinatarioId" to usuarioId,
+                        "fechaHora" to fechaHora,
+                        "leida" to false,
+                        "tipo" to "Canal General",
+                        "mensaje" to "Interactua con todos los usuarios en el canal general de GoRace!",
+                        "accion" to "launch_canal",
+                        "metadatos" to JSONObject(metadatos).toString()
+                    )
+
+                    database.reference.child("notificaciones").child(notificacionId)
+                        .setValue(notificacion)
+                        .addOnSuccessListener {
+                            Log.i("NOTI", "Notificación de bienvenida creada exitosamente")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("NOTI", "Error al crear notificación de bienvenida")
+                        }
+                }
+            }
+
+    }
+
+    private fun enviarNotificacionBienvenida(usuarioId: String, fechaHora: String) {
+        database.reference.child("usuarios").child(usuarioId).child("nombre").get()
+            .addOnSuccessListener { snapshot ->
+
+                val notificacionId =
+                    database.reference.child("notificaciones").push().key
+
+                if (notificacionId != null) {
+                    val notificacion = mapOf(
+                        "idNotificacion" to notificacionId,
+                        "emisorId" to "GoRace!",
+                        "destinatarioId" to usuarioId,
+                        "fechaHora" to fechaHora,
+                        "leida" to false,
+                        "tipo" to "Bienvenida!",
+                        "mensaje" to "Bienvenido a la plataforma, ${snapshot.value}!",
+                        "accion" to "ninguna"
+                    )
+
+                    database.reference.child("notificaciones").child(notificacionId)
+                        .setValue(notificacion)
+                        .addOnSuccessListener {
+                            Log.i("NOTI", "Notificación de bienvenida creada exitosamente")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("NOTI", "Error al crear notificación de bienvenida")
+                        }
+                }
+            }
+    }
+
+    private fun guardarDatosUsuario(
+        nombre: String,
+        apellidos: String,
+        nombreUsuario: String,
+        fechaNacimiento: String
+    ) {
         val usuario = FirebaseAuth.getInstance().currentUser
         val uid = usuario?.uid
         if (uid != null) {
@@ -144,10 +267,11 @@ class RegistroActivity : AppCompatActivity() {
         val month = calendar.get(Calendar.MONTH)
         val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-        val datePickerDialog = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-            val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
-            binding.fechaNacimiento.setText(selectedDate)
-        }, year, month, day)
+        val datePickerDialog =
+            DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+                val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
+                binding.fechaNacimiento.setText(selectedDate)
+            }, year, month, day)
 
         datePickerDialog.show()
     }

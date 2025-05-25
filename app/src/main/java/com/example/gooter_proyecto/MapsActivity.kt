@@ -180,7 +180,7 @@ class MapsActivity : AppCompatActivity() {
         {
             binding.normalLayout.visibility = View.GONE
             binding.goOnlyButton.visibility = View.VISIBLE
-
+            registrarEnCarrera()
             cargarDestinoCarrera()
             observarParticipantes()
             observarEstadoCarrera()
@@ -457,6 +457,47 @@ class MapsActivity : AppCompatActivity() {
         Toast.makeText(this, "Carrera finalizada. Distancia: ${distanciaRecorrida}km", Toast.LENGTH_LONG).show()
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
+    }
+
+    private fun registrarEnCarrera() {
+        val uid = auth.currentUser?.uid ?: return
+        val carreraRef = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId)
+
+        // Verificar si el usuario ya está registrado en la carrera
+        carreraRef.child("jugadores").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val participantes = mutableListOf<String>()
+
+                // Obtener participantes existentes
+                for (child in snapshot.children) {
+                    val participante = child.getValue(String::class.java)
+                    if (participante != null) {
+                        participantes.add(participante)
+                    }
+                }
+
+                // Verificar si el usuario actual ya está en la lista
+                if (!participantes.contains(uid)) {
+                    // Agregar el usuario actual a la lista
+                    participantes.add(uid)
+
+                    // Actualizar la lista en Firebase
+                    carreraRef.child("jugadores").setValue(participantes)
+                        .addOnSuccessListener {
+                            Log.d("CARRERA", "Usuario agregado exitosamente a la carrera")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("CARRERA", "Error al agregar usuario a la carrera: ${e.message}")
+                        }
+                } else {
+                    Log.d("CARRERA", "Usuario ya está registrado en la carrera")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("CARRERA", "Error al verificar participantes: ${error.message}")
+            }
+        })
     }
 
     private fun drawRouteAfterDelay() {

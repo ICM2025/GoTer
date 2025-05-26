@@ -66,8 +66,10 @@ class ComunidadesActivity : AppCompatActivity() {
                     val idComunidad = comunidadSnap.key
                     val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                     val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
+                    val fotoUrl = comunidadSnap.child("fotoUrl")
+                        .getValue(String::class.java) ?: ""
 
-                    val comunidad = Comunidad(idComunidad.toString(), nombre, R.drawable.background_username, miembros, participantes, idChat)
+                    val comunidad = Comunidad(idComunidad.toString(), nombre, fotoUrl, miembros, participantes, idChat)
 
                     todasTemp.add(comunidad) // guardar todas
 
@@ -92,6 +94,7 @@ class ComunidadesActivity : AppCompatActivity() {
                     putExtra("comunidadId", comunidad.id)
                     putExtra("nombreGrupo", comunidad.nombre)
                     putExtra("chatId", comunidad.idChat)
+                    putExtra("fotoUrl", comunidad.imagen)
                 }
                 startActivity(intent)
             } else {
@@ -186,12 +189,14 @@ class ComunidadesActivity : AppCompatActivity() {
                     val idCanal = canalSnap.key
                     val nombre = canalSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                     val privado = canalSnap.child("privado").getValue(Boolean::class.java) ?: false
+                    val fotoUrl = canalSnap.child("fotoUrl")
+                        .getValue(String::class.java) ?: ""
 
                     canales.add(
                         Canal(
                             idCanal.toString(),
                             nombre,
-                            R.drawable.background_username,
+                            fotoUrl,
                             privado,
                             miembros.size,
                             idChat

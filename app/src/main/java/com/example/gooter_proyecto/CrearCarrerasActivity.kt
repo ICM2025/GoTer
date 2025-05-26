@@ -24,7 +24,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.gooter_proyecto.databinding.ActivityCrearCarrerasBinding
 import com.google.android.gms.location.*
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -316,8 +319,11 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
         adaptadorComunidades = ComunidadHomeAdapter(mutableListOf()) { comunidad ->
             if (ubicacionDestino == null) {
-                Toast.makeText(this@CrearCarrerasActivity,
-                    "Primero selecciona un destino para la carrera", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@CrearCarrerasActivity,
+                    "Primero selecciona un destino para la carrera",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@ComunidadHomeAdapter
             }
             crearCarreraParaComunidad(comunidad)
@@ -325,8 +331,8 @@ class CrearCarrerasActivity : AppCompatActivity() {
         binding.rvListaComunidades.adapter = adaptadorComunidades
 
         val ref = database.reference.child("comunidad")
-        ref.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
-            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+        ref.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
                 Log.d(ETIQUETA, "Datos recibidos de Firebase: ${snapshot.childrenCount} comunidades en total")
 
                 if (!snapshot.exists() || snapshot.childrenCount.toInt() == 0) {
@@ -341,35 +347,27 @@ class CrearCarrerasActivity : AppCompatActivity() {
                         val comId = comunidadSnap.key ?: continue
                         val nombreGrupo = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
                         val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
-                        val chatId = comunidadSnap.child("chatId").getValue(String::class.java)?: "Sin nombre"
-                        // Extraer participantes correctamente
-                        val participantes = mutableListOf<String>()
-                        val participantesNode = comunidadSnap.child("participantes")
+                        val chatId = comunidadSnap.child("chatId").getValue(String::class.java)?: "Sin chat"
 
-                        if (participantesNode.exists()) {
-                            // Los participantes están almacenados como un array de strings
-                            for (participante in participantesNode.children) {
-                                participante.getValue(String::class.java)?.let {
-                                    participantes.add(it)
-                                }
-                            }
-                        }
+                        // Leer URL de la imagen
+                        val fotoUrl = comunidadSnap.child("fotoUrl").getValue(String::class.java) ?: ""
+
+                        // Extraer participantes
+                        val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
 
                         // Verificar si el usuario es admin o participante
                         if (adminId == usuarioId || participantes.contains(usuarioId)) {
-                            val miembros = comunidadSnap.child("miembros").getValue(Int::class.java)
-                                ?: participantes.size
-
-                            Log.d(ETIQUETA, "Añadiendo comunidad '$nombreGrupo' (ID: $comId) con ${participantes.size} participantes")
-
-                            listaComunidades.add(Comunidad(
-                                id = comId,
-                                nombre = nombreGrupo,
-                                imagen = R.drawable.ic_user,
-                                miembros = miembros,
-                                participantes = participantes,
-                                idChat = chatId
-                            ))
+                            val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
+                            listaComunidades.add(
+                                Comunidad(
+                                    id = comId,
+                                    nombre = nombreGrupo,
+                                    imagen = fotoUrl,          // ← Usar la URL
+                                    miembros = miembros,
+                                    participantes = participantes,
+                                    idChat = chatId
+                                )
+                            )
                         }
                     } catch (e: Exception) {
                         Log.e(ETIQUETA, "Error procesando comunidad: ${e.message}", e)
@@ -382,29 +380,20 @@ class CrearCarrerasActivity : AppCompatActivity() {
                         return@runOnUiThread
                     }
 
-                    (binding.rvListaComunidades.adapter as? ComunidadHomeAdapter)?.let { adapter ->
-                        // Actualizar la lista del adaptador existente
-                        adapter.lista = listaComunidades
-                        adapter.notifyDataSetChanged()
-                    } ?: run {
-                        // Crear nuevo adaptador si no existe
-                        adaptadorComunidades = ComunidadHomeAdapter(listaComunidades) { comunidad ->
-                            if (ubicacionDestino == null) {
-                                Toast.makeText(this@CrearCarrerasActivity,
-                                    "Primero selecciona un destino para la carrera", Toast.LENGTH_SHORT).show()
-                                return@ComunidadHomeAdapter
-                            }
-                            crearCarreraParaComunidad(comunidad)
-                        }
-                        binding.rvListaComunidades.adapter = adaptadorComunidades
+                    (binding.rvListaComunidades.adapter as? ComunidadHomeAdapter)?.apply {
+                        lista = listaComunidades
+                        notifyDataSetChanged()
                     }
                 }
             }
 
-            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+            override fun onCancelled(error: DatabaseError) {
                 Log.e(ETIQUETA, "Error cargando comunidades: ${error.message}")
-                Toast.makeText(this@CrearCarrerasActivity,
-                    "Error al cargar comunidades: ${error.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@CrearCarrerasActivity,
+                    "Error al cargar comunidades: ${error.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
     }

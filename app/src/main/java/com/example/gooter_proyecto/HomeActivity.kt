@@ -272,40 +272,39 @@ class HomeActivity : AppCompatActivity() {
 
     private fun loadComunidades() {
         val userId = auth.currentUser?.uid ?: return
-
-        val comunidadesRef = database.child("comunidad")
-        comunidadesRef.addValueEventListener(object : ValueEventListener {
+        val ref = database.child("comunidad")
+        ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val comunidades = mutableListOf<Comunidad>()
-                for (comunidadSnap in snapshot.children) {
-                    val adminId = comunidadSnap.child("administrador").getValue(String::class.java)
-                    val participantes = comunidadSnap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
-                    val idChat = comunidadSnap.child("chatId").getValue(String::class.java) ?: "sim chat"
-                    val idComunidad = comunidadSnap.key ?: ""
-                    if (adminId == userId || participantes.contains(userId)) {
-                        val nombre = comunidadSnap.child("nombreGrupo").getValue(String::class.java) ?: "Sin nombre"
-                        val miembros = comunidadSnap.child("miembros").getValue(Int::class.java) ?: participantes.size
-                        comunidades.add(Comunidad(idComunidad, nombre, R.drawable.ic_user, miembros, participantes, idChat))
+                val lista = mutableListOf<Comunidad>()
+                snapshot.children.forEach { snap ->
+                    val id = snap.key ?: return@forEach
+                    val nombre = snap.child("nombreGrupo").getValue(String::class.java) ?: ""
+                    val participantes = snap.child("participantes").children.mapNotNull { it.getValue(String::class.java) }
+                    val admin = snap.child("administrador").getValue(String::class.java)
+                    val chatId = snap.child("chatId").getValue(String::class.java) ?: ""
+                    val fotoUrl = snap.child("fotoUrl").getValue(String::class.java) ?: ""
+
+                    if (admin == userId || participantes.contains(userId)) {
+                        val miembros = snap.child("miembros").getValue(Int::class.java) ?: participantes.size
+                        lista.add(Comunidad(id, nombre, fotoUrl, miembros, participantes, chatId))
                     }
                 }
-
-                comunidadHomeAdapter = ComunidadHomeAdapter(comunidades) { comunidad ->
-                    val intent = Intent(this@HomeActivity, ChatActivity::class.java).apply {
-                        putExtra("nombreGrupo", comunidad.nombre)
-                        putExtra("chatId", comunidad.idChat)
-                        putExtra("comunidadId", comunidad.id)
+                runOnUiThread {
+                    comunidadHomeAdapter = ComunidadHomeAdapter(lista) { comunidad ->
+                        val intent = Intent(this@HomeActivity, ChatActivity::class.java).apply {
+                            putExtra("nombreGrupo", comunidad.nombre)
+                            putExtra("chatId", comunidad.idChat)
+                            putExtra("comunidadId", comunidad.id)
+                        }
+                        startActivity(intent)
                     }
-                    startActivity(intent)
+                    binding.rvListaComunidades.apply {
+                        layoutManager = LinearLayoutManager(this@HomeActivity, LinearLayoutManager.HORIZONTAL, false)
+                        adapter = comunidadHomeAdapter
+                    }
+                    binding.tvSinComunidades.visibility = if (lista.isEmpty()) View.VISIBLE else View.GONE
                 }
-
-                binding.rvListaComunidades.apply {
-                    layoutManager = LinearLayoutManager(this@HomeActivity, LinearLayoutManager.HORIZONTAL, false)
-                    adapter = comunidadHomeAdapter
-                }
-                Log.i("COMUNIDADES_EMPTY:", comunidades.isEmpty().toString())
-                binding.tvSinComunidades.visibility = if (comunidades.isEmpty()) View.VISIBLE else View.GONE
             }
-
             override fun onCancelled(error: DatabaseError) {}
         })
     }

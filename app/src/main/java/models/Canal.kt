@@ -3,14 +3,14 @@ package models
 data class Canal(
     val id: String,
     val nombre: String,
-    val imagen: Int,
+    val imagen: String,
     var seguido: Boolean = false,
     var miembros: Int = 0,
     val administrador: String = "",
     val idChat : String
 ) {
 
-    constructor(nom: String, imagen: Int, seguido: Boolean, numMiembros: Int, idChat: String) :
+    constructor(nom: String, imagen: String, seguido: Boolean, numMiembros: Int, idChat: String) :
             this(
                 id = "",
                 nombre = nom,
@@ -20,7 +20,7 @@ data class Canal(
                 idChat = idChat
             )
 
-    constructor(id: String, nom: String, imagen: Int, seguido: Boolean, numMiembros: Int, idChat: String) :
+    constructor(id: String, nom: String, imagen: String, seguido: Boolean, numMiembros: Int, idChat: String) :
             this(
                 id = id,
                 nombre = nom,
@@ -34,12 +34,12 @@ data class Canal(
     constructor(id: String, canalData: Map<String, Any>, idChat: String) : this(
         id = id,
         nombre = canalData["nombreGrupo"] as? String ?: "",
-        imagen = 0,
+        imagen = "",
         seguido = false,
         miembros = (canalData["miembros"] as? List<*>)?.size ?: 0,
         administrador = canalData["administrador"] as? String ?: "",
         idChat = idChat
     )
 
-    
+
 }

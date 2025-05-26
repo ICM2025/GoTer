@@ -72,11 +72,16 @@ import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.GenericTypeIndicator
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
 import com.google.firebase.firestore.FirebaseFirestore
 import java.time.LocalDate
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
+import java.time.format.DateTimeFormatter
+import java.time.temporal.WeekFields
 
 class MapsActivity : AppCompatActivity() {
 
@@ -109,6 +114,11 @@ class MapsActivity : AppCompatActivity() {
     private lateinit var roadManager: RoadManager
     private var roadOverlay: Polyline? = null
     private val participantMarkers = mutableMapOf<String, Marker>()
+    private var tiempoInicioCarrera: Long = 0
+    private var tiempoActividad: Long = 0 // en segundos
+    private var cronometroRunnable: Runnable? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var velocidadMaxima: Double = 0.0
 
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
@@ -180,6 +190,7 @@ class MapsActivity : AppCompatActivity() {
         {
             binding.normalLayout.visibility = View.GONE
             binding.goOnlyButton.visibility = View.VISIBLE
+            iniciarCronometro()
             registrarEnCarrera()
             cargarDestinoCarrera()
             observarParticipantes()
@@ -195,6 +206,7 @@ class MapsActivity : AppCompatActivity() {
                     binding.goOnlyButton.text = "FINISH RACE"
                 } else {
                     finalizarCarreraYRegistrarEstadisticas()
+                    detenerCronometro()
                 }
             }
 
@@ -446,18 +458,185 @@ class MapsActivity : AppCompatActivity() {
     @SuppressLint("NewApi")
     private fun finalizarCarreraYRegistrarEstadisticas() {
         val uid = auth.currentUser?.uid ?: return
-        val hoy = LocalDate.now().toString()
-        val statsRef = FirebaseDatabase.getInstance().getReference("estadisticasUsuarios").child(uid).child("diarias").child(hoy)
+        val hoy = LocalDate.now()
+        val fechaHoy = hoy.toString() // 2025-05-25
+        val mesActual = hoy.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM")) // 2025-05
+        val semanaActual = "${hoy.year}-S${hoy.get(WeekFields.ISO.weekOfYear())}" // 2025-S21
 
-        statsRef.child("distanciaRecorrida").setValue(distanciaRecorrida)
-        statsRef.child("tiempoActividad").setValue(0)
+        // Calcular estadísticas de la sesión actual
+        val tiempoEnSegundos = tiempoActividad
+        val velocidadMediaKmh = if (tiempoEnSegundos > 0) (distanciaRecorrida * 3600) / tiempoEnSegundos else 0.0
+        val caloriasGastadas = calcularCalorias(distanciaRecorrida, tiempoEnSegundos, velocidadMaxima)
+        val distanciaEnMetros = (distanciaRecorrida * 1000).toInt()
+        val puntosGanados = (distanciaEnMetros * 0.5).toInt()
 
-        FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).removeValue()
+        val database = FirebaseDatabase.getInstance()
+        val statsRef = database.getReference("estadisticasUsuarios").child(uid)
+        val userRef = database.getReference("usuarios").child(uid)
 
-        Toast.makeText(this, "Carrera finalizada. Distancia: ${distanciaRecorrida}km", Toast.LENGTH_LONG).show()
+        // Actualizar estadísticas diarias
+        actualizarEstadisticasDiarias(statsRef, fechaHoy, caloriasGastadas, velocidadMediaKmh)
+
+        // Actualizar estadísticas semanales
+        actualizarEstadisticasSemanales(statsRef, semanaActual, fechaHoy, caloriasGastadas)
+
+        // Actualizar estadísticas mensuales
+        actualizarEstadisticasMensuales(statsRef, mesActual, caloriasGastadas)
+
+        // Actualizar resumen total
+        actualizarResumenTotal(statsRef, caloriasGastadas, tiempoEnSegundos)
+
+        // Actualizar puntos del usuario
+        actualizarPuntosUsuario(userRef, puntosGanados)
+
+        // Limpiar carrera actual
+        database.getReference("carreras").child(carreraId).removeValue()
+
+        Toast.makeText(this, "Carrera finalizada. Distancia: ${distanciaRecorrida}km, Puntos ganados: $puntosGanados", Toast.LENGTH_LONG).show()
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
     }
+
+    private fun actualizarEstadisticasDiarias(statsRef: DatabaseReference, fecha: String, calorias: Double, velocidadMedia: Double) {
+        val diariaRef = statsRef.child("diarias").child(fecha)
+
+        diariaRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val stats = currentData.value as? Map<String, Any> ?: mutableMapOf()
+
+                val nuevasStats = mutableMapOf<String, Any>(
+                    "distanciaRecorrida" to ((stats["distanciaRecorrida"] as? Double ?: 0.0) + distanciaRecorrida),
+                    "tiempoActividad" to ((stats["tiempoActividad"] as? Long ?: 0L) + tiempoActividad),
+                    "caloriasGastadas" to ((stats["caloriasGastadas"] as? Double ?: 0.0) + calorias),
+                    "velocidadMedia" to velocidadMedia,
+                    "velocidadMaxima" to maxOf(stats["velocidadMaxima"] as? Double ?: 0.0, velocidadMaxima)
+                )
+
+                currentData.value = nuevasStats
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                if (error != null) {
+                    Log.e("EstadisticasDiarias", "Error: ${error.message}")
+                }
+            }
+        })
+    }
+
+    private fun actualizarEstadisticasSemanales(statsRef: DatabaseReference, semana: String, fecha: String, calorias: Double) {
+        val semanalRef = statsRef.child("semanales").child(semana)
+
+        semanalRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val stats = currentData.value as? Map<String, Any> ?: mutableMapOf()
+
+                val nuevasStats = mutableMapOf<String, Any>(
+                    "distanciaRecorrida" to ((stats["distanciaRecorrida"] as? Double ?: 0.0) + distanciaRecorrida),
+                    "tiempoActividad" to ((stats["tiempoActividad"] as? Long ?: 0L) + tiempoActividad),
+                    "caloriasGastadas" to ((stats["caloriasGastadas"] as? Double ?: 0.0) + calorias),
+                    "mejorDia" to (stats["mejorDia"] as? String ?: fecha)
+                )
+
+                currentData.value = nuevasStats
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                if (error != null) {
+                    Log.e("EstadisticasSemanales", "Error: ${error.message}")
+                }
+            }
+        })
+    }
+
+    private fun actualizarEstadisticasMensuales(statsRef: DatabaseReference, mes: String, calorias: Double) {
+        val mensualRef = statsRef.child("mensuales").child(mes)
+
+        mensualRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val stats = currentData.value as? Map<String, Any> ?: mutableMapOf()
+
+                val nuevasStats = mutableMapOf<String, Any>(
+                    "distanciaRecorrida" to ((stats["distanciaRecorrida"] as? Double ?: 0.0) + distanciaRecorrida),
+                    "tiempoActividad" to ((stats["tiempoActividad"] as? Long ?: 0L) + tiempoActividad),
+                    "caloriasGastadas" to ((stats["caloriasGastadas"] as? Double ?: 0.0) + calorias),
+                    "carrerasParticipadas" to ((stats["carrerasParticipadas"] as? Long ?: 0L) + 1),
+                    "carrerasGanadas" to (stats["carrerasGanadas"] as? Long ?: 0L) // Se actualiza cuando gane una carrera
+                )
+
+                currentData.value = nuevasStats
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                if (error != null) {
+                    Log.e("EstadisticasMensuales", "Error: ${error.message}")
+                }
+            }
+        })
+    }
+
+    private fun actualizarResumenTotal(statsRef: DatabaseReference, calorias: Double, tiempo: Long) {
+        val totalRef = statsRef.child("resumenTotal")
+
+        totalRef.runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val stats = currentData.value as? Map<String, Any> ?: mutableMapOf()
+
+                val nuevasStats = mutableMapOf<String, Any>(
+                    "distanciaTotal" to ((stats["distanciaTotal"] as? Double ?: 0.0) + distanciaRecorrida),
+                    "tiempoTotal" to ((stats["tiempoTotal"] as? Long ?: 0L) + tiempo),
+                    "caloriasTotal" to ((stats["caloriasTotal"] as? Double ?: 0.0) + calorias),
+                    "carrerasGanadas" to (stats["carrerasGanadas"] as? Long ?: 0L),
+                    "mejorTiempo" to minOf(stats["mejorTiempo"] as? Long ?: Long.MAX_VALUE, tiempo)
+                )
+
+                currentData.value = nuevasStats
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                if (error != null) {
+                    Log.e("ResumenTotal", "Error: ${error.message}")
+                }
+            }
+        })
+    }
+
+    private fun actualizarPuntosUsuario(userRef: DatabaseReference, puntosGanados: Int) {
+        userRef.child("puntos").runTransaction(object : Transaction.Handler {
+            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                val puntosActuales = currentData.value as? Long ?: 0L
+                currentData.value = puntosActuales + puntosGanados
+                return Transaction.success(currentData)
+            }
+
+            override fun onComplete(error: DatabaseError?, committed: Boolean, currentData: DataSnapshot?) {
+                if (error != null) {
+                    Log.e("PuntosUsuario", "Error: ${error.message}")
+                }
+            }
+        })
+    }
+
+    private fun calcularCalorias(distanciaKm: Double, tiempoSegundos: Long, velocidadMaxKmh: Double): Double {
+        // Fórmula aproximada: MET * peso * tiempo_horas
+        // Para ciclismo: MET base = 8.0, ajustado por velocidad
+        val tiempoHoras = tiempoSegundos / 3600.0
+        val pesoPromedio = 70.0 // kg (puedes hacer esto configurable por usuario)
+        val velocidadPromedio = if (tiempoHoras > 0) distanciaKm / tiempoHoras else 0.0
+
+        val met = when {
+            velocidadPromedio < 16 -> 6.0  // Ritmo ligero
+            velocidadPromedio < 20 -> 8.0  // Ritmo moderado
+            velocidadPromedio < 25 -> 10.0 // Ritmo vigoroso
+            else -> 12.0                   // Ritmo muy vigoroso
+        }
+
+        return met * pesoPromedio * tiempoHoras
+    }
+
 
     private fun registrarEnCarrera() {
         val uid = auth.currentUser?.uid ?: return
@@ -812,6 +991,12 @@ class MapsActivity : AppCompatActivity() {
                 super.onLocationResult(result)
                 val loc = result.lastLocation
                 if (loc != null) {
+                    val velocidadActual = loc.speed.toDouble()
+
+                    // 2. Comparar y actualizar máxima
+                    if (velocidadActual > velocidadMaxima) {
+                        velocidadMaxima = velocidadActual
+                    }
                     updateUI(loc)
                 }
             }
@@ -1168,4 +1353,36 @@ class MapsActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
+
+    private fun iniciarCronometro() {
+        tiempoInicioCarrera = System.currentTimeMillis()
+        tiempoActividad = 0
+
+        cronometroRunnable = object : Runnable {
+            override fun run() {
+                val tiempoTranscurrido = (System.currentTimeMillis() - tiempoInicioCarrera) / 1000
+                tiempoActividad = tiempoTranscurrido
+
+
+                // Continuar el cronómetro cada segundo
+                handler.postDelayed(this, 1000)
+            }
+        }
+
+        handler.post(cronometroRunnable!!)
+    }
+
+
+    private fun detenerCronometro() {
+        cronometroRunnable?.let { handler.removeCallbacks(it) }
+        cronometroRunnable = null
+    }
+
+    private fun formatearTiempo(segundos: Long): String {
+        val horas = segundos / 3600
+        val minutos = (segundos % 3600) / 60
+        val segs = segundos % 60
+        return String.format("%02d:%02d:%02d", horas, minutos, segs)
+    }
+
 }

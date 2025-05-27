@@ -48,6 +48,7 @@ class ChatActivity : AppCompatActivity() {
     private val email = FirebaseAuth.getInstance().currentUser?.email
     private val uid = FirebaseAuth.getInstance().currentUser?.uid
     private var idChat: String? = null
+    private var menuVisible = false // Variable para controlar la visibilidad del menú
     val usuario = hashMapOf(
         "nombre" to "",
         "email" to email,
@@ -111,18 +112,10 @@ class ChatActivity : AppCompatActivity() {
 
         cargarMensajesDesdeFirebase()
         binding.tvTitulo.text = nombreGrupo
-        binding.addPersona.setOnClickListener {
-            var i = Intent(this, AddPersonasComunidadActivity::class.java)
-            i.putExtra("id_comunidad", idComunidad)
-            startActivity(i)
-        }
-        binding.salir.setOnClickListener {
-            var i = Intent(this, ComunidadesActivity::class.java)
-            if (idComunidad != null) {
-                salirComunidad(idComunidad)
-            }
-            startActivity(i)
-        }
+
+        // Configurar el menú hamburguesa
+        configurarMenuHamburguesa(idComunidad)
+
         adapter = ChatAdapter(mensajes)
         binding.listaMensajes.layoutManager = LinearLayoutManager(this)
         binding.listaMensajes.adapter = adapter
@@ -139,9 +132,9 @@ class ChatActivity : AppCompatActivity() {
             Toast.makeText(this, "Permiso de lectura ya concedido", Toast.LENGTH_SHORT).show()
         }
 
+        // Ocultar menú si es canal
         if (intent.getStringExtra("canalId") != null) {
-            binding.addPersona.visibility = View.GONE
-            binding.salir.visibility = View.GONE
+            binding.btnMenuHamburguesa.visibility = View.GONE
         }
 
         // Enviar texto
@@ -176,15 +169,12 @@ class ChatActivity : AppCompatActivity() {
 
         // Tomar foto con la cámara
         binding.btnTomarFoto.setOnClickListener {
-            // Crea archivo pocFromCamera dentro de almacenamiento interno
             val file = File(getFilesDir(), "picFromCamera")
-            // Genera uri para acceder al archivo
             uri = FileProvider.getUriForFile(
                 baseContext,
                 baseContext.packageName + ".fileprovider",
                 file
             )
-            // Lanza la camara
             camaraLauncher.launch(uri)
         }
 
@@ -194,8 +184,69 @@ class ChatActivity : AppCompatActivity() {
         }
 
         binding.botonBack.setOnClickListener {
-            //regresa a ComunidadesActivity
             finish()
+        }
+    }
+
+    private fun configurarMenuHamburguesa(idComunidad: String?) {
+        // Botón del menú hamburguesa
+        binding.btnMenuHamburguesa.setOnClickListener {
+            toggleMenu()
+        }
+
+        // Opción agregar persona
+        binding.opcionAgregarPersona.setOnClickListener {
+            ocultarMenu()
+            val i = Intent(this, AddPersonasComunidadActivity::class.java)
+            i.putExtra("id_comunidad", idComunidad)
+            startActivity(i)
+        }
+
+        // Opción salir del grupo
+        binding.opcionSalirGrupo.setOnClickListener {
+            ocultarMenu()
+            val i = Intent(this, ComunidadesActivity::class.java)
+            if (idComunidad != null) {
+                salirComunidad(idComunidad)
+            }
+            startActivity(i)
+        }
+    }
+
+    private fun toggleMenu() {
+        if (menuVisible) {
+            ocultarMenu()
+        } else {
+            mostrarMenu()
+        }
+    }
+
+    private fun mostrarMenu() {
+        binding.menuOpciones.visibility = View.VISIBLE
+        menuVisible = true
+        // Opcional: rotar el ícono del menú
+        binding.btnMenuHamburguesa.animate()
+            .rotation(90f)
+            .setDuration(200)
+            .start()
+    }
+
+    private fun ocultarMenu() {
+        binding.menuOpciones.visibility = View.GONE
+        menuVisible = false
+        // Opcional: restaurar la rotación del ícono
+        binding.btnMenuHamburguesa.animate()
+            .rotation(0f)
+            .setDuration(200)
+            .start()
+    }
+
+    // Ocultar menú cuando se toque fuera de él
+    override fun onBackPressed() {
+        if (menuVisible) {
+            ocultarMenu()
+        } else {
+            super.onBackPressed()
         }
     }
 
@@ -376,14 +427,10 @@ class ChatActivity : AppCompatActivity() {
         }
     }
 
-    //Aqui basicamente agregue que se suba al storage, que agarre la url y guarda el mensaje en la base de datos
-
     private fun loadImage(uri: Uri) {
-
         val nombreImagen = "imagen_${UUID.randomUUID()}.jpg"
         val imageRef = storageRef.child(nombreImagen)
 
-        // Subir imagen a Firebase Storage
         imageRef.putFile(uri)
             .addOnSuccessListener { taskSnapshot ->
                 imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
@@ -397,7 +444,6 @@ class ChatActivity : AppCompatActivity() {
                         uri = urlImagen,
                         timestamp = System.currentTimeMillis()
                     )
-                        //base de datos
                     databaseRef.push().setValue(mensaje)
                         .addOnSuccessListener {
                             guardarUrlImagenEnChat(urlImagen)
@@ -414,15 +460,12 @@ class ChatActivity : AppCompatActivity() {
             }
     }
 
-    //Y aqui lo que haces es guardar en la base de datos la imagen con la url del storage
-
     private fun guardarUrlImagenEnChat(urlImagen: String) {
         chatRef.get().addOnSuccessListener { snapshot ->
             var contadorImagenes = 1
             while (snapshot.hasChild("urlImagen$contadorImagenes")) {
                 contadorImagenes++
             }
-            //guarda las imagenes con un contador pues pa identificar asi mas soft
             val campoImagen = "urlImagen$contadorImagenes"
             chatRef.child(campoImagen).setValue(urlImagen)
                 .addOnSuccessListener {

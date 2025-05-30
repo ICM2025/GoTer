@@ -212,31 +212,48 @@ class HomeActivity : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val notificaciones = mutableListOf<Notificacion>()
                     for (notificacionSnap in snapshot.children) {
-                        val idNotificacion = notificacionSnap.key ?: ""
+                        val idNotificacion = notificacionSnap.key ?: continue
                         val titulo = notificacionSnap.child("tipo").getValue(String::class.java) ?: "Notificación"
                         val descripcion = notificacionSnap.child("mensaje").getValue(String::class.java) ?: ""
                         val remitente = notificacionSnap.child("emisorId").getValue(String::class.java) ?: "Sistema"
                         val destinatario = userId
-                        val fecha = notificacionSnap.child("fechaHora").getValue(String::class.java) ?: ""
+                        val fecha = notificacionSnap.child("fechaHora").getValue(Long::class.java)?.toString() ?: ""
                         val leida = notificacionSnap.child("leida").getValue(Boolean::class.java) ?: false
                         val accion = notificacionSnap.child("accion").getValue(String::class.java) ?: ""
                         val tipo = notificacionSnap.child("tipo").getValue(String::class.java) ?: "General"
 
+                        // Skip finalizar_carrera notifications
+                        if (accion == "finalizar_carrera") {
+                            Log.d("Notificaciones", "Skipping finalizar_carrera notification: $idNotificacion")
+                            // Optionally delete the notification
+                            notificacionSnap.ref.removeValue()
+                                .addOnSuccessListener {
+                                    Log.d("Notificaciones", "Deleted finalizar_carrera notification: $idNotificacion")
+                                }
+                                .addOnFailureListener { e ->
+                                    Log.e("Notificaciones", "Error deleting notification: ${e.message}")
+                                }
+                            continue
+                        }
 
+                        // Safely handle metadatos
                         val metadatosValue = notificacionSnap.child("metadatos").value
-
                         val metadatosString = when (metadatosValue) {
                             is HashMap<*, *> -> {
-                                metadatosValue.entries.joinToString(", ") { "${it.key}=${it.value}" }
+                                val idCarreraRaw = metadatosValue["idCarrera"]
+                                val idCarrera = when (idCarreraRaw) {
+                                    is String -> idCarreraRaw
+                                    is Long -> idCarreraRaw.toString()
+                                    else -> "unknown"
+                                }
+                                metadatosValue.entries.joinToString(", ") {
+                                    if (it.key == "idCarrera") "idCarrera=$idCarrera" else "${it.key}=${it.value}"
+                                }
                             }
-                            is String -> {
-                                metadatosValue
-                            }
-                            else -> {
-
-                                ""
-                            }
+                            is String -> metadatosValue
+                            else -> ""
                         }
+
                         notificaciones.add(Notificacion(
                             idNotificacion = idNotificacion,
                             titulo = titulo,
@@ -265,7 +282,7 @@ class HomeActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@HomeActivity, "Error al cargar notificaciones", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@HomeActivity, "Error al cargar notificaciones: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             })
     }

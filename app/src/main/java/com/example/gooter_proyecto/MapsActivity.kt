@@ -814,13 +814,13 @@ class MapsActivity : AppCompatActivity() {
         currentLocation?.let {
             Log.d("MAP", "Moviendo a ubicacion actual desde onResume")
             map.controller.animateTo(it)
+            // Solo ajustar la ruta en modo carrera si ultimaPosicionCamara es nula (inicio)
+            if (carreraId.isNotEmpty() && carreraDestino != null && ultimaPosicionCamara == null) {
+                adjustZoomToShowRoute(it, carreraDestino!!)
+                Log.d("MAP", "Ajustando zoom para mostrar ruta en modo carrera (inicio)")
+            }
         } ?: run {
             map.controller.animateTo(bogota)
-        }
-
-        if (carreraDestino != null && currentLocation != null) {
-            adjustZoomToShowRoute(currentLocation!!, carreraDestino!!)
-            Log.d("MAP", "Moviendo a que se vea el destino y la ubicacion actual")
         }
 
         startSavingLocationUpdates()
@@ -913,14 +913,7 @@ class MapsActivity : AppCompatActivity() {
         }
 
         map.overlays.add(roadOverlay)
-
-        // Solo ajustar zoom si es la primera vez que se dibuja o si la cámara se movió
-        if (ultimaPosicionCamara == null || ultimaPosicionCamara == start) {
-            adjustZoomToShowRoute(start, end)
-        }
-
         map.invalidate()
-        showDistanceBetweenPoints(start, end)
     }
 
     private fun adjustZoomToShowRoute(start: GeoPoint, end: GeoPoint) {
@@ -1047,15 +1040,15 @@ class MapsActivity : AppCompatActivity() {
             Log.i("MAPA", "Moviendo cámara a ubicación actual (cambio >50m)")
         }
 
-        // Redibujar ruta si existe destino
-        carreraDestino?.let {
+        // Redibujar ruta si existe destino y estamos en modo carrera
+        if (carreraId.isNotEmpty() && carreraDestino != null) {
             // Borrar ruta anterior
             roadOverlay?.let { overlay ->
                 map.overlays.remove(overlay)
                 roadOverlay = null
             }
             // Dibujar nueva ruta
-            drawDirectLine(newLocation, it)
+            drawDirectLine(newLocation, carreraDestino!!)
         }
 
         map.invalidate()

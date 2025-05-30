@@ -119,6 +119,7 @@ class MapsActivity : AppCompatActivity() {
     private var cronometroRunnable: Runnable? = null
     private val handler = Handler(Looper.getMainLooper())
     private var velocidadMaxima: Double = 0.0
+    private var ultimaPosicionCamara: GeoPoint? = null
 
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
@@ -728,6 +729,7 @@ class MapsActivity : AppCompatActivity() {
             }
 
             if (!address.isNullOrEmpty()) {
+                Log.d("MAP", "Moviendo a ubicacion buscada")
                 map.controller.animateTo(loc)
                 map.controller.setZoom(17.0)
 
@@ -810,6 +812,7 @@ class MapsActivity : AppCompatActivity() {
         }
 
         currentLocation?.let {
+            Log.d("MAP", "Moviendo a ubicacion actual desde onResume")
             map.controller.animateTo(it)
         } ?: run {
             map.controller.animateTo(bogota)
@@ -817,12 +820,7 @@ class MapsActivity : AppCompatActivity() {
 
         if (carreraDestino != null && currentLocation != null) {
             adjustZoomToShowRoute(currentLocation!!, carreraDestino!!)
-        } else {
-            currentLocation?.let {
-                map.controller.animateTo(it)
-            } ?: run {
-                map.controller.animateTo(bogota)
-            }
+            Log.d("MAP", "Moviendo a que se vea el destino y la ubicacion actual")
         }
 
         startSavingLocationUpdates()
@@ -900,9 +898,12 @@ class MapsActivity : AppCompatActivity() {
     private fun drawDirectLine(start: GeoPoint, end: GeoPoint) {
         val routePoints = ArrayList<GeoPoint>()
 
-        routeOverlay?.let {
+        // Remover overlay anterior si existe
+        roadOverlay?.let {
             map.overlays.remove(it)
+            roadOverlay = null
         }
+
         routePoints.add(start)
         routePoints.add(end)
         val road = roadManager.getRoad(routePoints)
@@ -912,7 +913,12 @@ class MapsActivity : AppCompatActivity() {
         }
 
         map.overlays.add(roadOverlay)
-        adjustZoomToShowRoute(start, end)
+
+        // Solo ajustar zoom si es la primera vez que se dibuja o si la cámara se movió
+        if (ultimaPosicionCamara == null || ultimaPosicionCamara == start) {
+            adjustZoomToShowRoute(start, end)
+        }
+
         map.invalidate()
         showDistanceBetweenPoints(start, end)
     }
@@ -1007,20 +1013,51 @@ class MapsActivity : AppCompatActivity() {
     fun updateUI(location: Location) {
         val newLocation = GeoPoint(location.latitude, location.longitude)
         val address = findAddress(LatLng(location.latitude, location.longitude))
+        var moverCamara = false
 
+        // Calcular distancia recorrida
         ultimaUbicacion?.let {
             val d = distance(it.latitude, it.longitude, newLocation.latitude, newLocation.longitude)
             distanciaRecorrida += d
+            Log.i("MAPA", "Distancia desde anterior actualizacion: $d")
         }
         ultimaUbicacion = newLocation
 
+        // Determinar si mover la cámara (solo si cambió más de 50 metros)
+        ultimaPosicionCamara?.let { ultimaPos ->
+            val distanciaCamara = distance(
+                ultimaPos.latitude, ultimaPos.longitude,
+                newLocation.latitude, newLocation.longitude
+            )
+            if (distanciaCamara > 0.05) { // 50 metros = 0.05 km
+                moverCamara = true
+                ultimaPosicionCamara = newLocation
+            }
+        } ?: run {
+            // Primera vez, mover cámara
+            moverCamara = true
+            ultimaPosicionCamara = newLocation
+        }
+
         currentLocation = newLocation
         updateCurrentLocationMarker(newLocation, address)
-        map.controller.animateTo(newLocation)
 
+        if (moverCamara) {
+            map.controller.animateTo(newLocation)
+            Log.i("MAPA", "Moviendo cámara a ubicación actual (cambio >50m)")
+        }
+
+        // Redibujar ruta si existe destino
         carreraDestino?.let {
+            // Borrar ruta anterior
+            roadOverlay?.let { overlay ->
+                map.overlays.remove(overlay)
+                roadOverlay = null
+            }
+            // Dibujar nueva ruta
             drawDirectLine(newLocation, it)
         }
+
         map.invalidate()
     }
 

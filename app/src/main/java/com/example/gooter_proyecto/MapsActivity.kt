@@ -103,8 +103,6 @@ class MapsActivity : AppCompatActivity() {
     private var destinationLocation: GeoPoint? = null
     private var destinationMarker: Marker? = null
     private lateinit var auth: FirebaseAuth
-    private lateinit var locationUpdateHandler: Handler
-    private lateinit var locationUpdateRunnable: Runnable
     private var carreraId: String = ""
     private var carreraEnCurso = false
     private var distanciaRecorrida = 0.0
@@ -121,6 +119,7 @@ class MapsActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var velocidadMaxima: Double = 0.0
     private var ultimaPosicionCamara: GeoPoint? = null
+    private var isExiting = false
 
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
@@ -172,77 +171,37 @@ class MapsActivity : AppCompatActivity() {
         NotificacionesDisponibles.getInstance().inicializar(this)
         carreraId = intent.getStringExtra("carrera_id") ?: ""
 
-        val uid = auth.currentUser?.uid
-        if (uid != null) {
-            FirebaseDatabase.getInstance().reference.child("usuarios").child(uid).get()
-                .addOnSuccessListener { snapshot ->
-                    if (snapshot.exists()) {
-                        val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
-                        binding.textSaludo.text = "Hola, $nombre!"
-                    } else {
-                        Toast.makeText(this, "No se encontró el usuario", Toast.LENGTH_SHORT).show()
+        // Validar carreraId si no está vacío
+        if (carreraId.isNotEmpty()) {
+            FirebaseDatabase.getInstance().getReference("carreras").child(carreraId)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (!snapshot.exists()) {
+                            Log.d("MapsActivity", "Carrera $carreraId no existe, limpiando estado")
+                            carreraId = ""
+                            carreraEnCurso = false
+                            carreraDestino = null
+                            isExiting = true
+                            Toast.makeText(this@MapsActivity, "La carrera no existe", Toast.LENGTH_SHORT).show()
+                            finishActivity()
+                            return
+                        }
+                        // Continuar con la inicialización de la carrera
+                        modoCarrera()
                     }
-                }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Error al obtener datos del usuario", Toast.LENGTH_SHORT).show()
-                }
-        }
 
-        if (carreraId.isNotEmpty())
-        {
-            binding.normalLayout.visibility = View.GONE
-            binding.goOnlyButton.visibility = View.VISIBLE
-            iniciarCronometro()
-            registrarEnCarrera()
-            cargarDestinoCarrera()
-            observarParticipantes()
-            observarEstadoCarrera()
-            suscribirseANotificaciones()
-
-            binding.goOnlyButton.setOnClickListener {
-                if (!carreraEnCurso) {
-                    FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
-                        .setValue("en_curso")
-                    borrarNotificacionesAsociadas()
-                    Toast.makeText(this, "¡Carrera iniciada!", Toast.LENGTH_SHORT).show()
-                    carreraEnCurso = true
-                    binding.goOnlyButton.text = "FINISH RACE"
-                } else {
-                    // Verificar si el usuario es el administrador
-                    verificarAdministrador()
-                }
-            }
-
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.e("MapsActivity", "Error al verificar carrera: ${error.message}")
+                        carreraId = ""
+                        carreraEnCurso = false
+                        carreraDestino = null
+                        isExiting = true
+                        Toast.makeText(this@MapsActivity, "Error al verificar carrera", Toast.LENGTH_SHORT).show()
+                        finishActivity()
+                    }
+                })
         } else {
-            binding.normalLayout.visibility = View.VISIBLE
-            binding.goOnlyButton.visibility = View.GONE
-
-            cargarEstacionamientos()
-
-            binding.botonGo.setOnClickListener {
-                val searchSuccessful = searchLocation()
-                if (searchSuccessful && destinationLocation != null && currentLocation != null) {
-                    drawDirectLine(currentLocation!!, destinationLocation!!)
-                } else if (!searchSuccessful) {
-                    // searchLocation already shows a toast if search fails
-                } else {
-                    Toast.makeText(this, "No se pudo trazar la ruta: ubicación actual desconocida.", Toast.LENGTH_SHORT).show()
-                }
-            }
-
-            binding.editUbicacion.setOnEditorActionListener { _, i, _ ->
-                if (i == EditorInfo.IME_ACTION_SEARCH) {
-                    searchLocation()
-                    hideKeyboard()
-                    true
-                }
-                false
-            }
-            binding.iconoEditar.setOnClickListener {
-                binding.editUbicacion.requestFocus()
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(binding.editUbicacion, InputMethodManager.SHOW_IMPLICIT)
-            }
+            noModoCarrera()
         }
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
@@ -267,21 +226,101 @@ class MapsActivity : AppCompatActivity() {
             goToMyLocation()
         }
         binding.botonBack.setOnClickListener {
+            isExiting = true
+            stopLocationUpdates()
             startActivity(Intent(this, HomeActivity::class.java))
             finish()
         }
 
-        auth = FirebaseAuth.getInstance()
-        locationUpdateHandler = Handler(Looper.getMainLooper())
-        locationUpdateRunnable = object : Runnable {
-            override fun run() {
-                guardarUsuarioUbicacionFirebase()
-                locationUpdateHandler.postDelayed(this, 7000)
+        askNotificationPermission()
+    }
+
+    private fun modoCarrera() {
+        val uid = auth.currentUser?.uid
+        if (uid != null) {
+            FirebaseDatabase.getInstance().reference.child("usuarios").child(uid).get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
+                        binding.textSaludo.text = "Hola, $nombre!"
+                    } else {
+                        Toast.makeText(this, "No se encontró el usuario", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al obtener datos del usuario", Toast.LENGTH_SHORT).show()
+                }
+        }
+
+        binding.normalLayout.visibility = View.GONE
+        binding.goOnlyButton.visibility = View.VISIBLE
+        iniciarCronometro()
+        registrarEnCarrera()
+        cargarDestinoCarrera()
+        observarParticipantes()
+        observarEstadoCarrera()
+        suscribirseANotificaciones()
+
+        binding.goOnlyButton.setOnClickListener {
+            if (!carreraEnCurso) {
+                FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
+                    .setValue("en_curso")
+                borrarNotificacionesAsociadas()
+                Toast.makeText(this, "¡Carrera iniciada!", Toast.LENGTH_SHORT).show()
+                carreraEnCurso = true
+                binding.goOnlyButton.text = "FINISH RACE"
+            } else {
+                verificarAdministrador()
+            }
+        }
+    }
+
+    private fun noModoCarrera() {
+        val uid = auth.currentUser?.uid
+        if (uid != null) {
+            FirebaseDatabase.getInstance().reference.child("usuarios").child(uid).get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        val nombre = snapshot.child("nombre").getValue(String::class.java) ?: ""
+                        binding.textSaludo.text = "Hola, $nombre!"
+                    } else {
+                        Toast.makeText(this, "No se encontró el usuario", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al obtener datos del usuario", Toast.LENGTH_SHORT).show()
+                }
+        }
+
+        binding.normalLayout.visibility = View.VISIBLE
+        binding.goOnlyButton.visibility = View.GONE
+
+        cargarEstacionamientos()
+
+        binding.botonGo.setOnClickListener {
+            val searchSuccessful = searchLocation()
+            if (searchSuccessful && destinationLocation != null && currentLocation != null) {
+                drawDirectLine(currentLocation!!, destinationLocation!!)
+            } else if (!searchSuccessful) {
+                // searchLocation already shows a toast if search fails
+            } else {
+                Toast.makeText(this, "No se pudo trazar la ruta: ubicación actual desconocida.", Toast.LENGTH_SHORT).show()
             }
         }
 
-        askNotificationPermission()
-
+        binding.editUbicacion.setOnEditorActionListener { _, i, _ ->
+            if (i == EditorInfo.IME_ACTION_SEARCH) {
+                searchLocation()
+                hideKeyboard()
+                true
+            }
+            false
+        }
+        binding.iconoEditar.setOnClickListener {
+            binding.editUbicacion.requestFocus()
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(binding.editUbicacion, InputMethodManager.SHOW_IMPLICIT)
+        }
     }
 
     private fun verificarAdministrador() {
@@ -295,8 +334,6 @@ class MapsActivity : AppCompatActivity() {
                     // El usuario es el administrador
                     carreraEnCurso = false
                     stopLocationUpdates()
-                    stopSavingLocationUpdates()
-                    locationUpdateHandler.removeCallbacksAndMessages(null)
                     finalizarCarreraYRegistrarEstadisticas()
                     detenerCronometro()
                     enviarNotificacionesFinalizacion()
@@ -335,10 +372,12 @@ class MapsActivity : AppCompatActivity() {
                     }
 
                     if (accion == "finalizar_carrera" && carreraIdNotif == carreraId) {
+                        // Detener actualizaciones antes de navegar
+                        stopLocationUpdates()
                         snapshot.ref.removeValue()
                             .addOnSuccessListener {
                                 Log.d("Notificaciones", "Notificación finalización eliminada: ${snapshot.key}")
-                                // Launch HomeActivity
+                                // Navegar a HomeActivity
                                 val intent = Intent(this@MapsActivity, HomeActivity::class.java)
                                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                                 startActivity(intent)
@@ -479,38 +518,56 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun guardarUsuarioUbicacionFirebase() {
+        // Evitar guardar si la actividad está finalizando o saliendo
+        if (isFinishing || isExiting) {
+            Log.d("Firebase", "Activity is finishing or exiting, skipping location save")
+            return
+        }
+
         val user = auth.currentUser
         val uid = user?.uid
 
-        if (carreraEnCurso && uid != null && currentLocation != null ) {
+        if (carreraEnCurso && uid != null && currentLocation != null && carreraId.isNotEmpty()) {
             val database = FirebaseDatabase.getInstance()
-            val userLocationRef = database.getReference("ubicacionesParticipantes").child(carreraId).child(uid)
+            // Verificar si la carrera aún existe
+            database.getReference("carreras").child(carreraId).addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        val userLocationRef = database.getReference("ubicacionesParticipantes").child(carreraId).child(uid)
 
-            val locationData = hashMapOf(
-                "latitud" to currentLocation!!.latitude,
-                "longitud" to currentLocation!!.longitude,
-                "altitud" to currentLocation!!.altitude,
-                "timestamp" to com.google.firebase.database.ServerValue.TIMESTAMP
-            )
+                        val locationData = hashMapOf(
+                            "latitud" to currentLocation!!.latitude,
+                            "longitud" to currentLocation!!.longitude,
+                            "altitud" to currentLocation!!.altitude,
+                            "timestamp" to com.google.firebase.database.ServerValue.TIMESTAMP
+                        )
 
-            userLocationRef.setValue(locationData)
-                .addOnSuccessListener {
-                    Log.d("Firebase", "Location saved successfully for user: $uid")
+                        userLocationRef.setValue(locationData)
+                            .addOnSuccessListener {
+                                Log.d("Firebase", "Location saved successfully for user: $uid")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Firebase", "Failed to save location for user: $uid", e)
+                                Toast.makeText(this@MapsActivity, "Error al guardar ubicación", Toast.LENGTH_SHORT).show()
+                            }
+                    } else {
+                        Log.d("Firebase", "Race $carreraId does not exist, skipping location save")
+                        // Limpiar estado y detener actualizaciones
+                        carreraId = ""
+                        carreraEnCurso = false
+                        carreraDestino = null
+                        isExiting = true // Marcar como saliendo para evitar más actualizaciones
+                        stopLocationUpdates()
+                    }
                 }
-                .addOnFailureListener { e ->
-                    Log.e("Firebase", "Failed to save location for user: $uid", e)
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("Firebase", "Error checking race existence: ${error.message}")
                 }
+            })
         } else {
-            Log.d("Firebase", "Location update skipped: User not logged in, no location, or race not in progress.")
+            Log.d("Firebase", "Location update skipped: User not logged in, no location, race not in progress, or no race ID.")
         }
-    }
-
-    private fun startSavingLocationUpdates() {
-        locationUpdateHandler.post(locationUpdateRunnable)
-    }
-
-    private fun stopSavingLocationUpdates() {
-        locationUpdateHandler.removeCallbacks(locationUpdateRunnable)
     }
 
     private fun cargarEstacionamientos() {
@@ -611,9 +668,26 @@ class MapsActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        // Detener actualizaciones de ubicación y remover callback
         stopLocationUpdates()
-        stopSavingLocationUpdates()
-        locationUpdateHandler.removeCallbacksAndMessages(null)
+        locationClient.removeLocationUpdates(locationCallback)
+            .addOnCompleteListener {
+                Log.d("Location", "Location callback removed in onDestroy")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Location", "Failed to remove location callback: ${e.message}")
+            }
+        // Detener cronómetro si existe
+        detenerCronometro()
+        // Limpiar mapa y sensores
+        map.onDetach()
+        sensorManager.unregisterListener(sensorEventListener)
+        // Limpiar overlays para evitar memory leaks
+        map.overlays.clear()
+        roadOverlay = null
+        currentLocationMarker = null
+        destinationMarker = null
+        participantMarkers.clear()
     }
 
     @SuppressLint("NewApi")
@@ -627,11 +701,10 @@ class MapsActivity : AppCompatActivity() {
         val database = FirebaseDatabase.getInstance()
         val carreraRef = database.getReference("carreras/$carreraId")
 
-        // Marcar la carrera como no activa and stop all location-related operations
+        // Marcar la carrera como no activa y detener operaciones relacionadas
         carreraEnCurso = false
         stopLocationUpdates()
-        stopSavingLocationUpdates()
-        locationUpdateHandler.removeCallbacksAndMessages(null)
+        detenerCronometro()
 
         carreraRef.child("jugadores").addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -639,6 +712,9 @@ class MapsActivity : AppCompatActivity() {
                 if (participantes.isEmpty()) {
                     Log.e("Estadisticas", "No se encontraron participantes para la carrera $carreraId")
                     Toast.makeText(this@MapsActivity, "No hay participantes en la carrera", Toast.LENGTH_SHORT).show()
+                    // Limpiar carreraId y finalizar
+                    carreraId = ""
+                    finishActivity()
                     return
                 }
 
@@ -666,25 +742,30 @@ class MapsActivity : AppCompatActivity() {
                             actualizarPuntosUsuario(userRef, puntosGanados)
                         }
 
-                        // Remove race data after all updates are stopped
+                        // Eliminar datos de la carrera
                         carreraRef.removeValue()
                             .addOnSuccessListener {
                                 borrarNotificacionesAsociadas()
                                 Toast.makeText(this@MapsActivity, "Carrera finalizada y estadísticas guardadas", Toast.LENGTH_LONG).show()
-                                val intent = Intent(this@MapsActivity, HomeActivity::class.java)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                startActivity(intent)
-                                finish() // Ensure the activity is finished
+                                // Limpiar carreraId y finalizar actividad
+                                carreraId = ""
+                                finishActivity()
                             }
                             .addOnFailureListener { e ->
                                 Log.e("Estadisticas", "Error al eliminar carrera: ${e.message}")
                                 Toast.makeText(this@MapsActivity, "Error al eliminar carrera: ${e.message}", Toast.LENGTH_SHORT).show()
+                                // Limpiar carreraId y finalizar de todos modos
+                                carreraId = ""
+                                finishActivity()
                             }
                     }
 
                     override fun onCancelled(error: DatabaseError) {
                         Log.e("Estadisticas", "Error al obtener estadísticas: ${error.message}")
                         Toast.makeText(this@MapsActivity, "Error al obtener estadísticas: ${error.message}", Toast.LENGTH_SHORT).show()
+                        // Limpiar carreraId y finalizar
+                        carreraId = ""
+                        finishActivity()
                     }
                 })
             }
@@ -692,8 +773,36 @@ class MapsActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {
                 Log.e("Estadisticas", "Error al obtener participantes: ${error.message}")
                 Toast.makeText(this@MapsActivity, "Error al obtener participantes: ${error.message}", Toast.LENGTH_SHORT).show()
+                // Limpiar carreraId y finalizar
+                carreraId = ""
+                finishActivity()
             }
         })
+    }
+
+    private fun finishActivity() {
+        // Marcar como saliendo
+        isExiting = true
+        // Detener actualizaciones de ubicación antes de salir
+        stopLocationUpdates()
+        // Asegurar que el callback esté removido
+        locationClient.removeLocationUpdates(locationCallback)
+            .addOnCompleteListener {
+                Log.d("Location", "Location callback removed before finishing activity")
+                // Navegar a HomeActivity
+                val intent = Intent(this, HomeActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
+            .addOnFailureListener { e ->
+                Log.e("Location", "Failed to remove location callback: ${e.message}")
+                // Navegar de todos modos para evitar quedarse atascado
+                val intent = Intent(this, HomeActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
     }
 
     private fun actualizarEstadisticasDiarias(statsRef: DatabaseReference, fecha: String, calorias: Double, velocidadMedia: Double) {
@@ -994,13 +1103,15 @@ class MapsActivity : AppCompatActivity() {
         map.onResume()
         map.controller.setZoom(18.0)
 
-        if (ActivityCompat.checkSelfPermission(
+        // Solo iniciar actualizaciones de ubicación si estamos en modo carrera y la carrera está en curso
+        if (carreraId.isNotEmpty() && carreraEnCurso && ActivityCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             locationSettings()
-        } else if (!permisoSolicitado) {
+        } else if (!permisoSolicitado && carreraId.isNotEmpty()) {
+            // Solo solicitar permiso si estamos en modo carrera
             locationPermission.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
@@ -1010,7 +1121,7 @@ class MapsActivity : AppCompatActivity() {
         }
 
         currentLocation?.let {
-            Log.d("MAP", "Moviendo a ubicacion actual desde onResume")
+            Log.d("MAP", "Moviendo a ubicación actual desde onResume")
             map.controller.animateTo(it)
             // Solo ajustar la ruta en modo carrera si ultimaPosicionCamara es nula (inicio)
             if (carreraId.isNotEmpty() && carreraDestino != null && ultimaPosicionCamara == null) {
@@ -1020,8 +1131,6 @@ class MapsActivity : AppCompatActivity() {
         } ?: run {
             map.controller.animateTo(bogota)
         }
-
-        startSavingLocationUpdates()
     }
 
     private fun createSensorEventListener(): SensorEventListener {
@@ -1071,9 +1180,7 @@ class MapsActivity : AppCompatActivity() {
         super.onPause()
         map.onPause()
         stopLocationUpdates()
-        stopSavingLocationUpdates()
         sensorManager.unregisterListener(sensorEventListener)
-        locationUpdateHandler.removeCallbacksAndMessages(null)
     }
 
     fun createMarker(p: GeoPoint, title: String, desc: String, iconID: Int): Marker? {
@@ -1215,27 +1322,39 @@ class MapsActivity : AppCompatActivity() {
     }
 
     fun updateUI(location: Location) {
+        // Prevent processing if activity is exiting
+        if (isExiting) {
+            Log.d("Location", "Activity is exiting, skipping UI update")
+            return
+        }
+
         val newLocation = GeoPoint(location.latitude, location.longitude)
         val address = findAddress(LatLng(location.latitude, location.longitude))
         var moverCamara = false
 
-        // Calcular distancia recorrida
-        ultimaUbicacion?.let {
-            val d = distance(it.latitude, it.longitude, newLocation.latitude, newLocation.longitude)
-            distanciaRecorrida += d
-            Log.i("MAPA", "Distancia desde anterior actualizacion: $d")
-            // Guardar estadísticas en Firebase para el usuario actual solo si la carrera está en curso
-            val uid = auth.currentUser?.uid
-            if (uid != null && carreraId.isNotEmpty() && carreraEnCurso) {
-                val statsRef = FirebaseDatabase.getInstance().getReference("carreras/$carreraId/estadisticas/$uid")
-                val statsData = mapOf(
-                    "distanciaRecorrida" to distanciaRecorrida,
-                    "velocidadMaxima" to velocidadMaxima
-                )
-                statsRef.setValue(statsData)
-                    .addOnFailureListener { e ->
-                        Log.e("Firebase", "Error al guardar estadísticas: ${e.message}")
-                    }
+        // Procesar estadísticas y guardar ubicación solo si la carrera está en curso
+        if (carreraId.isNotEmpty() && carreraEnCurso) {
+            // Calcular distancia recorrida
+            ultimaUbicacion?.let {
+                val d = distance(it.latitude, it.longitude, newLocation.latitude, newLocation.longitude)
+                distanciaRecorrida += d
+                Log.i("MAPA", "Distancia desde anterior actualizacion: $d")
+                // Guardar estadísticas en Firebase para el usuario actual
+                val uid = auth.currentUser?.uid
+                if (uid != null) {
+                    val statsRef = FirebaseDatabase.getInstance().getReference("carreras/$carreraId/estadisticas/$uid")
+                    val statsData = mapOf(
+                        "distanciaRecorrida" to distanciaRecorrida,
+                        "velocidadMaxima" to velocidadMaxima
+                    )
+                    statsRef.setValue(statsData)
+                        .addOnFailureListener { e ->
+                            Log.e("Firebase", "Error al guardar estadísticas: ${e.message}")
+                            Toast.makeText(this@MapsActivity, "Error al guardar estadísticas", Toast.LENGTH_SHORT).show()
+                        }
+                    // Guardar ubicación en Firebase
+                    guardarUsuarioUbicacionFirebase()
+                }
             }
         }
         ultimaUbicacion = newLocation
@@ -1264,15 +1383,24 @@ class MapsActivity : AppCompatActivity() {
             Log.i("MAPA", "Moviendo cámara a ubicación actual (cambio >50m)")
         }
 
-        // Redibujar ruta si existe destino y estamos en modo carrera
+        // Redibujar ruta si existe destino
         if (carreraId.isNotEmpty() && carreraDestino != null) {
-            // Borrar ruta anterior
+            // Solo remover overlay anterior si vamos a dibujar una nueva ruta
+            if (carreraEnCurso || roadOverlay == null) {
+                roadOverlay?.let { overlay ->
+                    map.overlays.remove(overlay)
+                    roadOverlay = null
+                }
+                // Dibujar nueva ruta
+                drawDirectLine(newLocation, carreraDestino!!)
+            }
+        } else if (!carreraId.isNotEmpty() && destinationLocation != null) {
+            // En modo no-carrera, dibujar ruta si hay destino
             roadOverlay?.let { overlay ->
                 map.overlays.remove(overlay)
                 roadOverlay = null
             }
-            // Dibujar nueva ruta
-            drawDirectLine(newLocation, carreraDestino!!)
+            drawDirectLine(newLocation, destinationLocation!!)
         }
 
         map.invalidate()
@@ -1598,15 +1726,28 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun observarEstadoCarrera() {
-        val ref = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
+        val ref = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId)
         ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val estado = snapshot.getValue(String::class.java)
+                if (!snapshot.exists()) {
+                    // La carrera ha sido eliminada
+                    Log.d("EstadoCarrera", "Carrera $carreraId no existe, deteniendo operaciones")
+                    carreraEnCurso = false
+                    carreraId = ""
+                    stopLocationUpdates()
+                    participantMarkers.clear()
+                    map.overlays.removeAll(participantMarkers.values)
+                    map.invalidate()
+                    // Opcionalmente, navegar a HomeActivity
+                    finishActivity()
+                    return
+                }
+
+                val estado = snapshot.child("estado").getValue(String::class.java)
                 carreraEnCurso = estado == "en_curso"
                 if (!carreraEnCurso) {
+                    Log.d("EstadoCarrera", "Carrera $carreraId no está en curso, deteniendo actualizaciones")
                     stopLocationUpdates()
-                    stopSavingLocationUpdates()
-                    locationUpdateHandler.removeCallbacksAndMessages(null)
                     participantMarkers.clear()
                     map.overlays.removeAll(participantMarkers.values)
                     map.invalidate()

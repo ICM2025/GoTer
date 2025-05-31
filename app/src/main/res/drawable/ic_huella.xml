@@ -6,7 +6,6 @@
 
     <!-- Contorno general del dedo -->
     <path
-        android:fillColor="none"
         android:strokeColor="#FFFFFF"
         android:strokeWidth="3"
         android:pathData="M50,15 C70,15 85,30 85,50 C85,70 70,85 50,85 C30,85 15,70 15,50 C15,30 30,15 50,15" />

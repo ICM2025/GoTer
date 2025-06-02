@@ -58,6 +58,7 @@ class HomeActivity : AppCompatActivity() {
 
         loadComunidades()
         loadNotificaciones()
+        borrarCarrerasPendientes()
 
         val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
 
@@ -104,6 +105,34 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, EstadisticasFechaInicioActivity::class.java))
         }
         permisoNotificaciones()
+    }
+
+    private fun borrarCarrerasPendientes() {
+        val uid = auth.currentUser?.uid ?: return
+        val dbRef = FirebaseDatabase.getInstance().getReference("carreras")
+        dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (carreraSnapshot in snapshot.children) {
+                    val carreraId = carreraSnapshot.key ?: continue
+                    val ubicaciones = carreraSnapshot.child("ubicacionesParticipantes")
+
+                    if (ubicaciones.hasChild(uid)) {
+                        // El usuario participó en esta carrera, así que eliminamos toda la carrera
+                        dbRef.child(carreraId).removeValue()
+                            .addOnSuccessListener {
+                                Log.d("CARRERA", "Carrera eliminada: $carreraId")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("CARRERA", "Error al eliminar carrera $carreraId: ${e.message}")
+                            }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("CARRERA", "Error al consultar carreras: ${error.message}")
+            }
+        })
     }
 
     override fun onRequestPermissionsResult(

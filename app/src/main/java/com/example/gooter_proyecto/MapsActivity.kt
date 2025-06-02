@@ -121,6 +121,7 @@ class MapsActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var velocidadMaxima: Double = 0.0
     private var ultimaPosicionCamara: GeoPoint? = null
+    private val locationListeners = mutableMapOf<String, Pair<DatabaseReference, ValueEventListener>>()
 
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
@@ -195,9 +196,12 @@ class MapsActivity : AppCompatActivity() {
             iniciarCronometro()
             registrarEnCarrera()
             cargarDestinoCarrera()
+
             observarParticipantes()
             observarEstadoCarrera()
             suscribirseANotificaciones()
+
+            guardarUsuarioUbicacionFirebase()
 
             binding.goOnlyButton.setOnClickListener {
                 if (!carreraEnCurso) {
@@ -209,7 +213,7 @@ class MapsActivity : AppCompatActivity() {
                     binding.goOnlyButton.text = "FINISH RACE"
                 } else {
                     // Verificar si el usuario es el administrador
-                    verificarAdministrador()
+                    verificarAdministrador(false)
                 }
             }
 
@@ -284,14 +288,14 @@ class MapsActivity : AppCompatActivity() {
 
     }
 
-    private fun verificarAdministrador() {
+    private fun verificarAdministrador(ganador: Boolean) {
         val carreraRef = FirebaseDatabase.getInstance().getReference("carreras/$carreraId")
         carreraRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val organizadorId = snapshot.child("organizadorId").getValue(String::class.java)
                 val currentUserId = auth.currentUser?.uid
 
-                if (currentUserId == organizadorId) {
+                if (currentUserId == organizadorId || ganador) {
                     // El usuario es el administrador
                     carreraEnCurso = false
                     stopLocationUpdates()
@@ -478,31 +482,131 @@ class MapsActivity : AppCompatActivity() {
         })
     }
 
+    @SuppressLint("MissingPermission")
     private fun guardarUsuarioUbicacionFirebase() {
-        val user = auth.currentUser
-        val uid = user?.uid
+        val uid = auth.currentUser?.uid
 
-        if (carreraEnCurso && uid != null && currentLocation != null ) {
-            val database = FirebaseDatabase.getInstance()
-            val userLocationRef = database.getReference("ubicacionesParticipantes").child(carreraId).child(uid)
-
-            val locationData = hashMapOf(
-                "latitud" to currentLocation!!.latitude,
-                "longitud" to currentLocation!!.longitude,
-                "altitud" to currentLocation!!.altitude,
-                "timestamp" to com.google.firebase.database.ServerValue.TIMESTAMP
-            )
-
-            userLocationRef.setValue(locationData)
-                .addOnSuccessListener {
-                    Log.d("Firebase", "Location saved successfully for user: $uid")
-                }
-                .addOnFailureListener { e ->
-                    Log.e("Firebase", "Failed to save location for user: $uid", e)
-                }
-        } else {
-            Log.d("Firebase", "Location update skipped: User not logged in, no location, or race not in progress.")
+        // Toast para verificar el UID
+        if (uid == null) {
+           // Toast.makeText(this, "❌ ERROR: Usuario no autenticado", Toast.LENGTH_SHORT).show()
+            Log.e("Firebase", "Usuario no autenticado")
+            return
         }
+
+       // Toast.makeText(this, "👤 Usuario: ${uid.take(8)}...", Toast.LENGTH_SHORT).show()
+
+        // Toast para mostrar el estado de la carrera (pero no bloquear)
+        if (!carreraEnCurso) {
+            //Toast.makeText(this, "⚠️ Carrera no está en curso, pero guardando ubicación...", Toast.LENGTH_SHORT).show()
+            Log.d("Firebase", "Carrera no está en curso, pero continuando con el guardado")
+        } else {
+           // Toast.makeText(this, "🏁 Carrera en curso - guardando ubicación", Toast.LENGTH_SHORT).show()
+        }
+
+       // Toast.makeText(this, "🆔 Carrera ID: $carreraId", Toast.LENGTH_SHORT).show()
+
+        // Verificar permisos de ubicación
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED) {
+            //Toast.makeText(this, "❌ Sin permisos de ubicación", Toast.LENGTH_SHORT).show()
+            Log.e("Firebase", "Sin permisos de ubicación")
+            return
+        }
+
+        //Toast.makeText(this, "🔄 Obteniendo ubicación actual...", Toast.LENGTH_SHORT).show()
+
+        // Obtener ubicación actual
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            if (location != null) {
+                // Convertir Location a GeoPoint y actualizar currentLocation
+                currentLocation = GeoPoint(location.latitude, location.longitude)
+
+               // Toast.makeText(this, "📍 Ubicación obtenida: ${location.latitude}, ${location.longitude}", Toast.LENGTH_SHORT).show()
+
+                // Ahora guardar en Firebase
+                guardarEnFirebase(uid, location)
+
+            } else {
+               // Toast.makeText(this, "❌ lastLocation es null, solicitando nueva ubicación...", Toast.LENGTH_SHORT).show()
+
+                // Si lastLocation es null, solicitar una nueva ubicación
+                solicitarNuevaUbicacion(uid)
+            }
+        }.addOnFailureListener { e ->
+          //  Toast.makeText(this, "❌ Error obteniendo lastLocation", Toast.LENGTH_SHORT).show()
+            Log.e("Firebase", "Error obteniendo lastLocation", e)
+
+            // Intentar con requestLocationUpdates
+            solicitarNuevaUbicacion(uid)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun solicitarNuevaUbicacion(uid: String) {
+      //  Toast.makeText(this, "🛰️ Solicitando nueva ubicación...", Toast.LENGTH_SHORT).show()
+
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        val locationRequest = LocationRequest.create().apply {
+            interval = 10000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+            numUpdates = 1 // Solo necesitamos una actualización
+        }
+
+        val locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                super.onLocationResult(locationResult)
+                val location = locationResult.lastLocation
+                if (location != null) {
+                    // Convertir Location a GeoPoint y actualizar currentLocation
+                    currentLocation = GeoPoint(location.latitude, location.longitude)
+
+                  //  Toast.makeText(this@MapsActivity, "📍 Nueva ubicación: ${location.latitude}, ${location.longitude}", Toast.LENGTH_SHORT).show()
+
+                    // Guardar en Firebase
+                    guardarEnFirebase(uid, location)
+
+                } else {
+                   // Toast.makeText(this@MapsActivity, "❌ No se pudo obtener ubicación", Toast.LENGTH_SHORT).show()
+                }
+
+                // Remover el callback después de obtener la ubicación
+                fusedLocationClient.removeLocationUpdates(this)
+            }
+        }
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
+    }
+
+    private fun guardarEnFirebase(uid: String, location: Location) {
+        val database = FirebaseDatabase.getInstance()
+
+        // Apuntar directamente al nodo del usuario específico
+        val userLocationRef = database.getReference("carreras")
+            .child(carreraId)
+            .child("ubicacionesParticipantes")
+            .child(uid)
+
+        val locationData = hashMapOf(
+            "latitud" to location.latitude,
+            "longitud" to location.longitude,
+            "altitud" to location.altitude,
+            "timestamp" to com.google.firebase.database.ServerValue.TIMESTAMP
+        )
+
+    //    Toast.makeText(this, "⬆️ Guardando ubicación en Firebase...", Toast.LENGTH_SHORT).show()
+
+        userLocationRef.setValue(locationData)
+            .addOnSuccessListener {
+            //    Toast.makeText(this, "✅ Ubicación guardada exitosamente", Toast.LENGTH_SHORT).show()
+                Log.d("Firebase", "Ubicación guardada exitosamente para el usuario: $uid")
+            }
+            .addOnFailureListener { e ->
+          //      Toast.makeText(this, "❌ Error al guardar ubicación", Toast.LENGTH_LONG).show()
+                Log.e("Firebase", "Error al guardar la ubicación para el usuario: $uid", e)
+            }
     }
 
     private fun startSavingLocationUpdates() {
@@ -860,6 +964,7 @@ class MapsActivity : AppCompatActivity() {
                     participantes.add(uid)
 
                     // Actualizar la lista en Firebase
+                    guardarUsuarioUbicacionFirebase()
                     carreraRef.child("jugadores").setValue(participantes)
                         .addOnSuccessListener {
                             Log.d("CARRERA", "Usuario agregado exitosamente a la carrera")
@@ -1169,6 +1274,7 @@ class MapsActivity : AppCompatActivity() {
                 Looper.getMainLooper()
             )
         }
+       // guardarUsuarioUbicacionFirebase()
     }
 
     fun stopLocationUpdates() {
@@ -1208,6 +1314,7 @@ class MapsActivity : AppCompatActivity() {
                         velocidadMaxima = velocidadActual
                     }
                     updateUI(loc)
+                    guardarUsuarioUbicacionFirebase()
                 }
             }
         }
@@ -1249,6 +1356,14 @@ class MapsActivity : AppCompatActivity() {
             if (distanciaCamara > 0.05) { // 50 metros = 0.05 km
                 moverCamara = true
                 ultimaPosicionCamara = newLocation
+            }
+
+            val distanciaMeta = distance(
+                newLocation.latitude, newLocation.longitude,
+                carreraDestino!!.latitude, carreraDestino!!.longitude
+            )
+            if (distanciaMeta < 0.02) {
+                verificarAdministrador(true)
             }
         } ?: run {
             // Primera vez, mover cámara
@@ -1479,77 +1594,129 @@ class MapsActivity : AppCompatActivity() {
 
     private fun observarParticipantes() {
         val userId = auth.currentUser?.uid ?: return
-        val ref = FirebaseDatabase.getInstance().getReference("usuarios")
+        val usuariosRef = FirebaseDatabase.getInstance().getReference("usuarios")
+        val ubicacionesRef = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("ubicacionesParticipantes")
 
-        FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("jugadores")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val participantes = snapshot.children.mapNotNull {
-                        val value = it.value
-                        if (value is String) value else null
-                    }
+        // Primero obtenemos la lista de participantes
+        ubicacionesRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // ✅ LIMPIAR TODOS LOS MARKERS ANTERIORES DEL MAPA
+                participantMarkers.values.forEach { marker ->
+                    map.overlays.remove(marker)
+                }
+                participantMarkers.clear()
 
-                    for (uid in participantes) {
-                        if (uid != userId) {
-                            // Primero obtener la foto de perfil del rival
-                            ref.child(uid).child("urlFotoPerfil").get().addOnSuccessListener { fotoSnapshot ->
-                                val urlFotoPerfil = fotoSnapshot.getValue(String::class.java)
+                // Limpiar listeners anteriores para evitar memory leaks
+                locationListeners.values.forEach { (ref, listener) ->
+                    ref.removeEventListener(listener)
+                }
+                locationListeners.clear()
 
-                                // Luego observar la ubicación del rival
-                                ref.child(uid).child("ubicacion")
-                                    .addValueEventListener(object : ValueEventListener {
-                                        override fun onDataChange(snap: DataSnapshot) {
-                                            val lat = snap.child("latitud").getValue(Double::class.java) ?: return
-                                            val lon = snap.child("longitud").getValue(Double::class.java) ?: return
-                                            val alt = snap.child("altitud").getValue(Double::class.java) ?: 0.0
+                // ✅ FORZAR ACTUALIZACIÓN DEL MAPA DESPUÉS DE LIMPIAR
+                map.invalidate()
 
-                                            // Remover marcador anterior si existe
-                                            participantMarkers[uid]?.let { oldMarker ->
-                                                map.overlays.remove(oldMarker)
-                                            }
+                // Obtener todos los UIDs de participantes
+                val participantes = snapshot.children.mapNotNull { it.key }
 
-                                            val punto = GeoPoint(lat, lon, alt)
+                for (uid in participantes) {
+                    if (uid != userId) {
+                        // Primero obtener la foto de perfil del rival
+                        usuariosRef.child(uid).child("urlFotoPerfil").get().addOnSuccessListener { fotoSnapshot ->
+                            val urlFotoPerfil = fotoSnapshot.getValue(String::class.java)
 
-                                            if (!urlFotoPerfil.isNullOrEmpty()) {
-                                                // Si tiene foto de perfil, cargarla
-                                                loadRivalProfileImageAsMarker(punto, uid, urlFotoPerfil)
-                                            } else {
-                                                // Si no tiene foto, usar icono por defecto
-                                                createAndAddRivalMarkerWithDefaultIcon(punto, uid)
-                                            }
+                            // Luego observar la ubicación del rival EN LA ESTRUCTURA CORRECTA
+                            val ubicacionRef = ubicacionesRef.child(uid)
+                            val ubicacionListener = ubicacionRef
+                                .addValueEventListener(object : ValueEventListener {
+                                    override fun onDataChange(ubicacionSnapshot: DataSnapshot) {
+                                        val lat = ubicacionSnapshot.child("latitud").getValue(Double::class.java) ?: return
+                                        val lon = ubicacionSnapshot.child("longitud").getValue(Double::class.java) ?: return
+                                        // En la estructura real no hay altitud, usamos 0.0 por defecto
+                                        val alt = 0.0
+
+                                        // ✅ REMOVER MARCADOR ANTERIOR SI EXISTE
+                                        participantMarkers[uid]?.let { oldMarker ->
+                                            map.overlays.remove(oldMarker)
                                         }
 
-                                        override fun onCancelled(error: DatabaseError) {}
-                                    })
-                            }.addOnFailureListener {
-                                // Si falla obtener la foto, observar ubicación con icono por defecto
-                                ref.child(uid).child("ubicacion")
-                                    .addValueEventListener(object : ValueEventListener {
-                                        override fun onDataChange(snap: DataSnapshot) {
-                                            val lat = snap.child("latitud").getValue(Double::class.java) ?: return
-                                            val lon = snap.child("longitud").getValue(Double::class.java) ?: return
-                                            val alt = snap.child("altitud").getValue(Double::class.java) ?: 0.0
+                                        val punto = GeoPoint(lat, lon, alt)
 
-                                            participantMarkers[uid]?.let { oldMarker ->
-                                                map.overlays.remove(oldMarker)
-                                            }
-
-                                            val punto = GeoPoint(lat, lon, alt)
+                                        if (!urlFotoPerfil.isNullOrEmpty()) {
+                                            // Si tiene foto de perfil, cargarla
+                                            loadRivalProfileImageAsMarker(punto, uid, urlFotoPerfil)
+                                        } else {
+                                            // Si no tiene foto, usar icono por defecto
                                             createAndAddRivalMarkerWithDefaultIcon(punto, uid)
                                         }
 
-                                        override fun onCancelled(error: DatabaseError) {}
-                                    })
-                            }
+                                        // ✅ FORZAR ACTUALIZACIÓN DEL MAPA
+                                        map.invalidate()
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {
+                                        Log.e("ObservarParticipantes", "Error observando ubicación de $uid: ${error.message}")
+                                    }
+                                })
+
+                            // Guardar el listener y su referencia para poder limpiarlo después
+                            locationListeners[uid] = Pair(ubicacionRef, ubicacionListener)
+
+                        }.addOnFailureListener { exception ->
+                            Log.e("ObservarParticipantes", "Error obteniendo foto de perfil de $uid", exception)
+
+                            // Si falla obtener la foto, observar ubicación con icono por defecto
+                            val ubicacionRef = ubicacionesRef.child(uid)
+                            val ubicacionListener = ubicacionRef
+                                .addValueEventListener(object : ValueEventListener {
+                                    override fun onDataChange(ubicacionSnapshot: DataSnapshot) {
+                                        val lat = ubicacionSnapshot.child("latitud").getValue(Double::class.java) ?: return
+                                        val lon = ubicacionSnapshot.child("longitud").getValue(Double::class.java) ?: return
+                                        val alt = 0.0
+
+                                        // ✅ REMOVER MARCADOR ANTERIOR SI EXISTE Y LIMPIARLO DEL MAPA
+                                        participantMarkers[uid]?.let { oldMarker ->
+                                            map.overlays.remove(oldMarker)
+                                            map.invalidate() // ✅ FORZAR ACTUALIZACIÓN DEL MAPA
+                                        }
+
+                                        val punto = GeoPoint(lat, lon, alt)
+                                        createAndAddRivalMarkerWithDefaultIcon(punto, uid)
+
+                                        // ✅ FORZAR ACTUALIZACIÓN DEL MAPA DESPUÉS DE AGREGAR EL NUEVO MARKER
+                                        map.invalidate()
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {
+                                        Log.e("ObservarParticipantes", "Error observando ubicación de $uid: ${error.message}")
+                                    }
+                                })
+
+                            locationListeners[uid] = Pair(ubicacionRef, ubicacionListener)
                         }
                     }
                 }
+            }
 
-                override fun onCancelled(error: DatabaseError) {}
-            })
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("ObservarParticipantes", "Error obteniendo participantes: ${error.message}")
+            }
+        })
+    }
+
+    // Método para limpiar listeners cuando sea necesario (por ejemplo, en onDestroy)
+    private fun limpiarListeners() {
+        locationListeners.values.forEach { (ref, listener) ->
+            ref.removeEventListener(listener)
+        }
+        locationListeners.clear()
     }
 
     private fun loadRivalProfileImageAsMarker(location: GeoPoint, uid: String, imageUrl: String) {
+        // ✅ REMOVER MARCADOR ANTERIOR ANTES DE CARGAR LA NUEVA IMAGEN
+        participantMarkers[uid]?.let { oldMarker ->
+            map.overlays.remove(oldMarker)
+        }
+
         Glide.with(this)
             .asBitmap()
             .load(imageUrl)
@@ -1568,6 +1735,10 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun createRivalMarkerWithCustomIcon(location: GeoPoint, uid: String, bitmap: Bitmap) {
+        participantMarkers[uid]?.let { oldMarker ->
+            map.overlays.remove(oldMarker)
+        }
+
         val marker = Marker(map)
         marker.title = "Rival"
         marker.subDescription = "Participante"
@@ -1583,6 +1754,10 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun createAndAddRivalMarkerWithDefaultIcon(location: GeoPoint, uid: String) {
+        participantMarkers[uid]?.let { oldMarker ->
+            map.overlays.remove(oldMarker)
+        }
+
         val marker = createMarker(
             location,
             "Rival",
@@ -1603,7 +1778,9 @@ class MapsActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val estado = snapshot.getValue(String::class.java)
                 carreraEnCurso = estado == "en_curso"
-                if (!carreraEnCurso) {
+                if(carreraEnCurso) {
+                    binding.goOnlyButton.text = "FINISH RACE"
+                } else {
                     stopLocationUpdates()
                     stopSavingLocationUpdates()
                     locationUpdateHandler.removeCallbacksAndMessages(null)

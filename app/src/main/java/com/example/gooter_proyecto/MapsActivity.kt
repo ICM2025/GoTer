@@ -213,7 +213,7 @@ class MapsActivity : AppCompatActivity() {
                     binding.goOnlyButton.text = "FINISH RACE"
                 } else {
                     // Verificar si el usuario es el administrador
-                    verificarAdministrador()
+                    verificarAdministrador(false)
                 }
             }
 
@@ -288,14 +288,14 @@ class MapsActivity : AppCompatActivity() {
 
     }
 
-    private fun verificarAdministrador() {
+    private fun verificarAdministrador(ganador: Boolean) {
         val carreraRef = FirebaseDatabase.getInstance().getReference("carreras/$carreraId")
         carreraRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val organizadorId = snapshot.child("organizadorId").getValue(String::class.java)
                 val currentUserId = auth.currentUser?.uid
 
-                if (currentUserId == organizadorId) {
+                if (currentUserId == organizadorId || ganador) {
                     // El usuario es el administrador
                     carreraEnCurso = false
                     stopLocationUpdates()
@@ -1357,6 +1357,14 @@ class MapsActivity : AppCompatActivity() {
                 moverCamara = true
                 ultimaPosicionCamara = newLocation
             }
+
+            val distanciaMeta = distance(
+                newLocation.latitude, newLocation.longitude,
+                carreraDestino!!.latitude, carreraDestino!!.longitude
+            )
+            if (distanciaMeta < 0.02) {
+                verificarAdministrador(true)
+            }
         } ?: run {
             // Primera vez, mover cámara
             moverCamara = true
@@ -1727,7 +1735,6 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun createRivalMarkerWithCustomIcon(location: GeoPoint, uid: String, bitmap: Bitmap) {
-        // ✅ REMOVER MARCADOR ANTERIOR SI EXISTE (por si acaso)
         participantMarkers[uid]?.let { oldMarker ->
             map.overlays.remove(oldMarker)
         }

@@ -1747,7 +1747,6 @@ class MapsActivity : AppCompatActivity() {
     }
 
     private fun createAndAddRivalMarkerWithDefaultIcon(location: GeoPoint, uid: String) {
-        // ✅ REMOVER MARCADOR ANTERIOR SI EXISTE
         participantMarkers[uid]?.let { oldMarker ->
             map.overlays.remove(oldMarker)
         }
@@ -1772,7 +1771,9 @@ class MapsActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val estado = snapshot.getValue(String::class.java)
                 carreraEnCurso = estado == "en_curso"
-                if (!carreraEnCurso) {
+                if(carreraEnCurso) {
+                    binding.goOnlyButton.text = "FINISH RACE"
+                } else {
                     stopLocationUpdates()
                     stopSavingLocationUpdates()
                     locationUpdateHandler.removeCallbacksAndMessages(null)

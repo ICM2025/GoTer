@@ -47,6 +47,7 @@ class CarreraActivity : AppCompatActivity() {
     private var mLastShake: Long = 0
     private var mLastForce: Long = 0
     private var idUnicoUser : String = ""
+    private lateinit var childEventListener: ChildEventListener
 
     lateinit var binding: ActivityCarreraBinding
     val carrerasRef = database.child("carreras")
@@ -111,29 +112,29 @@ class CarreraActivity : AppCompatActivity() {
             }
         })
 
-
-
-        carrerasRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        childEventListener = object : ChildEventListener {
             val userCarreraKeyPrefix = "Carrera_$uid"
-            override fun onDataChange(snapshot: DataSnapshot) {
-                for (child in snapshot.children) {
-                    val key = child.key
-                    if (key != null && key.startsWith(userCarreraKeyPrefix)) {
-                        if (child.hasChild("location")) {
-                            val intent = Intent(baseContext, MapsActivity::class.java).apply {
-                                Toast.makeText(baseContext, key, Toast.LENGTH_SHORT).show()
-                                putExtra("carrera_id", key)
-                            }
-                            startActivity(intent)
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                // Detectar nuevas carreras si se desea
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                val key = snapshot.key
+                if (key != null && key.startsWith(userCarreraKeyPrefix)) {
+                    if (snapshot.hasChild("location")) {
+                        val intent = Intent(baseContext, MapsActivity::class.java).apply {
+                            Toast.makeText(baseContext, key, Toast.LENGTH_SHORT).show()
+                            putExtra("carrera_id", key)
                         }
+                        startActivity(intent)
                     }
                 }
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                // Manejo del error si es necesario
-            }
-        })
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+            override fun onCancelled(error: DatabaseError) {}
+        }
 
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
             val email = parent.getItemAtPosition(position).toString()
@@ -251,6 +252,7 @@ class CarreraActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        carrerasRef.removeEventListener(childEventListener)
         sensorManager.unregisterListener(accelerometerEventListener)
     }
 }

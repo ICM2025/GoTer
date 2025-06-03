@@ -333,9 +333,10 @@ class CarreraActivity : AppCompatActivity() {
                         if (userEmail != email && userLat!= null && userLng != null) {
 
                             val distance = calculateDistance(currentLatitude, currentLongitude, userLat, userLng)
-                            Log.i("Distance", "Distance: $distance")
                             if (distance <= PROXIMITY_RADIUS_METERS) {
+                                Log.i("Distance", "Distance: $distance")
                                 listTemporal.add("$userEmail (${String.format("%.0f", distance)}m)")
+                                addUsersList(listTemporal)
                             }
                         }
                     }
@@ -355,7 +356,7 @@ class CarreraActivity : AppCompatActivity() {
           //  Toast.makeText(this, "Encontrados ${listTemporal.size} jugadores cercanos", Toast.LENGTH_SHORT).show()
         }
 
-        addUsersList(listTemporal)
+
     }
 
     fun calculateDistance(lat1: Double, long1: Double, lat2: Double, long2: Double): Double {

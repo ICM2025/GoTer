@@ -234,6 +234,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                     databases.child("carreras").child(carreraIdExistente!!).child("location").setValue(locationData).addOnSuccessListener {
                         val intent = Intent(this, MapsActivity::class.java).apply {
                             putExtra("carrera_id", carreraIdExistente)
+                            putExtra("admin", true)
                         }
                         Toast.makeText(this, "Iniciando seguimiento de carrera existente", Toast.LENGTH_SHORT).show()
                         startActivity(intent)
@@ -434,6 +435,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 actualizarUbicacionParticipante(carreraId)
                 val intent = Intent(this, MapsActivity::class.java).apply {
                     putExtra("carrera_id", carreraId)
+                    putExtra("admin", true)
                 }
                 startActivity(intent)
             }
@@ -482,6 +484,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 actualizarUbicacionParticipante(carreraId)
                 val intent = Intent(this, MapsActivity::class.java).apply {
                     putExtra("carrera_id", carreraId)
+                    putExtra("admin", true)
                 }
                 startActivity(intent)
             }

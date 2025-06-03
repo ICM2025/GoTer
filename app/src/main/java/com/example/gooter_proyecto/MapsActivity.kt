@@ -120,6 +120,7 @@ class MapsActivity : AppCompatActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var velocidadMaxima: Double = 0.0
     private var ultimaPosicionCamara: GeoPoint? = null
+    private var admin : Boolean = false
 
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
@@ -170,6 +171,7 @@ class MapsActivity : AppCompatActivity() {
         // Solicita permiso para notificaciones
         NotificacionesDisponibles.getInstance().inicializar(this)
         carreraId = intent.getStringExtra("carrera_id") ?: ""
+        admin = intent.getBooleanExtra("admin", false)
 
         val uid = auth.currentUser?.uid
         if (uid != null) {
@@ -196,18 +198,22 @@ class MapsActivity : AppCompatActivity() {
             cargarDestinoCarrera()
             observarParticipantes()
             observarEstadoCarrera()
-
             binding.goOnlyButton.setOnClickListener {
-                if (!carreraEnCurso) {
-                    FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
-                        .setValue("en_curso")
-                    borrarNotificacionesAsociadas()
-                    Toast.makeText(this, "¡Carrera iniciada!", Toast.LENGTH_SHORT).show()
-                    carreraEnCurso = true
-                    binding.goOnlyButton.text = "FINISH RACE"
-                } else {
-                    finalizarCarreraYRegistrarEstadisticas()
-                    detenerCronometro()
+                if (admin) {
+                    if (!carreraEnCurso) {
+                        FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
+                            .setValue("en_curso")
+                        borrarNotificacionesAsociadas()
+                        Toast.makeText(this, "¡Carrera iniciada!", Toast.LENGTH_SHORT).show()
+                        carreraEnCurso = true
+                        binding.goOnlyButton.text = "FINISH RACE"
+                    } else {
+                        finalizarCarreraYRegistrarEstadisticas()
+                        detenerCronometro()
+                    }
+                }
+                else {
+                    Toast.makeText(baseContext,"Para hacer esto debes ser administrador", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -1050,8 +1056,21 @@ class MapsActivity : AppCompatActivity() {
             // Dibujar nueva ruta
             drawDirectLine(newLocation, carreraDestino!!)
         }
-
+        revisarVictoria(newLocation)
         map.invalidate()
+    }
+
+    fun revisarVictoria(newLocation : GeoPoint) {
+        val distancia  = distance(newLocation.latitude, newLocation.longitude, carreraDestino!!.latitude, carreraDestino!!.longitude)
+        Log.i("MAPA", "Distancia a destino: $distancia")
+        if (distancia < 0.4 ){
+            val ref = FirebaseDatabase.getInstance().getReference("carreras")
+                .child(carreraId)
+                .child("estado")
+            ref.setValue("finalizada")
+            finalizarCarreraYRegistrarEstadisticas()
+            detenerCronometro()
+        }
     }
 
     private fun updateCurrentLocationMarker(location: GeoPoint, address: String?) {
@@ -1378,6 +1397,12 @@ class MapsActivity : AppCompatActivity() {
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 carreraEnCurso = snapshot.getValue(String::class.java) == "en_curso"
+                if(!carreraEnCurso) {
+                    startActivity(Intent(baseContext, HomeActivity::class.java))
+                }
+                else {
+                    binding.goOnlyButton.text = "FINISH RACE"
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {}

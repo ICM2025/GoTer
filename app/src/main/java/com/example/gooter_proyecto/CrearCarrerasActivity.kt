@@ -218,6 +218,16 @@ class CrearCarrerasActivity : AppCompatActivity() {
             finish()
         }
 
+        binding.buttonGo.setOnClickListener {
+            val destino = binding.editTextDestination.text.toString().trim()
+            if (destino.isNotEmpty()) {
+                buscarDestino(destino)
+                ocultarTeclado()
+            } else {
+                Toast.makeText(this, "Por favor ingresa un destino.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding.buttonIniciar.setOnClickListener {
             if (ubicacionDestino == null) {
                 Toast.makeText(this, "Primero selecciona un destino para la carrera", Toast.LENGTH_SHORT).show()

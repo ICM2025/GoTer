@@ -166,26 +166,48 @@ class CarreraActivity : AppCompatActivity() {
         })
 
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
-            val email = parent.getItemAtPosition(position).toString()
+            val emailWithDistance = parent.getItemAtPosition(position).toString()
+
+            // Extract just the email part (remove the distance part in parentheses)
+            val email = if (emailWithDistance.contains("(")) {
+                emailWithDistance.substring(0, emailWithDistance.indexOf("(")).trim()
+            } else {
+                emailWithDistance.trim()
+            }
+
             val contrarioUid = mapCompetidores[email]
-            val customKeyTmp = "Carrera_$contrarioUid"
-            customKey = customKeyTmp
-            val jugadores = ArrayList<String>()
-            jugadores.add(uid!!)
-            jugadores.add(contrarioUid!!)
-            val carrera = mapOf(
-                "jugadores" to jugadores,
-            )
-            database.child("carreras").child(customKey).setValue(carrera)
-                .addOnSuccessListener {
-                    val intent = Intent(baseContext, CrearCarrerasActivity::class.java).apply {
-                        putExtra("modo_directo", true)
-                        putExtra("carrera_id", customKey)
-                    }
-                    startActivity(intent)
-                }.addOnFailureListener {
-                    Toast.makeText(baseContext, "Error al crear carrera", Toast.LENGTH_SHORT).show()
+
+            // Add null check to prevent NullPointerException
+            if (contrarioUid != null && contrarioUid.isNotEmpty()) {
+                val customKeyTmp = "Carrera_$contrarioUid"
+                customKey = customKeyTmp
+                val jugadores = ArrayList<String>()
+
+                // Also add null check for uid
+                uid?.let { currentUid ->
+                    jugadores.add(currentUid)
+                    jugadores.add(contrarioUid)
+
+                    val carrera = mapOf(
+                        "jugadores" to jugadores,
+                    )
+
+                    database.child("carreras").child(customKey).setValue(carrera)
+                        .addOnSuccessListener {
+                            val intent = Intent(baseContext, CrearCarrerasActivity::class.java).apply {
+                                putExtra("modo_directo", true)
+                                putExtra("carrera_id", customKey)
+                            }
+                            startActivity(intent)
+                        }.addOnFailureListener {
+                            Toast.makeText(baseContext, "Error al crear carrera", Toast.LENGTH_SHORT).show()
+                        }
+                } ?: run {
+                    Toast.makeText(baseContext, "Error: Usuario no autenticado", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                Toast.makeText(baseContext, "Error: No se pudo encontrar el usuario seleccionado", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

@@ -132,18 +132,6 @@ class CarreraActivity : AppCompatActivity() {
             true
         }
 
-        // Listener para usuarios disponibles (ahora con filtro de proximidad)
-        docRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (currentLatitude != 0.0 && currentLongitude != 0.0) {
-                    filterNearbyUsers(snapshot)
-                }
-            }
-            override fun onCancelled(error: DatabaseError) {
-            //    Toast.makeText(baseContext, "Error al cargar usuarios", Toast.LENGTH_SHORT).show()
-            }
-        })
-
         carrerasRef.addChildEventListener(object : ChildEventListener {
             val userCarreraKeyPrefix = "Carrera_$uid"
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
@@ -332,37 +320,34 @@ class CarreraActivity : AppCompatActivity() {
         }
     }
 
-    private fun filterNearbyUsers(snapshot: DataSnapshot) {
+    private fun filterNearbyUsers() {
         val listTemporal = ArrayList<String>()
-        mapCompetidores.clear()
-        mapCompetidoresLocation.clear()
+        docRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (currentLatitude != 0.0 && currentLongitude != 0.0) {
+                    for (child: DataSnapshot in snapshot.children) {
+                        val userEmail = child.child("email").getValue(String::class.java)
+                        val userLat = child.child("latitude").getValue(Double::class.java)
+                        val userLng = child.child("longitude").getValue(Double::class.java)
+                        if (userEmail != email && userLat!= null && userLng != null) {
 
-        for (child: DataSnapshot in snapshot.children) {
-            val userEmail = child.child("email").getValue(String::class.java)
-            val userUid = child.child("uid").getValue(String::class.java)
-            val userLat = child.child("latitude").getValue(Double::class.java)
-            val userLng = child.child("longitude").getValue(Double::class.java)
-
-            // Verificar que no sea el usuario actual y que tenga ubicación
-            if (userEmail != email && userEmail != null && userUid != null &&
-                userLat != null && userLng != null
-            ) {
-                // Calcular distancia
-                val distance = calculateDistance(currentLatitude, currentLongitude, userLat, userLng)
-
-                // Solo agregar usuarios dentro del radio de proximidad (200m)
-                if (distance <= PROXIMITY_RADIUS_METERS) {
-                    listTemporal.add("$userEmail (${String.format("%.0f", distance)}m)")
-                    mapCompetidores[userEmail] = userUid
-                    mapCompetidoresLocation[userEmail] = Pair(userLat, userLng)
+                            val distance = calculateDistance(currentLatitude, currentLongitude, userLat, userLng)
+                            if (distance <= PROXIMITY_RADIUS_METERS) {
+                                listTemporal.add("$userEmail (${String.format("%.0f", distance)}m)")
+                            }
+                        }
+                    }
                 }
             }
-        }
+            override fun onCancelled(error: DatabaseError) {
+                //    Toast.makeText(baseContext, "Error al cargar usuarios", Toast.LENGTH_SHORT).show()
+            }
+        })
+
 
         // Mostrar mensaje si no hay usuarios cercanos
         if (listTemporal.isEmpty()) {
             binding.busquedaText.text = "No hay jugadores disponibles en un radio de 200 metros"
-           // Toast.makeText(this, "No hay jugadores disponibles en un radio de 200 metros", Toast.LENGTH_LONG).show()
         } else {
             binding.busquedaText.text = "Encontrados ${listTemporal.size} jugadores cercanos"
           //  Toast.makeText(this, "Encontrados ${listTemporal.size} jugadores cercanos", Toast.LENGTH_SHORT).show()
@@ -420,8 +405,8 @@ class CarreraActivity : AppCompatActivity() {
                                 // Log para depuración
                                 println("Sacudida detectada con fuerza: $speed")
                                 Toast.makeText(baseContext, "¡Sacudida detectada!", Toast.LENGTH_SHORT).show()
-
                                 binding.busquedaText.text = "Buscando jugadores cercanos"
+                                filterNearbyUsers()
                                 binding.listDisponibles.visibility = View.VISIBLE
                                 sensorManager.unregisterListener(this)
                                 getCurrentLocationAndAddToList()

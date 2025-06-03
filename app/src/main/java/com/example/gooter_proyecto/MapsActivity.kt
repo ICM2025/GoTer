@@ -1396,11 +1396,12 @@ class MapsActivity : AppCompatActivity() {
         val ref = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
         ref.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                var estadoCarrera = snapshot.getValue(String::class.java)
                 carreraEnCurso = snapshot.getValue(String::class.java) == "en_curso"
-                if(!carreraEnCurso) {
+                if(estadoCarrera == "finalizada") {
                     startActivity(Intent(baseContext, HomeActivity::class.java))
                 }
-                else {
+                else if (estadoCarrera == "en_curso"){
                     binding.goOnlyButton.text = "FINISH RACE"
                 }
             }

@@ -246,15 +246,21 @@ class HomeActivity : AppCompatActivity() {
                         val descripcion = notificacionSnap.child("mensaje").getValue(String::class.java) ?: ""
                         val remitente = notificacionSnap.child("emisorId").getValue(String::class.java) ?: "Sistema"
                         val destinatario = userId
-                        val fecha = notificacionSnap.child("fechaHora").getValue(Long::class.java)?.toString() ?: ""
                         val leida = notificacionSnap.child("leida").getValue(Boolean::class.java) ?: false
                         val accion = notificacionSnap.child("accion").getValue(String::class.java) ?: ""
                         val tipo = notificacionSnap.child("tipo").getValue(String::class.java) ?: "General"
 
+                        // Corrección para manejar fechaHora
+                        val fechaValue = notificacionSnap.child("fechaHora").value
+                        val fecha = when (fechaValue) {
+                            is Long -> fechaValue.toString()
+                            is String -> fechaValue
+                            else -> ""
+                        }
+
                         // Skip finalizar_carrera notifications
                         if (accion == "finalizar_carrera") {
                             Log.d("Notificaciones", "Skipping finalizar_carrera notification: $idNotificacion")
-                            // Optionally delete the notification
                             notificacionSnap.ref.removeValue()
                                 .addOnSuccessListener {
                                     Log.d("Notificaciones", "Deleted finalizar_carrera notification: $idNotificacion")
@@ -315,7 +321,6 @@ class HomeActivity : AppCompatActivity() {
                 }
             })
     }
-
     private fun loadComunidades() {
         val userId = auth.currentUser?.uid ?: return
         val ref = database.child("comunidad")

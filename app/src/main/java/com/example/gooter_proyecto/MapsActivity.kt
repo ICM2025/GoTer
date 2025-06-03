@@ -208,6 +208,10 @@ class MapsActivity : AppCompatActivity() {
                         carreraEnCurso = true
                         binding.goOnlyButton.text = "FINISH RACE"
                     } else {
+                        val ref = FirebaseDatabase.getInstance().getReference("carreras")
+                            .child(carreraId)
+                            .child("estado")
+                        ref.setValue("finalizada")
                         finalizarCarreraYRegistrarEstadisticas()
                         detenerCronometro()
                     }

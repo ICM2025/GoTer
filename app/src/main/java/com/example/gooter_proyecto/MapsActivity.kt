@@ -889,6 +889,11 @@ class MapsActivity : AppCompatActivity() {
         stopSavingLocationUpdates()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        stopLocationUpdates()
+    }
+
     fun createMarker(p: GeoPoint, title: String, desc: String, iconID: Int): Marker? {
         var marker: Marker? = null;
         if (map != null) {

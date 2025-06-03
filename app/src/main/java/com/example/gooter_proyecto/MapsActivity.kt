@@ -502,6 +502,8 @@ class MapsActivity : AppCompatActivity() {
         Toast.makeText(this, "Carrera finalizada. Distancia: ${distanciaRecorrida}km, Puntos ganados: $puntosGanados", Toast.LENGTH_LONG).show()
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
+        val carreraRef = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId)
+        carreraRef.removeValue()
     }
 
     private fun actualizarEstadisticasDiarias(statsRef: DatabaseReference, fecha: String, calorias: Double, velocidadMedia: Double) {

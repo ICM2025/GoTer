@@ -156,6 +156,16 @@ class CrearCarrerasActivity : AppCompatActivity() {
                 Toast.makeText(this, "Error: No se proporcionó ID de carrera en modo directo.", Toast.LENGTH_LONG).show()
             }
         }
+        binding.buttonGo.setOnClickListener {
+            val destino = binding.editTextDestination.text.toString().trim()
+            if (destino.isNotEmpty()) {
+                buscarDestino(destino)
+                ocultarTeclado()
+            } else {
+                Toast.makeText(this, "Por favor ingresa un destino.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         database = FirebaseDatabase.getInstance()
 
         val databases = FirebaseDatabase.getInstance().reference

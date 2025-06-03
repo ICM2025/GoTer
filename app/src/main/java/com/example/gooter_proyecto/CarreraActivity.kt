@@ -39,7 +39,7 @@ class CarreraActivity : AppCompatActivity() {
     private var currentLatitude: Double = 0.0
     private var currentLongitude: Double = 0.0
     private val LOCATION_PERMISSION_REQUEST_CODE = 1000
-    private val PROXIMITY_RADIUS_METERS = 200.0 // 200 metros
+    private val PROXIMITY_RADIUS_METERS = 400.0 // 400 metros
 
     // Handler para actualizaciones periódicas de ubicación
     private lateinit var locationUpdateHandler: Handler

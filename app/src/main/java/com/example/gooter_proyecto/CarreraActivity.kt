@@ -111,26 +111,28 @@ class CarreraActivity : AppCompatActivity() {
             }
         })
 
-        carrerasRef.addChildEventListener(object : ChildEventListener {
+
+
+        carrerasRef.addListenerForSingleValueEvent(object : ValueEventListener {
             val userCarreraKeyPrefix = "Carrera_$uid"
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                // Podríamos detectar nuevas carreras aquí si es necesario
-            }
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                val key = snapshot.key
-                if (key != null && key.startsWith(userCarreraKeyPrefix)) {
-                    if (snapshot.hasChild("location")) {
-                        val intent = Intent(baseContext, MapsActivity::class.java).apply {
-                            Toast.makeText(baseContext, customKey, Toast.LENGTH_SHORT).show()
-                            putExtra("carrera_id", customKey)
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (child in snapshot.children) {
+                    val key = child.key
+                    if (key != null && key.startsWith(userCarreraKeyPrefix)) {
+                        if (child.hasChild("location")) {
+                            val intent = Intent(baseContext, MapsActivity::class.java).apply {
+                                Toast.makeText(baseContext, key, Toast.LENGTH_SHORT).show()
+                                putExtra("carrera_id", key)
+                            }
+                            startActivity(intent)
                         }
-                        startActivity(intent)
                     }
                 }
             }
-            override fun onChildRemoved(snapshot: DataSnapshot) {}
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onCancelled(error: DatabaseError) {}
+
+            override fun onCancelled(error: DatabaseError) {
+                // Manejo del error si es necesario
+            }
         })
 
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->

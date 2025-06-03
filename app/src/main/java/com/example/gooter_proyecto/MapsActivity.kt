@@ -1072,16 +1072,24 @@ class MapsActivity : AppCompatActivity() {
     }
 
     fun revisarVictoria(newLocation : GeoPoint) {
-        val distancia  = distance(newLocation.latitude, newLocation.longitude, carreraDestino!!.latitude, carreraDestino!!.longitude)
-        Log.i("MAPA", "Distancia a destino: $distancia")
-        if (distancia < 0.4 ){
-            val ref = FirebaseDatabase.getInstance().getReference("carreras")
-                .child(carreraId)
-                .child("estado")
-            ref.setValue("finalizada")
-            finalizarCarreraYRegistrarEstadisticas()
-            detenerCronometro()
+        if(newLocation.latitude != null && newLocation.longitude != null) {
+            val distancia = distance(
+                newLocation.latitude,
+                newLocation.longitude,
+                carreraDestino!!.latitude,
+                carreraDestino!!.longitude
+            )
+            Log.i("MAPA", "Distancia a destino: $distancia")
+            if (distancia < 0.4) {
+                val ref = FirebaseDatabase.getInstance().getReference("carreras")
+                    .child(carreraId)
+                    .child("estado")
+                ref.setValue("finalizada")
+                finalizarCarreraYRegistrarEstadisticas()
+                detenerCronometro()
+            }
         }
+
     }
 
     private fun updateCurrentLocationMarker(location: GeoPoint, address: String?) {
@@ -1410,12 +1418,10 @@ class MapsActivity : AppCompatActivity() {
                 var estadoCarrera = snapshot.getValue(String::class.java)
                 carreraEnCurso = snapshot.getValue(String::class.java) == "en_curso"
                 if(estadoCarrera == "finalizada") {
+                    stopLocationUpdates()
                     finalizarCarreraYRegistrarEstadisticas()
                     detenerCronometro()
-                    startActivity(Intent(baseContext, HomeActivity::class.java))
-                }
-                else if (estadoCarrera == "en_curso"){
-                    binding.goOnlyButton.text = "FINISH RACE"
+                    Log.i("MAPA", "Carrera finalizada")
                 }
             }
 

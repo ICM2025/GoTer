@@ -11,6 +11,7 @@ import android.location.Location
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -39,7 +40,7 @@ class CarreraActivity : AppCompatActivity() {
     private var currentLatitude: Double = 0.0
     private var currentLongitude: Double = 0.0
     private val LOCATION_PERMISSION_REQUEST_CODE = 1000
-    private val PROXIMITY_RADIUS_METERS = 0.4 // 400 metros
+    private val PROXIMITY_RADIUS_METERS = 400 // 400 metros
     val RADIUS_OF_EARTH_KM = 6378
 
     // Handler para actualizaciones periódicas de ubicación
@@ -332,6 +333,7 @@ class CarreraActivity : AppCompatActivity() {
                         if (userEmail != email && userLat!= null && userLng != null) {
 
                             val distance = calculateDistance(currentLatitude, currentLongitude, userLat, userLng)
+                            Log.i("Distance", "Distance: $distance")
                             if (distance <= PROXIMITY_RADIUS_METERS) {
                                 listTemporal.add("$userEmail (${String.format("%.0f", distance)}m)")
                             }

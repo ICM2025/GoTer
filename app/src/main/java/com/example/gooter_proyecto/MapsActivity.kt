@@ -1405,6 +1405,8 @@ class MapsActivity : AppCompatActivity() {
                 var estadoCarrera = snapshot.getValue(String::class.java)
                 carreraEnCurso = snapshot.getValue(String::class.java) == "en_curso"
                 if(estadoCarrera == "finalizada") {
+                    finalizarCarreraYRegistrarEstadisticas()
+                    detenerCronometro()
                     startActivity(Intent(baseContext, HomeActivity::class.java))
                 }
                 else if (estadoCarrera == "en_curso"){

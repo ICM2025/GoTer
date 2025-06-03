@@ -1358,12 +1358,15 @@ class MapsActivity : AppCompatActivity() {
                 ultimaPosicionCamara = newLocation
             }
 
-            val distanciaMeta = distance(
-                newLocation.latitude, newLocation.longitude,
-                carreraDestino!!.latitude, carreraDestino!!.longitude
-            )
-            if (distanciaMeta < 0.02) {
-                verificarAdministrador(true)
+            // Solo calcular distancia a la meta si carreraDestino no es null
+            carreraDestino?.let { destino ->
+                val distanciaMeta = distance(
+                    newLocation.latitude, newLocation.longitude,
+                    destino.latitude, destino.longitude
+                )
+                if (distanciaMeta < 0.02) {
+                    verificarAdministrador(true)
+                }
             }
         } ?: run {
             // Primera vez, mover cámara
@@ -1387,7 +1390,9 @@ class MapsActivity : AppCompatActivity() {
                 roadOverlay = null
             }
             // Dibujar nueva ruta
-            drawDirectLine(newLocation, carreraDestino!!)
+            carreraDestino?.let { destino ->
+                drawDirectLine(newLocation, destino)
+            }
         }
 
         map.invalidate()

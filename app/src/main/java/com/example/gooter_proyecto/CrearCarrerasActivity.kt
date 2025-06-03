@@ -236,20 +236,7 @@ class CrearCarrerasActivity : AppCompatActivity() {
 
             if (modoDirecto) {
                 if (carreraIdExistente != null) {
-                    val locationData = hashMapOf(
-                        "latitud" to ubicacionDestino!!.latitude,
-                        "longitud" to ubicacionDestino!!.longitude,
-                        "altitud" to 0.0
-                    )
-                    databases.child("carreras").child(carreraIdExistente!!).child("location").setValue(locationData).addOnSuccessListener {
-                        val intent = Intent(this, MapsActivity::class.java).apply {
-                            putExtra("carrera_id", carreraIdExistente)
-                        }
-                        Toast.makeText(this, "Iniciando seguimiento de carrera existente", Toast.LENGTH_SHORT).show()
-                        startActivity(intent)
-                    }.addOnFailureListener{ exception ->
-                        Toast.makeText(this, "Error al guardar ubicación: ${exception.message}", Toast.LENGTH_SHORT).show()
-                    }
+                    crearNuevaCarreraDirecta()
                 } else {
                     Toast.makeText(this, "Error: ID de carrera no disponible para iniciar.", Toast.LENGTH_SHORT).show()
                 }

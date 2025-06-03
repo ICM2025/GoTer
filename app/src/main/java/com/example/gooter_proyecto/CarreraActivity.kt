@@ -158,15 +158,13 @@ class CarreraActivity : AppCompatActivity() {
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
             val emailWithDistance = parent.getItemAtPosition(position).toString()
 
-            // Extract just the email part (remove the distance part in parentheses)
             val email = if (emailWithDistance.contains("(")) {
                 emailWithDistance.substring(0, emailWithDistance.indexOf("(")).trim()
             } else {
                 emailWithDistance.trim()
             }
-
             val contrarioUid = mapCompetidores[email]
-
+            Log.i("CONTRARIO ID: ", contrarioUid?: "null")
             // Add null check to prevent NullPointerException
             if (contrarioUid != null && contrarioUid.isNotEmpty()) {
                 val customKeyTmp = "Carrera_$contrarioUid"
@@ -336,6 +334,8 @@ class CarreraActivity : AppCompatActivity() {
                             if (distance <= PROXIMITY_RADIUS_METERS) {
                                 Log.i("Distance", "Distance: $distance")
                                 listTemporal.add("$userEmail (${String.format("%.0f", distance)}m)")
+                                mapCompetidores[userEmail!!] = child.key.toString()
+                                mapCompetidoresLocation[userEmail!!] = Pair(userLat, userLng)
                                 addUsersList(listTemporal)
                             }
                         }
@@ -346,17 +346,6 @@ class CarreraActivity : AppCompatActivity() {
                 //    Toast.makeText(baseContext, "Error al cargar usuarios", Toast.LENGTH_SHORT).show()
             }
         })
-
-
-        // Mostrar mensaje si no hay usuarios cercanos
-        if (listTemporal.isEmpty()) {
-            binding.busquedaText.text = "No hay jugadores disponibles en un radio de 200 metros"
-        } else {
-            binding.busquedaText.text = "Encontrados ${listTemporal.size} jugadores cercanos"
-          //  Toast.makeText(this, "Encontrados ${listTemporal.size} jugadores cercanos", Toast.LENGTH_SHORT).show()
-        }
-
-
     }
 
     fun calculateDistance(lat1: Double, long1: Double, lat2: Double, long2: Double): Double {

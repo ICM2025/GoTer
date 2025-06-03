@@ -1364,7 +1364,7 @@ class MapsActivity : AppCompatActivity() {
                     newLocation.latitude, newLocation.longitude,
                     destino.latitude, destino.longitude
                 )
-                if (distanciaMeta < 0.02) {
+                if (distanciaMeta < 0.08) {
                     verificarAdministrador(true)
                 }
             }

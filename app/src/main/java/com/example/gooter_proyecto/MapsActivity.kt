@@ -161,7 +161,6 @@ class MapsActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMapsBinding.inflate(layoutInflater)
@@ -172,6 +171,10 @@ class MapsActivity : AppCompatActivity() {
         // Solicita permiso para notificaciones
         NotificacionesDisponibles.getInstance().inicializar(this)
         carreraId = intent.getStringExtra("carrera_id") ?: ""
+
+        if(!carreraId.isNullOrEmpty() || carreraId != "") {
+            carreraEnCurso = true
+        }
 
         val uid = auth.currentUser?.uid
         if (uid != null) {

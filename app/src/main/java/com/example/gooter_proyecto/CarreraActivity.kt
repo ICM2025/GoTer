@@ -149,6 +149,7 @@ class CarreraActivity : AppCompatActivity() {
                 val intent = Intent(baseContext, CrearCarrerasActivity::class.java).apply {
                     putExtra("modo_directo", true)
                     putExtra("carrera_id", customKey)
+                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 }
                 startActivity(intent)
             }.addOnFailureListener{

@@ -175,6 +175,9 @@ class MapsActivity : AppCompatActivity() {
         if(!carreraId.isNullOrEmpty() || carreraId != "") {
             carreraEnCurso = true
         }
+        var modoDirecto = intent.getStringExtra("modo_directo") ?: ""
+
+        Log.i("Modo directo", modoDirecto)
 
         val uid = auth.currentUser?.uid
         if (uid != null) {

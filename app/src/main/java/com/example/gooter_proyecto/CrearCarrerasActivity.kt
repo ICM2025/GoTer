@@ -237,6 +237,21 @@ class CrearCarrerasActivity : AppCompatActivity() {
             if (modoDirecto) {
                 if (carreraIdExistente != null) {
                     crearNuevaCarreraDirecta()
+                    /*val locationData = hashMapOf(
+                        "latitud" to ubicacionDestino!!.latitude,
+                        "longitud" to ubicacionDestino!!.longitude,
+                        "altitud" to 0.0
+                    )
+                    // TO DO: Actualizar administrador ID
+                    databases.child("carreras").child(carreraIdExistente!!).child("location").setValue(locationData).addOnSuccessListener {
+                        val intent = Intent(this, MapsActivity::class.java).apply {
+                            putExtra("carrera_id", carreraIdExistente)
+                        }
+                        Toast.makeText(this, "Iniciando seguimiento de carrera existente", Toast.LENGTH_SHORT).show()
+                        startActivity(intent)
+                    }.addOnFailureListener{ exception ->
+                        Toast.makeText(this, "Error al guardar ubicación: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    }*/
                 } else {
                     Toast.makeText(this, "Error: ID de carrera no disponible para iniciar.", Toast.LENGTH_SHORT).show()
                 }
@@ -403,7 +418,13 @@ class CrearCarrerasActivity : AppCompatActivity() {
             distancia(it.latitude, it.longitude, ubicacionDestino.latitude, ubicacionDestino.longitude)
         } ?: 0.0
 
-        val carreraId = database.reference.child("carreras").push().key ?: return
+        val locationData = hashMapOf(
+            "latitud" to ubicacionDestino!!.latitude,
+            "longitud" to ubicacionDestino!!.longitude,
+            "altitud" to 0.0
+        )
+
+        val carreraId = carreraIdExistente
 
         val carrera = mapOf(
             "id" to carreraId,
@@ -425,7 +446,9 @@ class CrearCarrerasActivity : AppCompatActivity() {
             "modoDirecto" to true
         )
 
-        database.reference.child("carreras").child(carreraId).setValue(carrera)
+        database.reference.child("carreras").child(carreraIdExistente!!).child("location").setValue(locationData)
+
+        database.reference.child("carreras").child(carreraId!!).setValue(carrera)
             .addOnSuccessListener {
                 Toast.makeText(this, "Carrera directa creada correctamente", Toast.LENGTH_SHORT).show()
                 actualizarUbicacionParticipante(carreraId)

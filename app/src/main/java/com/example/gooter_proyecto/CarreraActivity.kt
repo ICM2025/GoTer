@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlin.math.abs
@@ -47,6 +48,7 @@ class CarreraActivity : AppCompatActivity() {
     private var mLastShake: Long = 0
     private var mLastForce: Long = 0
     private var idUnicoUser : String = ""
+    lateinit var nuevaReferenciaUsuario : DatabaseReference
 
     lateinit var binding: ActivityCarreraBinding
     val carrerasRef = database.child("carreras")
@@ -126,6 +128,7 @@ class CarreraActivity : AppCompatActivity() {
                             putExtra("carrera_id", customKey)
                             carrerasRef.removeEventListener(carrerasListener!!)
                         }
+                        nuevaReferenciaUsuario.removeValue()
                         startActivity(intent)
                         finish()
                     }
@@ -224,7 +227,7 @@ class CarreraActivity : AppCompatActivity() {
 
     fun agregarALista() {
         val usuariosDisponiblesRef = database.child("usuariosDisponibles")
-        val nuevaReferenciaUsuario = usuariosDisponiblesRef.push()
+        nuevaReferenciaUsuario = usuariosDisponiblesRef.push()
         nuevaReferenciaUsuario.onDisconnect().removeValue()
         idUnicoUser = nuevaReferenciaUsuario.key!!
         nuevaReferenciaUsuario.setValue(usuario).addOnSuccessListener {

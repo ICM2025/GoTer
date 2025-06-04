@@ -121,6 +121,16 @@ class MapsActivity : AppCompatActivity() {
     private var velocidadMaxima: Double = 0.0
     private var ultimaPosicionCamara: GeoPoint? = null
     private var admin : Boolean = false
+    private lateinit var estacionamientosListener: ValueEventListener
+
+    // 2) Listener para “estado de la carrera”
+    private lateinit var estadoCarreraListener: ValueEventListener
+
+    // 3) Lista de listeners “de ubicación de cada rival”
+    private val rivalLocationListeners = mutableMapOf<String, ValueEventListener>()
+
+    // 4) Listener para “jugadores de la carrera” (la lista de UIDs)
+    private lateinit var jugadoresCarreraListener: ValueEventListener
 
 
     private val estacionamientoMarkers: MutableList<Marker> = mutableListOf()
@@ -397,7 +407,7 @@ class MapsActivity : AppCompatActivity() {
         val database = FirebaseDatabase.getInstance()
         val estacionamientoRef = database.getReference("estacionamientos")
 
-        estacionamientoRef.addValueEventListener(object : ValueEventListener {
+        estacionamientosListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 estacionamientoMarkers.forEach { marker ->
                     map.overlays.remove(marker)
@@ -448,7 +458,8 @@ class MapsActivity : AppCompatActivity() {
                 Log.e("FIREBASE", "Error al cargar estacionamientos: ${error.message}")
                 Toast.makeText(baseContext, "Error al cargar estacionamientos", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
+        estacionamientoRef.addValueEventListener(estacionamientosListener)
     }
 
     private fun setupRouteButton() {
@@ -892,6 +903,24 @@ class MapsActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         stopLocationUpdates()
+        detenerCronometro()
+        FirebaseDatabase.getInstance()
+            .getReference("estacionamientos")
+            .removeEventListener(estacionamientosListener)
+
+        // 3) Desregistrar listener de “estado de la carrera”
+        FirebaseDatabase.getInstance()
+            .getReference("carreras")
+            .child(carreraId)
+            .child("estado")
+            .removeEventListener(estadoCarreraListener)
+
+        // 4) Desregistrar listener de “jugadores de la carrera”
+        FirebaseDatabase.getInstance()
+            .getReference("carreras")
+            .child(carreraId)
+            .child("jugadores")
+            .removeEventListener(jugadoresCarreraListener)
     }
 
     fun createMarker(p: GeoPoint, title: String, desc: String, iconID: Int): Marker? {
@@ -1413,7 +1442,7 @@ class MapsActivity : AppCompatActivity() {
     
     private fun observarEstadoCarrera() {
         val ref = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
-        ref.addValueEventListener(object : ValueEventListener {
+        estadoCarreraListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var estadoCarrera = snapshot.getValue(String::class.java)
                 carreraEnCurso = snapshot.getValue(String::class.java) == "en_curso"
@@ -1426,7 +1455,8 @@ class MapsActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {}
-        })
+        }
+        ref.addValueEventListener(estadoCarreraListener)
     }
 
     private fun iniciarCronometro() {

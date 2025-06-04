@@ -53,6 +53,7 @@ class CarreraActivity : AppCompatActivity() {
     val docRef = database.child("usuariosDisponibles")
     var mapCompetidores = HashMap<String, String>()
     var customKey : String = "Carrera_$uid"
+    var carrerasListener : ChildEventListener? = null
 
     // Variable para el modo de prueba (útil en emuladores)
     private var testModeEnabled = false
@@ -111,7 +112,7 @@ class CarreraActivity : AppCompatActivity() {
             }
         })
 
-        var carrerasListener = object : ChildEventListener {
+        carrerasListener = object : ChildEventListener {
             val userCarreraKeyPrefix = "Carrera_$uid"
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 // Podríamos detectar nuevas carreras aquí si es necesario
@@ -123,6 +124,7 @@ class CarreraActivity : AppCompatActivity() {
                         val intent = Intent(baseContext, MapsActivity::class.java).apply {
                             Toast.makeText(baseContext, customKey, Toast.LENGTH_SHORT).show()
                             putExtra("carrera_id", customKey)
+                            carrerasRef.removeEventListener(carrerasListener!!)
                         }
                         startActivity(intent)
                         finish()
@@ -133,7 +135,7 @@ class CarreraActivity : AppCompatActivity() {
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {}
         }
-        carrerasRef.addChildEventListener(carrerasListener)
+        carrerasRef.addChildEventListener(carrerasListener!!)
 
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
             val email = parent.getItemAtPosition(position).toString()
@@ -153,7 +155,6 @@ class CarreraActivity : AppCompatActivity() {
                     putExtra("carrera_id", customKey)
                 }
                 startActivity(intent)
-                carrerasRef.removeEventListener(carrerasListener)
             }.addOnFailureListener{
                 Toast.makeText(baseContext, "Error al crear carrera", Toast.LENGTH_SHORT).show()
             }

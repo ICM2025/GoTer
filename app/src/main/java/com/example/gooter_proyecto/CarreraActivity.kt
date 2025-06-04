@@ -111,7 +111,7 @@ class CarreraActivity : AppCompatActivity() {
             }
         })
 
-        carrerasRef.addChildEventListener(object : ChildEventListener {
+        var carrerasListener = object : ChildEventListener {
             val userCarreraKeyPrefix = "Carrera_$uid"
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 // Podríamos detectar nuevas carreras aquí si es necesario
@@ -132,7 +132,8 @@ class CarreraActivity : AppCompatActivity() {
             override fun onChildRemoved(snapshot: DataSnapshot) {}
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {}
-        })
+        }
+        carrerasRef.addChildEventListener(carrerasListener)
 
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
             val email = parent.getItemAtPosition(position).toString()
@@ -152,6 +153,7 @@ class CarreraActivity : AppCompatActivity() {
                     putExtra("carrera_id", customKey)
                 }
                 startActivity(intent)
+                carrerasRef.removeEventListener(carrerasListener)
             }.addOnFailureListener{
                 Toast.makeText(baseContext, "Error al crear carrera", Toast.LENGTH_SHORT).show()
             }

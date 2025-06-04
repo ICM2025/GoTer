@@ -111,17 +111,26 @@ class CarreraActivity : AppCompatActivity() {
             }
         })
 
-        carrerasRef.child(customKey).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                if (snapshot.hasChild("location")) {
-                    val intent = Intent(baseContext, MapsActivity::class.java).apply {
-                        putExtra("carrera_id", customKey)
+        carrerasRef.addChildEventListener(object : ChildEventListener {
+            val userCarreraKeyPrefix = "Carrera_$uid"
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                // Podríamos detectar nuevas carreras aquí si es necesario
+            }
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                val key = snapshot.key
+                if (key != null && key.startsWith(userCarreraKeyPrefix)) {
+                    if (snapshot.hasChild("location") && snapshot.child("estado").getValue() != "en_curso") {
+                        val intent = Intent(baseContext, MapsActivity::class.java).apply {
+                            Toast.makeText(baseContext, customKey, Toast.LENGTH_SHORT).show()
+                            putExtra("carrera_id", customKey)
+                        }
+                        startActivity(intent)
+                        finish()
                     }
-                    startActivity(intent)
-                    finish()
                 }
             }
-
+            override fun onChildRemoved(snapshot: DataSnapshot) {}
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {}
         })
 

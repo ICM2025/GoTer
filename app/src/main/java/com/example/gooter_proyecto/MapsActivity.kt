@@ -1085,7 +1085,9 @@ class MapsActivity : AppCompatActivity() {
             // Dibujar nueva ruta
             drawDirectLine(newLocation, carreraDestino!!)
         }
-        revisarVictoria(newLocation)
+        if(!isFinishing) {
+            revisarVictoria(newLocation)
+        }
         map.invalidate()
     }
 

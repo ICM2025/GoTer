@@ -905,17 +905,11 @@ class MapsActivity : AppCompatActivity() {
         stopLocationUpdates()
         detenerCronometro()
         FirebaseDatabase.getInstance()
-            .getReference("estacionamientos")
-            .removeEventListener(estacionamientosListener)
-
-        // 3) Desregistrar listener de “estado de la carrera”
-        FirebaseDatabase.getInstance()
             .getReference("carreras")
             .child(carreraId)
             .child("estado")
             .removeEventListener(estadoCarreraListener)
-
-        // 4) Desregistrar listener de “jugadores de la carrera”
+        
         FirebaseDatabase.getInstance()
             .getReference("carreras")
             .child(carreraId)

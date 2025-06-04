@@ -909,12 +909,7 @@ class MapsActivity : AppCompatActivity() {
             .child(carreraId)
             .child("estado")
             .removeEventListener(estadoCarreraListener)
-        
-        FirebaseDatabase.getInstance()
-            .getReference("carreras")
-            .child(carreraId)
-            .child("jugadores")
-            .removeEventListener(jugadoresCarreraListener)
+
     }
 
     fun createMarker(p: GeoPoint, title: String, desc: String, iconID: Int): Marker? {

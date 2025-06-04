@@ -48,7 +48,7 @@ class CarreraActivity : AppCompatActivity() {
     private var mLastShake: Long = 0
     private var mLastForce: Long = 0
     private var idUnicoUser : String = ""
-    lateinit var nuevaReferenciaUsuario : DatabaseReference
+    var nuevaReferenciaUsuario : DatabaseReference? = null
 
     lateinit var binding: ActivityCarreraBinding
     val carrerasRef = database.child("carreras")
@@ -73,6 +73,9 @@ class CarreraActivity : AppCompatActivity() {
         binding.button2.setOnClickListener{
             val intent = Intent(this, CrearCarrerasActivity::class.java).apply {
                 putExtra("modo_directo", false)
+            }
+            if(nuevaReferenciaUsuario != null) {
+                nuevaReferenciaUsuario!!.removeValue()
             }
             startActivity(intent)
         }
@@ -128,7 +131,7 @@ class CarreraActivity : AppCompatActivity() {
                             putExtra("carrera_id", customKey)
                             carrerasRef.removeEventListener(carrerasListener!!)
                         }
-                        nuevaReferenciaUsuario.removeValue()
+                        nuevaReferenciaUsuario!!.removeValue()
                         startActivity(intent)
                         finish()
                     }
@@ -228,9 +231,9 @@ class CarreraActivity : AppCompatActivity() {
     fun agregarALista() {
         val usuariosDisponiblesRef = database.child("usuariosDisponibles")
         nuevaReferenciaUsuario = usuariosDisponiblesRef.push()
-        nuevaReferenciaUsuario.onDisconnect().removeValue()
-        idUnicoUser = nuevaReferenciaUsuario.key!!
-        nuevaReferenciaUsuario.setValue(usuario).addOnSuccessListener {
+        nuevaReferenciaUsuario!!.onDisconnect().removeValue()
+        idUnicoUser = nuevaReferenciaUsuario!!.key!!
+        nuevaReferenciaUsuario!!.setValue(usuario).addOnSuccessListener {
             Toast.makeText(this, "Usuario agregado: $idUnicoUser", Toast.LENGTH_SHORT).show()
         }.addOnFailureListener{
             Toast.makeText(this, "Error al agregar usuario", Toast.LENGTH_SHORT).show()
@@ -251,6 +254,9 @@ class CarreraActivity : AppCompatActivity() {
         super.onDestroy()
         if (idUnicoUser.isNotEmpty()) {
             database.child("usuariosDisponibles").child(idUnicoUser).removeValue()
+        }
+        if(nuevaReferenciaUsuario != null) {
+            nuevaReferenciaUsuario!!.removeValue()
         }
     }
 

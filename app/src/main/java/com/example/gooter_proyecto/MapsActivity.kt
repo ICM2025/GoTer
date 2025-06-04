@@ -502,12 +502,12 @@ class MapsActivity : AppCompatActivity() {
 
         // Limpiar carrera actual
         database.getReference("carreras").child(carreraId).removeValue()
-
+        val carreraRef = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId)
+        carreraRef.removeValue()
         Toast.makeText(this, "Carrera finalizada. Distancia: ${distanciaRecorrida}km, Puntos ganados: $puntosGanados", Toast.LENGTH_LONG).show()
         startActivity(Intent(this, HomeActivity::class.java))
         finish()
-        val carreraRef = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId)
-        carreraRef.removeValue()
+
     }
 
     private fun actualizarEstadisticasDiarias(statsRef: DatabaseReference, fecha: String, calorias: Double, velocidadMedia: Double) {
@@ -1413,7 +1413,7 @@ class MapsActivity : AppCompatActivity() {
     
     private fun observarEstadoCarrera() {
         val ref = FirebaseDatabase.getInstance().getReference("carreras").child(carreraId).child("estado")
-        ref.addListenerForSingleValueEvent(object : ValueEventListener {
+        ref.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var estadoCarrera = snapshot.getValue(String::class.java)
                 carreraEnCurso = snapshot.getValue(String::class.java) == "en_curso"

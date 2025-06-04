@@ -47,7 +47,6 @@ class CarreraActivity : AppCompatActivity() {
     private var mLastShake: Long = 0
     private var mLastForce: Long = 0
     private var idUnicoUser : String = ""
-    private lateinit var childEventListener: ChildEventListener
 
     lateinit var binding: ActivityCarreraBinding
     val carrerasRef = database.child("carreras")
@@ -112,29 +111,27 @@ class CarreraActivity : AppCompatActivity() {
             }
         })
 
-        childEventListener = object : ChildEventListener {
+        carrerasRef.addChildEventListener(object : ChildEventListener {
             val userCarreraKeyPrefix = "Carrera_$uid"
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                // Detectar nuevas carreras si se desea
+                // Podríamos detectar nuevas carreras aquí si es necesario
             }
-
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
                 val key = snapshot.key
                 if (key != null && key.startsWith(userCarreraKeyPrefix)) {
                     if (snapshot.hasChild("location")) {
                         val intent = Intent(baseContext, MapsActivity::class.java).apply {
-                            Toast.makeText(baseContext, key, Toast.LENGTH_SHORT).show()
-                            putExtra("carrera_id", key)
+                            Toast.makeText(baseContext, customKey, Toast.LENGTH_SHORT).show()
+                            putExtra("carrera_id", customKey)
                         }
                         startActivity(intent)
                     }
                 }
             }
-
             override fun onChildRemoved(snapshot: DataSnapshot) {}
             override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {}
-        }
+        })
 
         binding.listDisponibles.setOnItemClickListener { parent, view, position, id ->
             val email = parent.getItemAtPosition(position).toString()
@@ -252,7 +249,6 @@ class CarreraActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        carrerasRef.removeEventListener(childEventListener)
         sensorManager.unregisterListener(accelerometerEventListener)
     }
 }
